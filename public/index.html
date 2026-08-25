@@ -40,7 +40,7 @@
 
       <!-- Active Center Switcher Pill & Actions -->
       <div class="navbar-actions">
-        
+
         <!-- Active Centro Switcher Pill -->
         <div class="centro-pill active" id="btnActiveCentroBadge" title="Centro de Trabajo Activo">
           <i class="fa-solid fa-warehouse"></i>
@@ -117,11 +117,6 @@
         <i class="fa-solid fa-users"></i>
         <span id="navUsersLabel">Equipo & Personal</span>
       </button>
-
-      <button class="nav-tab admin-only" data-tab="config-tab" id="navConfigBtn">
-        <i class="fa-solid fa-sliders"></i>
-        <span>Conexión Excel & Mapeo</span>
-      </button>
     </nav>
 
     <!-- CONTENT WRAPPER -->
@@ -132,13 +127,15 @@
       <!-- ========================================================================= -->
       <section class="tab-panel" id="centros-tab">
         <div class="centros-portal-layout">
-          
+
           <!-- Hero Banner for Centros -->
           <div class="centros-hero-card">
             <div class="hero-content">
-              <div class="hero-tag"><i class="fa-solid fa-network-wired"></i> Red Nacional de Centros de Distribución</div>
+              <div class="hero-tag"><i class="fa-solid fa-network-wired"></i> Red Nacional de Centros de Distribución
+              </div>
               <h2>Centros de Inventarios Cíclicos</h2>
-              <p>Selecciona una variante de centro para realizar el conteo rápido de inventario, revisar diferencias y gestionar la operación.</p>
+              <p>Selecciona una variante de centro para realizar el conteo rápido de inventario, revisar diferencias y
+                gestionar la operación.</p>
             </div>
             <div class="hero-stats">
               <div class="h-stat">
@@ -160,7 +157,8 @@
           <div class="centros-toolbar">
             <div class="search-box">
               <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="searchCentrosInput" placeholder="Buscar por código de centro (ej: 1300, 1800, 1120), nombre o encargado...">
+              <input type="text" id="searchCentrosInput"
+                placeholder="Buscar por código de centro (ej: 1300, 1800, 1120), nombre o encargado...">
             </div>
           </div>
 
@@ -183,9 +181,10 @@
             <div class="progress-info-group">
               <div class="progress-title">
                 <i class="fa-solid fa-list-check text-primary"></i>
-                <h2>Hoja de Conteo en Vivo &bull; <span class="text-primary font-mono" id="conteoCurrentCentroTitle">Centro 1300</span></h2>
+                <h2>Hoja de Conteo en Vivo &bull; <span class="text-primary font-mono"
+                    id="conteoCurrentCentroTitle">Centro 1300</span></h2>
               </div>
-              
+
               <!-- Cycle Assignment Status Indicator -->
               <div class="assignment-status-badge" id="assignmentStatusBadge">
                 <i class="fa-solid fa-user-tag text-primary"></i>
@@ -194,13 +193,17 @@
               </div>
 
               <div class="progress-stats-pills">
-                <span class="stat-pill"><i class="fa-solid fa-boxes-stacked text-primary"></i> Total: <strong id="invCountTotal">0</strong></span>
-                <span class="stat-pill pill-success"><i class="fa-solid fa-circle-check text-green"></i> Contados: <strong id="invCountDone">0</strong></span>
-                <span class="stat-pill pill-warning"><i class="fa-solid fa-clock text-amber"></i> Pendientes: <strong id="invCountPending">0</strong></span>
-                <span class="stat-pill"><i class="fa-solid fa-chart-line"></i> Avance: <strong id="invProgressPercent">0%</strong></span>
+                <span class="stat-pill"><i class="fa-solid fa-boxes-stacked text-primary"></i> Total: <strong
+                    id="invCountTotal">0</strong></span>
+                <span class="stat-pill pill-success"><i class="fa-solid fa-circle-check text-green"></i> Contados:
+                  <strong id="invCountDone">0</strong></span>
+                <span class="stat-pill pill-warning"><i class="fa-solid fa-clock text-amber"></i> Pendientes: <strong
+                    id="invCountPending">0</strong></span>
+                <span class="stat-pill"><i class="fa-solid fa-chart-line"></i> Avance: <strong
+                    id="invProgressPercent">0%</strong></span>
               </div>
             </div>
-            
+
             <div class="progress-bar-container">
               <div class="progress-bar-fill" id="invProgressBarFill" style="width: 0%;"></div>
             </div>
@@ -208,13 +211,15 @@
             <!-- Cycle Action Strip (Assign & Conclude) -->
             <div class="cycle-action-strip">
               <div class="cycle-actions-left">
-                <button class="btn btn-outline btn-sm admin-only" id="btnOpenAssignModal" title="Asignar este ciclo a un auxiliar del centro">
+                <button class="btn btn-outline btn-sm admin-only" id="btnOpenAssignModal"
+                  title="Asignar este ciclo a un auxiliar del centro">
                   <i class="fa-solid fa-user-check"></i>
                   <span>Asignar a Auxiliar</span>
                 </button>
               </div>
               <div class="cycle-actions-right">
-                <button class="btn btn-success btn-sm btn-conclude-cycle" id="btnOpenSignatureModal" title="Firmar y concluir ciclo en Excel">
+                <button class="btn btn-success btn-sm btn-conclude-cycle" id="btnOpenSignatureModal"
+                  title="Firmar y concluir ciclo en Excel">
                   <i class="fa-solid fa-signature"></i>
                   <span>CONCLUIR Y FIRMAR CÍCLICO</span>
                 </button>
@@ -229,89 +234,94 @@
             </div>
             <h2>Inventario Cíclico no Asignado</h2>
             <p id="unassignedReasonText">
-              No tienes ninguna orden de conteo cíclico asignada en este momento para el Centro. Solicita a tu Encargado de Centro que asigne la tarea de conteo para habilitar tu lista.
+              No tienes ninguna orden de conteo cíclico asignada en este momento para el Centro. Solicita a tu Encargado
+              de Centro que asigne la tarea de conteo para habilitar tu lista.
             </p>
             <div class="unassigned-meta">
-              <span><i class="fa-solid fa-warehouse text-primary"></i> Centro: <strong id="unassignedCentroCode">1300</strong></span>
-              <span><i class="fa-solid fa-user text-primary"></i> Operador: <strong id="unassignedUserName">Usuario</strong></span>
+              <span><i class="fa-solid fa-warehouse text-primary"></i> Centro: <strong
+                  id="unassignedCentroCode">1300</strong></span>
+              <span><i class="fa-solid fa-user text-primary"></i> Operador: <strong
+                  id="unassignedUserName">Usuario</strong></span>
             </div>
           </div>
 
           <!-- Inventory Content Wrapper (Hidden when unassigned) -->
           <div id="assignedInventoryContent">
 
-          <!-- Filters & Action Toolbar -->
-          <div class="toolbar-card">
-            <div class="toolbar-top">
-              <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="invSearchInput" placeholder="Buscar SKU, descripción o pasillo (Filtrado en vivo)...">
+            <!-- Filters & Action Toolbar -->
+            <div class="toolbar-card">
+              <div class="toolbar-top">
+                <div class="search-box">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="invSearchInput"
+                    placeholder="Buscar SKU, descripción o pasillo (Filtrado en vivo)...">
+                </div>
+
+                <div class="filter-controls">
+                  <select id="invLocationFilter" class="form-select" title="Filtrar por Pasillo / Ubicación">
+                    <option value="">Todos los Pasillos / Ubicaciones</option>
+                  </select>
+
+                  <select id="invAbcFilter" class="form-select" title="Filtrar por Clasificación ABC">
+                    <option value="">Todas las Clases ABC</option>
+                    <option value="A">Clase A (Críticos)</option>
+                    <option value="B">Clase B (Medios)</option>
+                    <option value="C">Clase C (Bajos)</option>
+                  </select>
+
+                  <select id="invStatusFilter" class="form-select" title="Filtrar por Estado de Conteo">
+                    <option value="">Todos los Productos</option>
+                    <option value="Pendiente">Solo Pendientes por Contar</option>
+                    <option value="Contado">Solo Contados (Check Verde)</option>
+                  </select>
+                </div>
               </div>
 
-              <div class="filter-controls">
-                <select id="invLocationFilter" class="form-select" title="Filtrar por Pasillo / Ubicación">
-                  <option value="">Todos los Pasillos / Ubicaciones</option>
-                </select>
+              <div class="toolbar-bottom">
+                <div class="toolbar-stats">
+                  <span>Mostrando: <strong id="invCountShown">0</strong> productos</span>
+                  &bull;
+                  <span class="keyboard-hint"><span class="kbd">Tab</span> para siguiente &bull; <span
+                      class="kbd">Enter</span> para confirmar</span>
+                </div>
 
-                <select id="invAbcFilter" class="form-select" title="Filtrar por Clasificación ABC">
-                  <option value="">Todas las Clases ABC</option>
-                  <option value="A">Clase A (Críticos)</option>
-                  <option value="B">Clase B (Medios)</option>
-                  <option value="C">Clase C (Bajos)</option>
-                </select>
-
-                <select id="invStatusFilter" class="form-select" title="Filtrar por Estado de Conteo">
-                  <option value="">Todos los Productos</option>
-                  <option value="Pendiente">Solo Pendientes por Contar</option>
-                  <option value="Contado">Solo Contados (Check Verde)</option>
-                </select>
+                <div class="toolbar-actions">
+                  <button class="btn btn-secondary btn-sm admin-only" id="btnResetCycleModal">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Reiniciar Ciclo</span>
+                  </button>
+                  <button class="btn btn-primary btn-sm" id="btnRefreshInventory" title="Recargar archivo Excel">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>Recargar</span>
+                  </button>
+                  <button class="btn btn-success btn-sm admin-only" id="btnDownloadCurrentExcel">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                    <span>Descargar Excel</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div class="toolbar-bottom">
-              <div class="toolbar-stats">
-                <span>Mostrando: <strong id="invCountShown">0</strong> productos</span>
-                &bull;
-                <span class="keyboard-hint"><span class="kbd">Tab</span> para siguiente &bull; <span class="kbd">Enter</span> para confirmar</span>
-              </div>
-
-              <div class="toolbar-actions">
-                <button class="btn btn-secondary btn-sm admin-only" id="btnResetCycleModal">
-                  <i class="fa-solid fa-rotate"></i>
-                  <span>Reiniciar Ciclo</span>
-                </button>
-                <button class="btn btn-primary btn-sm" id="btnRefreshInventory" title="Recargar archivo Excel">
-                  <i class="fa-solid fa-arrows-rotate"></i>
-                  <span>Recargar</span>
-                </button>
-                <button class="btn btn-success btn-sm admin-only" id="btnDownloadCurrentExcel">
-                  <i class="fa-solid fa-file-arrow-down"></i>
-                  <span>Descargar Excel</span>
-                </button>
+            <!-- Rapid Condensed Blind Counting Table -->
+            <div class="table-card">
+              <div class="table-responsive">
+                <table class="data-table condensed-counting-table" id="mainInventoryTable">
+                  <thead>
+                    <tr>
+                      <th style="width: 160px;">SKU / Código</th>
+                      <th>Descripción</th>
+                      <th style="width: 150px;">Ubicación</th>
+                      <th style="width: 100px;" class="text-center">ABC</th>
+                      <th style="width: 170px;" class="text-center">Conteo Físico</th>
+                      <th style="width: 150px;" class="text-center">Confirmar</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mainInventoryTbody">
+                    <!-- Rows dynamically populated via JS -->
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
-
-          <!-- Rapid Condensed Blind Counting Table -->
-          <div class="table-card">
-            <div class="table-responsive">
-              <table class="data-table condensed-counting-table" id="mainInventoryTable">
-                <thead>
-                  <tr>
-                    <th style="width: 160px;">SKU / Código</th>
-                    <th>Descripción</th>
-                    <th style="width: 150px;">Ubicación</th>
-                    <th style="width: 100px;" class="text-center">ABC</th>
-                    <th style="width: 170px;" class="text-center">Conteo Físico</th>
-                    <th style="width: 150px;" class="text-center">Confirmar</th>
-                  </tr>
-                </thead>
-                <tbody id="mainInventoryTbody">
-                  <!-- Rows dynamically populated via JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
           </div> <!-- Close assignedInventoryContent -->
 
         </div>
@@ -342,7 +352,8 @@
               <div class="kpi-content">
                 <div class="kpi-label">Avance del Ciclo</div>
                 <div class="kpi-value"><span id="kpiProgress">0</span>%</div>
-                <div class="kpi-sub"><span id="kpiCountedItems">0</span> de <span id="kpiTotalItems">0</span> productos</div>
+                <div class="kpi-sub"><span id="kpiCountedItems">0</span> de <span id="kpiTotalItems">0</span> productos
+                </div>
               </div>
             </div>
 
@@ -362,7 +373,8 @@
               <div class="kpi-content">
                 <div class="kpi-label">Discrepancias Totales</div>
                 <div class="kpi-value text-red" id="kpiDiscrepancies">0</div>
-                <div class="kpi-sub"><span id="kpiMissing">0</span> faltantes &bull; <span id="kpiSurplus">0</span> sobrantes</div>
+                <div class="kpi-sub"><span id="kpiMissing">0</span> faltantes &bull; <span id="kpiSurplus">0</span>
+                  sobrantes</div>
               </div>
             </div>
 
@@ -501,7 +513,8 @@
             <div class="users-search-bar">
               <div class="search-input-wrapper">
                 <div class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-                <input type="text" id="usersSearchInput" placeholder="Buscar por nombre, usuario o cargo..." autocomplete="off">
+                <input type="text" id="usersSearchInput" placeholder="Buscar por nombre, usuario o cargo..."
+                  autocomplete="off">
               </div>
             </div>
           </div>
@@ -514,234 +527,7 @@
         </div>
       </section>
 
-      <!-- ========================================================================= -->
-      <!-- TAB 4: CONEXIÓN CON EXCEL & CONFIGURACIÓN DE COLUMNAS (ENCARGADOS ONLY)  -->
-      <!-- ========================================================================= -->
-      <section class="tab-panel admin-only" id="config-tab">
-        <div class="config-layout">
 
-          <!-- Cloud Synchronization: Google Sheets (Apps Script) -->
-          <div class="card card-google-sync">
-            <div class="card-header">
-              <div class="card-title">
-                <i class="fa-solid fa-cloud-arrow-up text-primary"></i>
-                <h2>Sincronización en la Nube con Google Sheets</h2>
-              </div>
-              <button class="btn btn-outline btn-sm" id="btnOpenGsHelpModal">
-                <i class="fa-solid fa-circle-question"></i> Ver Guía de Conexión
-              </button>
-            </div>
-            <div class="card-body">
-              <p class="section-desc">
-                Conecta tu libro de <strong>Google Sheets</strong> para sincronizar conteos en tiempo real desde cualquier celular sin necesidad de subir archivos a GitHub.
-              </p>
-
-              <!-- Sync Mode Selector -->
-              <div class="sync-mode-selector">
-                <label class="radio-pill-label">
-                  <input type="radio" name="syncModeRadio" value="google_sheets" id="syncModeGoogle">
-                  <span class="pill-btn"><i class="fa-solid fa-globe"></i> Modo Google Sheets (Nube 24/7)</span>
-                </label>
-                <label class="radio-pill-label">
-                  <input type="radio" name="syncModeRadio" value="local" id="syncModeLocal">
-                  <span class="pill-btn"><i class="fa-solid fa-file-excel"></i> Modo Excel Local (.xlsx)</span>
-                </label>
-              </div>
-
-              <!-- Web App URL Input Form -->
-              <div class="form-group" style="margin-top: 14px;">
-                <label for="googleSheetUrlInput">
-                  <i class="fa-solid fa-link text-primary"></i> URL de la Aplicación Web de Google Apps Script:
-                </label>
-                <div class="input-with-actions">
-                  <input type="url" id="googleSheetUrlInput" class="form-control font-mono" placeholder="https://script.google.com/macros/s/AKfycb.../exec">
-                  <button type="button" class="btn btn-outline" id="btnTestGoogleSheet">
-                    <i class="fa-solid fa-plug"></i> Probar Conexión
-                  </button>
-                  <button type="button" class="btn btn-primary" id="btnSaveGoogleSheet">
-                    <i class="fa-solid fa-floppy-disk"></i> Guardar y Activar
-                  </button>
-                </div>
-              </div>
-
-              <!-- Connection Status Alert Box -->
-              <div class="sync-status-box" id="googleSheetStatusBox">
-                <div class="sync-status-indicator" id="gsStatusDot"></div>
-                <div class="sync-status-text">
-                  <strong id="gsStatusTitle">Estado: Modo Excel Local Activo</strong>
-                  <span id="gsStatusSub">Ingresa la URL de tu Google Apps Script y presiona "Guardar y Activar" para conectar la nube.</span>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- Upload or Link Excel Card -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">
-                <i class="fa-solid fa-file-excel text-green"></i>
-                <h2>Vincular Archivo Microsoft Excel (.xlsx)</h2>
-              </div>
-            </div>
-            <div class="card-body">
-
-              <!-- File Drag and Drop Zone -->
-              <div class="file-drop-zone" id="fileDropZone">
-                <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
-                <h3>Arrastra y suelta tu archivo Excel aquí</h3>
-                <p>O haz clic para seleccionar un archivo .xlsx de tu computadora</p>
-                <input type="file" id="excelFileInput" accept=".xlsx, .xlsm, .xls" class="hidden">
-                <button class="btn btn-outline" id="btnBrowseFile">
-                  <i class="fa-solid fa-folder-open"></i> Explorar Archivos
-                </button>
-              </div>
-
-              <!-- Active File Path Info -->
-              <div class="active-file-details">
-                <div class="detail-row">
-                  <span class="detail-label">Ruta en Disco:</span>
-                  <code class="detail-path" id="configFilePath">Cargando...</code>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">Hoja Seleccionada:</span>
-                  <select id="configSheetSelect" class="form-select"></select>
-                </div>
-              </div>
-
-              <!-- Generator of professional sample Excel -->
-              <div class="sample-generator-box">
-                <div>
-                  <h4>¿Deseas generar una plantilla nueva?</h4>
-                  <p>Crea una plantilla optimizada con artículos de prueba y columnas estándar listas.</p>
-                </div>
-                <button class="btn btn-secondary" id="btnCreateSampleExcel">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i> Generar Plantilla de Muestra
-                </button>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- Column Mapping Wizard Card -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">
-                <i class="fa-solid fa-diagram-project"></i>
-                <h2>Mapeador de Columnas de Excel</h2>
-              </div>
-              <button class="btn btn-primary btn-sm" id="btnSaveMapping">
-                <i class="fa-solid fa-floppy-disk"></i> Guardar Mapeo
-              </button>
-            </div>
-            <div class="card-body">
-              <p class="section-desc">
-                Indica a qué letra de columna de tu hoja Excel corresponde cada dato.
-              </p>
-
-              <div class="mapping-grid" id="mappingFormGrid">
-
-                <div class="mapping-item">
-                  <label for="mapSku"><i class="fa-solid fa-barcode"></i> Código / SKU / ID *</label>
-                  <input type="text" id="mapSku" class="col-input" placeholder="A" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapBarcode"><i class="fa-solid fa-qrcode"></i> Código de Barras / EAN</label>
-                  <input type="text" id="mapBarcode" class="col-input" placeholder="B" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapDescription"><i class="fa-solid fa-tag"></i> Descripción / Nombre *</label>
-                  <input type="text" id="mapDescription" class="col-input" placeholder="C" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapLocation"><i class="fa-solid fa-location-dot"></i> Ubicación / Pasillo</label>
-                  <input type="text" id="mapLocation" class="col-input" placeholder="D" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapCategory"><i class="fa-solid fa-folder"></i> Categoría / Familia</label>
-                  <input type="text" id="mapCategory" class="col-input" placeholder="E" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapAbcClass"><i class="fa-solid fa-layer-group"></i> Clasificación ABC</label>
-                  <input type="text" id="mapAbcClass" class="col-input" placeholder="F" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapUnit"><i class="fa-solid fa-boxes-packing"></i> Unidad de Medida</label>
-                  <input type="text" id="mapUnit" class="col-input" placeholder="G" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapUnitCost"><i class="fa-solid fa-dollar-sign"></i> Costo Unitario</label>
-                  <input type="text" id="mapUnitCost" class="col-input" placeholder="H" maxlength="2">
-                </div>
-
-                <div class="mapping-item highlight-map">
-                  <label for="mapSystemStock"><i class="fa-solid fa-database"></i> Stock Sistema (Teórico) *</label>
-                  <input type="text" id="mapSystemStock" class="col-input" placeholder="I" maxlength="2">
-                </div>
-
-                <div class="mapping-item highlight-map">
-                  <label for="mapPhysicalStock"><i class="fa-solid fa-clipboard-check"></i> Stock Físico (Contado) *</label>
-                  <input type="text" id="mapPhysicalStock" class="col-input" placeholder="J" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapVariance"><i class="fa-solid fa-calculator"></i> Diferencia / Variación</label>
-                  <input type="text" id="mapVariance" class="col-input" placeholder="K" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapVarianceCost"><i class="fa-solid fa-money-bill"></i> Costo Diferencia</label>
-                  <input type="text" id="mapVarianceCost" class="col-input" placeholder="L" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapLastCountDate"><i class="fa-solid fa-calendar-day"></i> Fecha Conteo</label>
-                  <input type="text" id="mapLastCountDate" class="col-input" placeholder="M" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapCounterName"><i class="fa-solid fa-user-check"></i> Responsable Conteo</label>
-                  <input type="text" id="mapCounterName" class="col-input" placeholder="N" maxlength="2">
-                </div>
-
-                <div class="mapping-item">
-                  <label for="mapStatus"><i class="fa-solid fa-flag"></i> Estado Conteo</label>
-                  <input type="text" id="mapStatus" class="col-input" placeholder="O" maxlength="2">
-                </div>
-
-              </div>
-
-            </div>
-          </div>
-
-          <!-- Server & Network Access Card -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">
-                <i class="fa-solid fa-mobile-screen-button"></i>
-                <h2>Acceso Móvil / Terminales de Almacén</h2>
-              </div>
-            </div>
-            <div class="card-body">
-              <p>Puedes conectar múltiples celulares o lectores inalámbricos abriendo esta dirección en cualquier navegador conectado a tu red local Wi-Fi:</p>
-              <div class="ip-display-box">
-                <span class="ip-url" id="mobileAccessUrl">http://localhost:3000</span>
-                <button class="btn btn-outline btn-sm" id="btnCopyUrl">
-                  <i class="fa-solid fa-copy"></i> Copiar URL
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
 
     </main>
 
@@ -761,8 +547,11 @@
           <button class="modal-close" id="btnCloseModifyModal">&times;</button>
         </div>
         <div class="modal-body">
-          <p>El producto <strong class="text-primary font-mono" id="modSkuText">SKU-1001</strong> (<span id="modDescText">Descripción</span>) ya se encuentra marcado como contado con <strong id="modCurrentValText">0</strong> unidades.</p>
-          <p class="mt-3 text-secondary">¿Deseas desbloquear este ítem para modificar la cantidad contada o registrar un reconteo en Excel?</p>
+          <p>El producto <strong class="text-primary font-mono" id="modSkuText">SKU-1001</strong> (<span
+              id="modDescText">Descripción</span>) ya se encuentra marcado como contado con <strong
+              id="modCurrentValText">0</strong> unidades.</p>
+          <p class="mt-3 text-secondary">¿Deseas desbloquear este ítem para modificar la cantidad contada o registrar un
+            reconteo en Excel?</p>
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline" id="btnCancelModifyModal">Cancelar</button>
@@ -786,7 +575,9 @@
           <button class="modal-close" id="btnCloseModifyModal">&times;</button>
         </div>
         <div class="modal-body">
-          <p>El producto <strong class="text-primary font-mono" id="modSkuText">SKU-1001</strong> (<span id="modDescText">Descripción</span>) ya fue registrado con <strong id="modCurrentValText">0</strong> unidades.</p>
+          <p>El producto <strong class="text-primary font-mono" id="modSkuText">SKU-1001</strong> (<span
+              id="modDescText">Descripción</span>) ya fue registrado con <strong id="modCurrentValText">0</strong>
+            unidades.</p>
           <p class="mt-3 text-secondary">¿Deseas desbloquear este ítem para modificar la cantidad contada?</p>
         </div>
         <div class="modal-footer">
@@ -811,7 +602,9 @@
           <button class="modal-close" id="btnCloseResetModal">&times;</button>
         </div>
         <div class="modal-body">
-          <p>Esta acción limpiará el <strong>Stock Físico</strong> y pondrá el estado en <strong>Pendiente</strong> en tu archivo Excel para iniciar una nueva ronda de conteos. El historial de auditoría previa se mantendrá intacto.</p>
+          <p>Esta acción limpiará el <strong>Stock Físico</strong> y pondrá el estado en <strong>Pendiente</strong> en
+            tu archivo Excel para iniciar una nueva ronda de conteos. El historial de auditoría previa se mantendrá
+            intacto.</p>
 
           <div class="form-group mt-3">
             <label for="resetFilterLocation">Filtrar por Pasillo/Ubicación (Opcional):</label>
@@ -874,7 +667,8 @@
               <i class="fa-solid fa-user"></i> Usuario / Operador
             </label>
             <div class="input-with-icon">
-              <input type="text" id="loginUsernameInput" class="form-control" placeholder="Ej: JHAMIL o JAVIER" required autocomplete="username">
+              <input type="text" id="loginUsernameInput" class="form-control" placeholder="Ej: JHAMIL o JAVIER" required
+                autocomplete="username">
               <span class="input-icon-right"><i class="fa-solid fa-id-badge"></i></span>
             </div>
             <!-- Quick operator chips for chosen centro -->
@@ -886,8 +680,10 @@
               <i class="fa-solid fa-lock"></i> Contraseña
             </label>
             <div class="input-with-icon">
-              <input type="password" id="loginPasswordInput" class="form-control" placeholder="Contraseña de acceso" required autocomplete="current-password">
-              <button type="button" class="btn-toggle-pwd" id="btnToggleLoginPassword" title="Mostrar/Ocultar contraseña">
+              <input type="password" id="loginPasswordInput" class="form-control" placeholder="Contraseña de acceso"
+                required autocomplete="current-password">
+              <button type="button" class="btn-toggle-pwd" id="btnToggleLoginPassword"
+                title="Mostrar/Ocultar contraseña">
                 <i class="fa-solid fa-eye" id="loginPwdEyeIcon"></i>
               </button>
             </div>
@@ -993,15 +789,18 @@
             </div>
 
             <div class="form-group mt-3">
-              <label for="assignAuxiliarSelect"><i class="fa-solid fa-user-tag text-primary"></i> Seleccionar Auxiliar Asignado *</label>
+              <label for="assignAuxiliarSelect"><i class="fa-solid fa-user-tag text-primary"></i> Seleccionar Auxiliar
+                Asignado *</label>
               <select id="assignAuxiliarSelect" class="form-select form-control" required>
                 <!-- Populated via JS with Auxiliares of this Centro -->
               </select>
             </div>
 
             <div class="form-group mt-3">
-              <label for="assignNotesInput"><i class="fa-solid fa-note-sticky text-amber"></i> Instrucciones / Observaciones (Opcional)</label>
-              <textarea id="assignNotesInput" class="form-control" rows="2" placeholder="Ej: Conteo prioritario de Pasillo A y productos Clase A..."></textarea>
+              <label for="assignNotesInput"><i class="fa-solid fa-note-sticky text-amber"></i> Instrucciones /
+                Observaciones (Opcional)</label>
+              <textarea id="assignNotesInput" class="form-control" rows="2"
+                placeholder="Ej: Conteo prioritario de Pasillo A y productos Clase A..."></textarea>
             </div>
           </div>
           <div class="modal-footer">
@@ -1033,7 +832,8 @@
             <div class="sig-badge-icon"><i class="fa-solid fa-file-circle-check"></i></div>
             <div class="sig-summary-text">
               <h4>Conclusión y Cierre de Inventario Cíclico</h4>
-              <p>Al firmar digitalmente, el conteo quedará auditado y se estampará la firma directamente en la hoja de Excel del <strong>Centro <span id="signCentroCodeText">1300</span></strong>.</p>
+              <p>Al firmar digitalmente, el conteo quedará auditado y se estampará la firma directamente en la hoja de
+                Excel del <strong>Centro <span id="signCentroCodeText">1300</span></strong>.</p>
             </div>
           </div>
 
@@ -1074,7 +874,8 @@
 
           <div class="form-group mt-3">
             <label for="signatureNotesInput">Notas de Cierre / Observaciones Finales (Opcional):</label>
-            <input type="text" id="signatureNotesInput" class="form-control" placeholder="Ej: Conteo físico completado sin observaciones...">
+            <input type="text" id="signatureNotesInput" class="form-control"
+              placeholder="Ej: Conteo físico completado sin observaciones...">
           </div>
         </div>
 
@@ -1083,75 +884,6 @@
           <button type="button" class="btn btn-success btn-lg" id="btnSubmitSignatureAndConclude">
             <i class="fa-solid fa-file-signature"></i> GUARDAR FIRMA Y CONCLUIR EN EXCEL
           </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- MODAL: GUÍA PASO A PASO GOOGLE APPS SCRIPT                                -->
-    <!-- ========================================================================= -->
-    <div class="modal-overlay hidden" id="googleSheetHelpModal">
-      <div class="modal-card" style="max-width: 680px;">
-        <div class="modal-header">
-          <div class="modal-title text-primary">
-            <i class="fa-solid fa-book-bookmark"></i>
-            <h3>Guía de Conexión con Google Sheets</h3>
-          </div>
-          <button class="modal-close" id="btnCloseGsHelpModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>Sigue estos 5 pasos rápidos para conectar tu libro de cálculo en tiempo real:</p>
-
-          <div class="gs-steps-list">
-            <div class="gs-step-item">
-              <div class="gs-step-badge">1</div>
-              <div class="gs-step-content">
-                <strong>Subir tu archivo a Google Drive:</strong>
-                <p>Ve a <a href="https://drive.google.com" target="_blank" style="color: var(--primary);">Google Drive</a>, sube tu archivo <code>CICLICOS NIBOL MULTIMARCAS.xlsx</code> y ábrelo como Google Sheets.</p>
-              </div>
-            </div>
-
-            <div class="gs-step-item">
-              <div class="gs-step-badge">2</div>
-              <div class="gs-step-content">
-                <strong>Abrir el editor de Apps Script:</strong>
-                <p>En tu Google Sheet, haz clic en el menú superior <strong>Extensiones &rarr; Apps Script</strong>.</p>
-              </div>
-            </div>
-
-            <div class="gs-step-item">
-              <div class="gs-step-badge">3</div>
-              <div class="gs-step-content">
-                <strong>Pegar el código:</strong>
-                <p>Borra todo lo que aparezca en el archivo <code>Código.gs</code> y pega el contenido del archivo <code>google_apps_script/Code.gs</code> generado en este proyecto.</p>
-              </div>
-            </div>
-
-            <div class="gs-step-item">
-              <div class="gs-step-badge">4</div>
-              <div class="gs-step-content">
-                <strong>Implementar como Aplicación Web:</strong>
-                <p>Haz clic en el botón azul <strong>Implementar (Deploy) &rarr; Nueva implementación</strong>.</p>
-                <ul style="margin-top: 4px; padding-left: 18px; font-size: 0.85rem;">
-                  <li>Seleccionar tipo: <strong>Aplicación web</strong> (ícono de engranaje).</li>
-                  <li>Ejecutar como: <strong>Yo (tu cuenta)</strong>.</li>
-                  <li>Quién tiene acceso: <strong>Cualquier usuario (Anyone)</strong>.</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="gs-step-item">
-              <div class="gs-step-badge">5</div>
-              <div class="gs-step-content">
-                <strong>Copiar y Pegar la URL:</strong>
-                <p>Copia la URL que termina en <code>/exec</code> y pégala en el campo de configuración de esta pantalla.</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="btnOkGsHelpModal">Entendido</button>
         </div>
       </div>
     </div>

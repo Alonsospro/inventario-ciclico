@@ -5,6 +5,8 @@
   "blindCount": false,
   "autoBackup": true,
   "varianceThreshold": 0,
+  "googleSheetUrl": "https://script.google.com/macros/s/AKfycbwpJ5klIWQmhhM4RNgxfG4QabqLOOb2KCVhLPhyIWvHeUsQ39wgHjMt3sHLJo9tH-9p/exec",
+  "syncMode": "google_sheets",
   "columnMapping": {
     "sku": "A",
     "barcode": "B",

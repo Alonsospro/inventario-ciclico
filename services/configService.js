@@ -2,6 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const storagePath = require('./storagePath');
 
+// ============================================================================
+// 🔗 ENLACE DIRECTO DE GOOGLE SHEETS (APPS SCRIPT)
+// Pega aquí la URL de tu Google Apps Script Web App (terminada en /exec)
+// o configúrala en las variables de entorno como GOOGLE_SHEET_URL.
+// ============================================================================
+const GOOGLE_SHEET_URL = process.env.GOOGLE_SHEET_URL || 'https://script.google.com/macros/s/AKfycb.../exec';
+
 const DEFAULT_CONFIG = {
   activeFilePath: storagePath.getDataFilePath('CICLICOS NIBOL MULTIMARCAS.xlsx'),
   activeSheetName: '1300',
@@ -9,8 +16,8 @@ const DEFAULT_CONFIG = {
   blindCount: false,
   autoBackup: true,
   varianceThreshold: 0,
-  googleSheetUrl: process.env.GOOGLE_SHEET_URL || '',
-  syncMode: process.env.GOOGLE_SHEET_URL ? 'google_sheets' : 'local', // 'local' | 'google_sheets'
+  googleSheetUrl: GOOGLE_SHEET_URL,
+  syncMode: 'google_sheets', // Modo predeterminado directo a Google Sheets
   columnMapping: {
     sku: 'A',
     barcode: 'B',
@@ -46,11 +53,12 @@ class ConfigService {
         if (loaded.activeFilePath && path.basename(loaded.activeFilePath) === 'CICLICOS NIBOL MULTIMARCAS.xlsx') {
           loaded.activeFilePath = storagePath.getDataFilePath('CICLICOS NIBOL MULTIMARCAS.xlsx');
         }
-        if (process.env.GOOGLE_SHEET_URL && !loaded.googleSheetUrl) {
-          loaded.googleSheetUrl = process.env.GOOGLE_SHEET_URL;
-          loaded.syncMode = 'google_sheets';
-        }
-        return { ...DEFAULT_CONFIG, ...loaded };
+        return {
+          ...DEFAULT_CONFIG,
+          ...loaded,
+          googleSheetUrl: GOOGLE_SHEET_URL || loaded.googleSheetUrl || '',
+          syncMode: GOOGLE_SHEET_URL ? 'google_sheets' : (loaded.syncMode || 'google_sheets')
+        };
       }
     } catch (err) {
       console.warn('Error reading config file, using defaults:', err.message);
