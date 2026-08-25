@@ -520,6 +520,62 @@
       <section class="tab-panel admin-only" id="config-tab">
         <div class="config-layout">
 
+          <!-- Cloud Synchronization: Google Sheets (Apps Script) -->
+          <div class="card card-google-sync">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-cloud-arrow-up text-primary"></i>
+                <h2>Sincronización en la Nube con Google Sheets</h2>
+              </div>
+              <button class="btn btn-outline btn-sm" id="btnOpenGsHelpModal">
+                <i class="fa-solid fa-circle-question"></i> Ver Guía de Conexión
+              </button>
+            </div>
+            <div class="card-body">
+              <p class="section-desc">
+                Conecta tu libro de <strong>Google Sheets</strong> para sincronizar conteos en tiempo real desde cualquier celular sin necesidad de subir archivos a GitHub.
+              </p>
+
+              <!-- Sync Mode Selector -->
+              <div class="sync-mode-selector">
+                <label class="radio-pill-label">
+                  <input type="radio" name="syncModeRadio" value="google_sheets" id="syncModeGoogle">
+                  <span class="pill-btn"><i class="fa-solid fa-globe"></i> Modo Google Sheets (Nube 24/7)</span>
+                </label>
+                <label class="radio-pill-label">
+                  <input type="radio" name="syncModeRadio" value="local" id="syncModeLocal">
+                  <span class="pill-btn"><i class="fa-solid fa-file-excel"></i> Modo Excel Local (.xlsx)</span>
+                </label>
+              </div>
+
+              <!-- Web App URL Input Form -->
+              <div class="form-group" style="margin-top: 14px;">
+                <label for="googleSheetUrlInput">
+                  <i class="fa-solid fa-link text-primary"></i> URL de la Aplicación Web de Google Apps Script:
+                </label>
+                <div class="input-with-actions">
+                  <input type="url" id="googleSheetUrlInput" class="form-control font-mono" placeholder="https://script.google.com/macros/s/AKfycb.../exec">
+                  <button type="button" class="btn btn-outline" id="btnTestGoogleSheet">
+                    <i class="fa-solid fa-plug"></i> Probar Conexión
+                  </button>
+                  <button type="button" class="btn btn-primary" id="btnSaveGoogleSheet">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar y Activar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Connection Status Alert Box -->
+              <div class="sync-status-box" id="googleSheetStatusBox">
+                <div class="sync-status-indicator" id="gsStatusDot"></div>
+                <div class="sync-status-text">
+                  <strong id="gsStatusTitle">Estado: Modo Excel Local Activo</strong>
+                  <span id="gsStatusSub">Ingresa la URL de tu Google Apps Script y presiona "Guardar y Activar" para conectar la nube.</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
           <!-- Upload or Link Excel Card -->
           <div class="card">
             <div class="card-header">
@@ -1027,6 +1083,75 @@
           <button type="button" class="btn btn-success btn-lg" id="btnSubmitSignatureAndConclude">
             <i class="fa-solid fa-file-signature"></i> GUARDAR FIRMA Y CONCLUIR EN EXCEL
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: GUÍA PASO A PASO GOOGLE APPS SCRIPT                                -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="googleSheetHelpModal">
+      <div class="modal-card" style="max-width: 680px;">
+        <div class="modal-header">
+          <div class="modal-title text-primary">
+            <i class="fa-solid fa-book-bookmark"></i>
+            <h3>Guía de Conexión con Google Sheets</h3>
+          </div>
+          <button class="modal-close" id="btnCloseGsHelpModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Sigue estos 5 pasos rápidos para conectar tu libro de cálculo en tiempo real:</p>
+
+          <div class="gs-steps-list">
+            <div class="gs-step-item">
+              <div class="gs-step-badge">1</div>
+              <div class="gs-step-content">
+                <strong>Subir tu archivo a Google Drive:</strong>
+                <p>Ve a <a href="https://drive.google.com" target="_blank" style="color: var(--primary);">Google Drive</a>, sube tu archivo <code>CICLICOS NIBOL MULTIMARCAS.xlsx</code> y ábrelo como Google Sheets.</p>
+              </div>
+            </div>
+
+            <div class="gs-step-item">
+              <div class="gs-step-badge">2</div>
+              <div class="gs-step-content">
+                <strong>Abrir el editor de Apps Script:</strong>
+                <p>En tu Google Sheet, haz clic en el menú superior <strong>Extensiones &rarr; Apps Script</strong>.</p>
+              </div>
+            </div>
+
+            <div class="gs-step-item">
+              <div class="gs-step-badge">3</div>
+              <div class="gs-step-content">
+                <strong>Pegar el código:</strong>
+                <p>Borra todo lo que aparezca en el archivo <code>Código.gs</code> y pega el contenido del archivo <code>google_apps_script/Code.gs</code> generado en este proyecto.</p>
+              </div>
+            </div>
+
+            <div class="gs-step-item">
+              <div class="gs-step-badge">4</div>
+              <div class="gs-step-content">
+                <strong>Implementar como Aplicación Web:</strong>
+                <p>Haz clic en el botón azul <strong>Implementar (Deploy) &rarr; Nueva implementación</strong>.</p>
+                <ul style="margin-top: 4px; padding-left: 18px; font-size: 0.85rem;">
+                  <li>Seleccionar tipo: <strong>Aplicación web</strong> (ícono de engranaje).</li>
+                  <li>Ejecutar como: <strong>Yo (tu cuenta)</strong>.</li>
+                  <li>Quién tiene acceso: <strong>Cualquier usuario (Anyone)</strong>.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="gs-step-item">
+              <div class="gs-step-badge">5</div>
+              <div class="gs-step-content">
+                <strong>Copiar y Pegar la URL:</strong>
+                <p>Copia la URL que termina en <code>/exec</code> y pégala en el campo de configuración de esta pantalla.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="btnOkGsHelpModal">Entendido</button>
         </div>
       </div>
     </div>

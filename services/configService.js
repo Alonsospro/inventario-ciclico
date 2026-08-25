@@ -9,6 +9,8 @@ const DEFAULT_CONFIG = {
   blindCount: false,
   autoBackup: true,
   varianceThreshold: 0,
+  googleSheetUrl: process.env.GOOGLE_SHEET_URL || '',
+  syncMode: process.env.GOOGLE_SHEET_URL ? 'google_sheets' : 'local', // 'local' | 'google_sheets'
   columnMapping: {
     sku: 'A',
     barcode: 'B',
@@ -43,6 +45,10 @@ class ConfigService {
         // Ensure activeFilePath points to the current environment's data directory if it's the default file
         if (loaded.activeFilePath && path.basename(loaded.activeFilePath) === 'CICLICOS NIBOL MULTIMARCAS.xlsx') {
           loaded.activeFilePath = storagePath.getDataFilePath('CICLICOS NIBOL MULTIMARCAS.xlsx');
+        }
+        if (process.env.GOOGLE_SHEET_URL && !loaded.googleSheetUrl) {
+          loaded.googleSheetUrl = process.env.GOOGLE_SHEET_URL;
+          loaded.syncMode = 'google_sheets';
         }
         return { ...DEFAULT_CONFIG, ...loaded };
       }

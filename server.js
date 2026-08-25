@@ -16,6 +16,7 @@ const excelService = require('./services/excelService');
 const configService = require('./services/configService');
 const usersService = require('./services/usersService');
 const storagePath = require('./services/storagePath');
+const googleSheetService = require('./services/googleSheetService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -271,6 +272,32 @@ app.post('/api/config/create-sample', async (req, res) => {
   }
 });
 
+// 1.1 Google Sheets Remote Integration
+app.post('/api/googlesheet/test', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    const testUrl = url || configService.getConfig().googleSheetUrl;
+    if (!testUrl) {
+      return res.status(400).json({ success: false, error: 'Por favor ingresa la URL de Google Apps Script' });
+    }
+    const result = await googleSheetService.ping(testUrl);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/googlesheet/sheets', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    const targetUrl = url || configService.getConfig().googleSheetUrl;
+    const result = await googleSheetService.getSheets(targetUrl);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
 // 2. Inventory Items & Operations (Scoped by Centro Sheet and Access Control)
 app.get('/api/inventory', async (req, res) => {
   try {
@@ -299,59 +326,88 @@ app.get('/api/inventory', async (req, res) => {
         locations: [],
         categories: [],
         blindCount: config.blindCount,
+        syncMode: config.syncMode,
         items: []
       });
     }
 
-    const data = await excelService.readInventory(
-      config.activeFilePath,
-      config.activeSheetName,
-      config.columnMapping,
-      targetCentro
-    );
+    let data;
+    const isGoogleSheets = Boolean(config.googleSheetUrl && config.syncMode === 'google_sheets');
 
-    let items = data.items;
+    if (isGoogleSheets) {
+      try {
+        const gsData = await googleSheetService.getInventory(config.googleSheetUrl, targetCentro);
+        if (gsData && gsData.success) {
+          data = {
+            totalItems: gsData.totalItems || (gsData.items ? gsData.items.length : 0),
+            items: gsData.items || [],
+            sheetName: gsData.sheetName || targetCentro,
+            centro: gsData.centro || targetCentro
+          };
+        } else {
+          throw new Error(gsData?.error || 'Error al obtener datos de Google Sheets');
+        }
+      } catch (gsErr) {
+        console.warn('Aviso: Fallback a Excel local:', gsErr.message);
+        data = await excelService.readInventory(
+          config.activeFilePath,
+          config.activeSheetName,
+          config.columnMapping,
+          targetCentro
+        );
+      }
+    } else {
+      data = await excelService.readInventory(
+        config.activeFilePath,
+        config.activeSheetName,
+        config.columnMapping,
+        targetCentro
+      );
+    }
+
+    let items = data.items || [];
 
     // Apply Filters
     if (search) {
       const q = search.toLowerCase().trim();
       items = items.filter(i => 
-        i.sku.toLowerCase().includes(q) || 
-        i.barcode.toLowerCase().includes(q) || 
-        i.description.toLowerCase().includes(q) ||
-        i.location.toLowerCase().includes(q)
+        (i.sku && i.sku.toLowerCase().includes(q)) || 
+        (i.barcode && i.barcode.toLowerCase().includes(q)) || 
+        (i.description && i.description.toLowerCase().includes(q)) ||
+        (i.location && i.location.toLowerCase().includes(q))
       );
     }
 
     if (location) {
-      items = items.filter(i => i.location.toLowerCase() === location.toLowerCase());
+      items = items.filter(i => (i.location || '').toLowerCase() === location.toLowerCase());
     }
 
     if (category) {
-      items = items.filter(i => i.category.toLowerCase() === category.toLowerCase());
+      items = items.filter(i => (i.category || '').toLowerCase() === category.toLowerCase());
     }
 
     if (abcClass) {
-      items = items.filter(i => i.abcClass.toUpperCase() === abcClass.toUpperCase());
+      items = items.filter(i => (i.abcClass || '').toUpperCase() === abcClass.toUpperCase());
     }
 
     if (status) {
-      items = items.filter(i => i.status.toLowerCase() === status.toLowerCase());
+      items = items.filter(i => (i.status || '').toLowerCase() === status.toLowerCase());
     }
 
-    const allLocations = [...new Set(data.items.map(i => i.location).filter(Boolean))].sort();
-    const allCategories = [...new Set(data.items.map(i => i.category).filter(Boolean))].sort();
+    const allLocations = [...new Set((data.items || []).map(i => i.location).filter(Boolean))].sort();
+    const allCategories = [...new Set((data.items || []).map(i => i.category).filter(Boolean))].sort();
 
     res.json({
       allowed: true,
       assignment: permission.assignment,
-      totalCount: data.totalItems,
+      totalCount: data.totalItems || items.length,
       filteredCount: items.length,
       sheetName: data.sheetName,
       centro: data.centro,
       locations: allLocations,
       categories: allCategories,
       blindCount: config.blindCount,
+      syncMode: config.syncMode || 'local',
       items
     });
   } catch (err) {
@@ -360,7 +416,7 @@ app.get('/api/inventory', async (req, res) => {
   }
 });
 
-// 3. Register Inventory Count (Direct write to this Centro's Excel sheet)
+// 3. Register Inventory Count (Direct write to Google Sheets or Excel sheet)
 app.post('/api/inventory/count', async (req, res) => {
   try {
     const config = configService.getConfig();
@@ -371,12 +427,11 @@ app.post('/api/inventory/count', async (req, res) => {
     }
 
     const counter = operatorName || config.operatorName || 'Operador Web';
+    const isGoogleSheets = Boolean(config.googleSheetUrl && config.syncMode === 'google_sheets');
+    let result;
 
-    const result = await excelService.updateItemCount(
-      config.activeFilePath,
-      config.activeSheetName,
-      config.columnMapping,
-      {
+    if (isGoogleSheets) {
+      result = await googleSheetService.updateItemCount(config.googleSheetUrl, {
         sku,
         physicalStock: Number(physicalStock),
         counterName: counter,
@@ -384,8 +439,41 @@ app.post('/api/inventory/count', async (req, res) => {
         notes: notes || '',
         unitCost: Number(unitCost) || 0,
         systemStock: Number(systemStock) || 0
+      });
+
+      // Update local file in background as backup if present
+      if (fs.existsSync(config.activeFilePath)) {
+        excelService.updateItemCount(
+          config.activeFilePath,
+          config.activeSheetName,
+          config.columnMapping,
+          {
+            sku,
+            physicalStock: Number(physicalStock),
+            counterName: counter,
+            centro: centro || '1300',
+            notes: notes || '',
+            unitCost: Number(unitCost) || 0,
+            systemStock: Number(systemStock) || 0
+          }
+        ).catch(err => console.warn('Aviso local backup:', err.message));
       }
-    );
+    } else {
+      result = await excelService.updateItemCount(
+        config.activeFilePath,
+        config.activeSheetName,
+        config.columnMapping,
+        {
+          sku,
+          physicalStock: Number(physicalStock),
+          counterName: counter,
+          centro: centro || '1300',
+          notes: notes || '',
+          unitCost: Number(unitCost) || 0,
+          systemStock: Number(systemStock) || 0
+        }
+      );
+    }
 
     res.json(result);
   } catch (err) {
@@ -399,14 +487,24 @@ app.post('/api/inventory/reset-cycle', async (req, res) => {
   try {
     const config = configService.getConfig();
     const { location, abcClass, centro } = req.body || {};
+    const isGoogleSheets = Boolean(config.googleSheetUrl && config.syncMode === 'google_sheets');
 
-    const result = await excelService.resetCycle(
-      config.activeFilePath,
-      config.activeSheetName,
-      config.columnMapping,
-      { location, abcClass },
-      centro || '1300'
-    );
+    let result;
+    if (isGoogleSheets) {
+      result = await googleSheetService.resetCycle(
+        config.googleSheetUrl,
+        centro || '1300',
+        { location, abcClass }
+      );
+    } else {
+      result = await excelService.resetCycle(
+        config.activeFilePath,
+        config.activeSheetName,
+        config.columnMapping,
+        { location, abcClass },
+        centro || '1300'
+      );
+    }
 
     res.json(result);
   } catch (err) {
@@ -419,12 +517,30 @@ app.get('/api/analytics', async (req, res) => {
   try {
     const config = configService.getConfig();
     const { centro } = req.query;
-    const analytics = await excelService.getAnalytics(
-      config.activeFilePath,
-      config.activeSheetName,
-      config.columnMapping,
-      centro || '1300'
-    );
+    const isGoogleSheets = Boolean(config.googleSheetUrl && config.syncMode === 'google_sheets');
+
+    let analytics;
+    if (isGoogleSheets) {
+      try {
+        analytics = await googleSheetService.getAnalytics(config.googleSheetUrl, centro || '1300');
+      } catch (gsErr) {
+        console.warn('Aviso analytics fallback:', gsErr.message);
+        analytics = await excelService.getAnalytics(
+          config.activeFilePath,
+          config.activeSheetName,
+          config.columnMapping,
+          centro || '1300'
+        );
+      }
+    } else {
+      analytics = await excelService.getAnalytics(
+        config.activeFilePath,
+        config.activeSheetName,
+        config.columnMapping,
+        centro || '1300'
+      );
+    }
+
     res.json(analytics);
   } catch (err) {
     res.status(500).json({ error: err.message });

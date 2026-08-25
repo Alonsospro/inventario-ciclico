@@ -419,9 +419,11 @@ async function loadAppConfig() {
     state.config = data;
 
     const nameElem = document.getElementById('activeExcelFileName');
-    if (nameElem) nameElem.textContent = data.fileName || 'inventario.xlsx';
+    if (nameElem) {
+      nameElem.textContent = data.syncMode === 'google_sheets' ? 'Google Sheets (Nube)' : (data.fileName || 'inventario.xlsx');
+    }
     const sheetElem = document.getElementById('activeSheetTag');
-    if (sheetElem) sheetElem.textContent = data.activeSheetName || 'General';
+    if (sheetElem) sheetElem.textContent = data.activeSheetName || '1300';
 
     const accessUrl = `http://${data.localIp}:${data.port}`;
     const ipElem = document.getElementById('networkIpText');
@@ -434,9 +436,137 @@ async function loadAppConfig() {
     const pathElem = document.getElementById('configFilePath');
     if (pathElem) pathElem.textContent = data.activeFilePath;
 
-    inspectActiveFile();
+    // Google Sheets UI population
+    const gsInput = document.getElementById('googleSheetUrlInput');
+    if (gsInput && data.googleSheetUrl) {
+      gsInput.value = data.googleSheetUrl;
+    }
+    const syncModeGoogleRadio = document.getElementById('syncModeGoogle');
+    const syncModeLocalRadio = document.getElementById('syncModeLocal');
+    if (syncModeGoogleRadio && syncModeLocalRadio) {
+      if (data.syncMode === 'google_sheets') {
+        syncModeGoogleRadio.checked = true;
+      } else {
+        syncModeLocalRadio.checked = true;
+      }
+    }
+    updateGoogleSheetStatusUI(data);
+
+    if (data.syncMode !== 'google_sheets') {
+      inspectActiveFile();
+    }
   } catch (err) {
     showToast('Error al conectar con el servidor backend', 'error');
+  }
+}
+
+function updateGoogleSheetStatusUI(config) {
+  const dot = document.getElementById('gsStatusDot');
+  const title = document.getElementById('gsStatusTitle');
+  const sub = document.getElementById('gsStatusSub');
+  if (!dot || !title || !sub) return;
+
+  if (config.syncMode === 'google_sheets' && config.googleSheetUrl) {
+    dot.className = 'sync-status-indicator connected';
+    title.textContent = 'Estado: Sincronización en la Nube Activa';
+    sub.textContent = 'Conectado a Google Sheets en tiempo real. Todos los conteos se guardan en vivo.';
+  } else if (config.googleSheetUrl) {
+    dot.className = 'sync-status-indicator';
+    title.textContent = 'Estado: URL Guardada (Modo Excel Local)';
+    sub.textContent = 'Selecciona "Modo Google Sheets (Nube 24/7)" y presiona "Guardar y Activar" para pasar a la nube.';
+  } else {
+    dot.className = 'sync-status-indicator';
+    title.textContent = 'Estado: Modo Excel Local Activo';
+    sub.textContent = 'Ingresa la URL de tu Google Apps Script y presiona "Guardar y Activar" para conectar la nube.';
+  }
+}
+
+async function testGoogleSheetConnection() {
+  const urlInput = document.getElementById('googleSheetUrlInput');
+  const dot = document.getElementById('gsStatusDot');
+  const title = document.getElementById('gsStatusTitle');
+  const sub = document.getElementById('gsStatusSub');
+  const btn = document.getElementById('btnTestGoogleSheet');
+
+  const rawUrl = (urlInput ? urlInput.value : '').trim();
+  if (!rawUrl) {
+    showToast('Por favor ingresa la URL de Google Apps Script antes de probar', 'warning');
+    return;
+  }
+
+  if (dot) dot.className = 'sync-status-indicator testing';
+  if (title) title.textContent = 'Probando conexión con Google Sheets...';
+  if (sub) sub.textContent = 'Enviando consulta a Google Apps Script Web App...';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Probando...';
+  }
+
+  try {
+    const res = await fetch('/api/googlesheet/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: rawUrl })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      if (dot) dot.className = 'sync-status-indicator connected';
+      if (title) title.textContent = '¡Conexión Exitosa con Google Sheets!';
+      if (sub) sub.textContent = `Libro conectado: "${data.spreadsheetName || 'Libro de Inventarios'}" - ${new Date(data.timestamp).toLocaleTimeString()}`;
+      showToast(`Conexión exitosa con "${data.spreadsheetName || 'Google Sheets'}"`, 'success');
+      sfx.saveSuccess();
+    } else {
+      throw new Error(data.error || 'No se pudo conectar con el script de Google');
+    }
+  } catch (err) {
+    if (dot) dot.className = 'sync-status-indicator error';
+    if (title) title.textContent = 'Error de Conexión';
+    if (sub) sub.textContent = err.message;
+    showToast('Error al conectar: ' + err.message, 'error');
+    sfx.error();
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-plug"></i> Probar Conexión';
+    }
+  }
+}
+
+async function saveGoogleSheetSettings() {
+  const urlInput = document.getElementById('googleSheetUrlInput');
+  const syncModeRadio = document.querySelector('input[name="syncModeRadio"]:checked');
+  const rawUrl = (urlInput ? urlInput.value : '').trim();
+  const syncMode = syncModeRadio ? syncModeRadio.value : (rawUrl ? 'google_sheets' : 'local');
+
+  if (syncMode === 'google_sheets' && !rawUrl) {
+    showToast('Por favor ingresa la URL de Google Apps Script para activar el modo nube', 'warning');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        googleSheetUrl: rawUrl,
+        syncMode: syncMode
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      state.config = data.config;
+      updateGoogleSheetStatusUI(data.config);
+      showToast(syncMode === 'google_sheets' ? 'Modo Google Sheets Nube activado exitosamente' : 'Configuración guardada en modo local', 'success');
+      sfx.saveSuccess();
+      loadAppConfig();
+      loadInventory();
+      loadAnalytics();
+    }
+  } catch (err) {
+    showToast('Error al guardar configuración: ' + err.message, 'error');
+    sfx.error();
   }
 }
 
@@ -1398,6 +1528,30 @@ function initEventListeners() {
   });
 
   document.getElementById('btnSaveMapping')?.addEventListener('click', saveMappingToServer);
+
+  // Google Sheets Remote Sync Listeners
+  document.getElementById('btnTestGoogleSheet')?.addEventListener('click', testGoogleSheetConnection);
+  document.getElementById('btnSaveGoogleSheet')?.addEventListener('click', saveGoogleSheetSettings);
+
+  const gsHelpModal = document.getElementById('googleSheetHelpModal');
+  document.getElementById('btnOpenGsHelpModal')?.addEventListener('click', () => {
+    if (gsHelpModal) gsHelpModal.classList.remove('hidden');
+  });
+  document.getElementById('btnCloseGsHelpModal')?.addEventListener('click', () => {
+    if (gsHelpModal) gsHelpModal.classList.add('hidden');
+  });
+  document.getElementById('btnOkGsHelpModal')?.addEventListener('click', () => {
+    if (gsHelpModal) gsHelpModal.classList.add('hidden');
+  });
+
+  document.querySelectorAll('input[name="syncModeRadio"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      if (state.config) {
+        state.config.syncMode = e.target.value;
+        updateGoogleSheetStatusUI(state.config);
+      }
+    });
+  });
 
   document.getElementById('btnCreateSampleExcel')?.addEventListener('click', async () => {
     try {
