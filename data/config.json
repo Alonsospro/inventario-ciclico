@@ -1,0 +1,25 @@
+{
+  "activeFilePath": "C:\\Users\\kingo\\.gemini\\antigravity-ide\\scratch\\inventario-ciclico\\data\\CICLICOS NIBOL MULTIMARCAS.xlsx",
+  "activeSheetName": "1300",
+  "operatorName": "ERICK MORALES",
+  "blindCount": false,
+  "autoBackup": true,
+  "varianceThreshold": 0,
+  "columnMapping": {
+    "sku": "A",
+    "barcode": "B",
+    "description": "C",
+    "location": "D",
+    "category": "E",
+    "abcClass": "F",
+    "unit": "G",
+    "unitCost": "H",
+    "systemStock": "I",
+    "physicalStock": "J",
+    "variance": "K",
+    "varianceCost": "L",
+    "lastCountDate": "M",
+    "counterName": "N",
+    "status": "O"
+  }
+}

@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyclicStock - Conteo Cíclico Multicentro</title>
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div class="app-container">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="top-navbar">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <i class="fa-solid fa-boxes-stacked"></i>
+        </div>
+        <div class="brand-info">
+          <h1 class="brand-title">CyclicStock <span>PRO</span></h1>
+          <p class="brand-subtitle">Inventarios Cíclicos &bull; Sincronización Excel en Vivo</p>
+        </div>
+      </div>
+
+      <!-- Active Center Switcher Pill & Actions -->
+      <div class="navbar-actions">
+        
+        <!-- Active Centro Switcher Pill -->
+        <div class="centro-pill active" id="btnActiveCentroBadge" title="Centro de Trabajo Activo">
+          <i class="fa-solid fa-warehouse"></i>
+          <span>Centro: <strong id="navActiveCentroText">1300</strong></span>
+          <button class="btn-centro-switch admin-only" id="btnSwitchCentroNav" title="Ver todos los Centros">
+            <i class="fa-solid fa-repeat"></i>
+          </button>
+        </div>
+        <!-- User Profile Pill & Dropdown -->
+        <div class="user-profile-menu" id="userProfileMenu">
+          <button class="user-profile-btn" id="userProfileBtn" title="Ver perfil o cambiar de operador">
+            <div class="user-avatar" id="navUserAvatar">U</div>
+            <div class="user-meta">
+              <span class="user-name" id="navUserName">Cargando...</span>
+              <span class="user-role-tag" id="navUserRole">AUXILIAR &bull; 1300</span>
+            </div>
+            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+          </button>
+
+          <!-- Dropdown Popover -->
+          <div class="user-dropdown-popover hidden" id="userDropdownPopover">
+            <div class="popover-header">
+              <div class="popover-avatar" id="popoverAvatar">U</div>
+              <div class="popover-user-info">
+                <strong id="popoverFullName">Nombre del Operador</strong>
+                <span class="popover-sub" id="popoverSubInfo">Usuario: OPERADOR &bull; Centro 1300</span>
+              </div>
+            </div>
+            <div class="popover-divider"></div>
+            <div class="popover-actions">
+              <button class="popover-item admin-only" id="btnNavViewCentros">
+                <i class="fa-solid fa-city"></i>
+                <span>Ver Todos los Centros</span>
+              </button>
+              <button class="popover-item" id="btnSwitchUser">
+                <i class="fa-solid fa-user-gear"></i>
+                <span>Cambiar de Operador</span>
+              </button>
+              <button class="popover-item text-danger" id="btnLogout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Cerrar Sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="icon-btn" id="themeToggleBtn" title="Cambiar tema claro/oscuro">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN APP TABS -->
+    <nav class="main-tabs-nav" id="mainTabsNav">
+      <button class="nav-tab admin-only" data-tab="centros-tab" id="navCentrosBtn">
+        <i class="fa-solid fa-city"></i>
+        <span>Centros de Operación</span>
+        <span class="badge badge-centros" id="badgeTotalCentros">13</span>
+      </button>
+
+      <!-- Primary View: Plan de Conteo Cíclico (Direct Rapid Counting Sheet) -->
+      <button class="nav-tab active" data-tab="inventory-tab" id="navInventoryBtn">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <span>Plan de Conteo Cíclico</span>
+        <span class="badge" id="pendingCountBadge">0</span>
+      </button>
+
+      <button class="nav-tab admin-only" data-tab="dashboard-tab" id="navDashboardBtn">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Métricas & Exactitud (IRA)</span>
+      </button>
+
+      <button class="nav-tab admin-only" data-tab="users-tab" id="navUsersBtn">
+        <i class="fa-solid fa-users"></i>
+        <span id="navUsersLabel">Equipo & Personal</span>
+      </button>
+
+      <button class="nav-tab admin-only" data-tab="config-tab" id="navConfigBtn">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Conexión Excel & Mapeo</span>
+      </button>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="main-content">
+
+      <!-- ========================================================================= -->
+      <!-- TAB 0: PORTAL DE VARIANTES DE CENTROS (ENCARGADOS ONLY)                  -->
+      <!-- ========================================================================= -->
+      <section class="tab-panel" id="centros-tab">
+        <div class="centros-portal-layout">
+          
+          <!-- Hero Banner for Centros -->
+          <div class="centros-hero-card">
+            <div class="hero-content">
+              <div class="hero-tag"><i class="fa-solid fa-network-wired"></i> Red Nacional de Centros de Distribución</div>
+              <h2>Centros de Inventarios Cíclicos</h2>
+              <p>Selecciona una variante de centro para realizar el conteo rápido de inventario, revisar diferencias y gestionar la operación.</p>
+            </div>
+            <div class="hero-stats">
+              <div class="h-stat">
+                <span class="h-num" id="statTotalCentros">13</span>
+                <span class="h-lbl">Centros Activos</span>
+              </div>
+              <div class="h-stat">
+                <span class="h-num" id="statTotalPersonal">35</span>
+                <span class="h-lbl">Operadores</span>
+              </div>
+              <div class="h-stat">
+                <span class="h-num text-amber" id="statTotalEncargados">14</span>
+                <span class="h-lbl">Encargados</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search & Filters Strip -->
+          <div class="centros-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="searchCentrosInput" placeholder="Buscar por código de centro (ej: 1300, 1800, 1120), nombre o encargado...">
+            </div>
+          </div>
+
+          <!-- Dynamic Grid of 13 Centros Cards -->
+          <div class="centros-grid" id="centrosCardsGrid">
+            <!-- Dynamically generated via JS -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 1 (PRINCIPAL): PLAN DE CONTEO CÍCLICO RÁPIDO & CONDENSADO            -->
+      <!-- ========================================================================= -->
+      <section class="tab-panel active" id="inventory-tab">
+        <div class="inventory-layout">
+
+          <!-- Rapid Counting Progress Header Strip -->
+          <div class="counting-progress-strip">
+            <div class="progress-info-group">
+              <div class="progress-title">
+                <i class="fa-solid fa-list-check text-primary"></i>
+                <h2>Hoja de Conteo en Vivo &bull; <span class="text-primary font-mono" id="conteoCurrentCentroTitle">Centro 1300</span></h2>
+              </div>
+              
+              <!-- Cycle Assignment Status Indicator -->
+              <div class="assignment-status-badge" id="assignmentStatusBadge">
+                <i class="fa-solid fa-user-tag text-primary"></i>
+                <span>Asignado a: <strong id="assignedAuxiliarNameText">Sin Asignar</strong></span>
+                <span class="badge-cycle-status" id="cycleStatusBadgeText">Pendiente</span>
+              </div>
+
+              <div class="progress-stats-pills">
+                <span class="stat-pill"><i class="fa-solid fa-boxes-stacked text-primary"></i> Total: <strong id="invCountTotal">0</strong></span>
+                <span class="stat-pill pill-success"><i class="fa-solid fa-circle-check text-green"></i> Contados: <strong id="invCountDone">0</strong></span>
+                <span class="stat-pill pill-warning"><i class="fa-solid fa-clock text-amber"></i> Pendientes: <strong id="invCountPending">0</strong></span>
+                <span class="stat-pill"><i class="fa-solid fa-chart-line"></i> Avance: <strong id="invProgressPercent">0%</strong></span>
+              </div>
+            </div>
+            
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" id="invProgressBarFill" style="width: 0%;"></div>
+            </div>
+
+            <!-- Cycle Action Strip (Assign & Conclude) -->
+            <div class="cycle-action-strip">
+              <div class="cycle-actions-left">
+                <button class="btn btn-outline btn-sm admin-only" id="btnOpenAssignModal" title="Asignar este ciclo a un auxiliar del centro">
+                  <i class="fa-solid fa-user-check"></i>
+                  <span>Asignar a Auxiliar</span>
+                </button>
+              </div>
+              <div class="cycle-actions-right">
+                <button class="btn btn-success btn-sm btn-conclude-cycle" id="btnOpenSignatureModal" title="Firmar y concluir ciclo en Excel">
+                  <i class="fa-solid fa-signature"></i>
+                  <span>CONCLUIR Y FIRMAR CÍCLICO</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Unassigned Locked State View (When Auxiliar has no cycle assigned) -->
+          <div class="unassigned-cycle-card hidden" id="unassignedCycleView">
+            <div class="lock-icon-box">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2>Inventario Cíclico no Asignado</h2>
+            <p id="unassignedReasonText">
+              No tienes ninguna orden de conteo cíclico asignada en este momento para el Centro. Solicita a tu Encargado de Centro que asigne la tarea de conteo para habilitar tu lista.
+            </p>
+            <div class="unassigned-meta">
+              <span><i class="fa-solid fa-warehouse text-primary"></i> Centro: <strong id="unassignedCentroCode">1300</strong></span>
+              <span><i class="fa-solid fa-user text-primary"></i> Operador: <strong id="unassignedUserName">Usuario</strong></span>
+            </div>
+          </div>
+
+          <!-- Inventory Content Wrapper (Hidden when unassigned) -->
+          <div id="assignedInventoryContent">
+
+          <!-- Filters & Action Toolbar -->
+          <div class="toolbar-card">
+            <div class="toolbar-top">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="invSearchInput" placeholder="Buscar SKU, descripción o pasillo (Filtrado en vivo)...">
+              </div>
+
+              <div class="filter-controls">
+                <select id="invLocationFilter" class="form-select" title="Filtrar por Pasillo / Ubicación">
+                  <option value="">Todos los Pasillos / Ubicaciones</option>
+                </select>
+
+                <select id="invAbcFilter" class="form-select" title="Filtrar por Clasificación ABC">
+                  <option value="">Todas las Clases ABC</option>
+                  <option value="A">Clase A (Críticos)</option>
+                  <option value="B">Clase B (Medios)</option>
+                  <option value="C">Clase C (Bajos)</option>
+                </select>
+
+                <select id="invStatusFilter" class="form-select" title="Filtrar por Estado de Conteo">
+                  <option value="">Todos los Productos</option>
+                  <option value="Pendiente">Solo Pendientes por Contar</option>
+                  <option value="Contado">Solo Contados (Check Verde)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="toolbar-bottom">
+              <div class="toolbar-stats">
+                <span>Mostrando: <strong id="invCountShown">0</strong> productos</span>
+                &bull;
+                <span class="keyboard-hint"><span class="kbd">Tab</span> para siguiente &bull; <span class="kbd">Enter</span> para confirmar</span>
+              </div>
+
+              <div class="toolbar-actions">
+                <button class="btn btn-secondary btn-sm admin-only" id="btnResetCycleModal">
+                  <i class="fa-solid fa-rotate"></i>
+                  <span>Reiniciar Ciclo</span>
+                </button>
+                <button class="btn btn-primary btn-sm" id="btnRefreshInventory" title="Recargar archivo Excel">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                  <span>Recargar</span>
+                </button>
+                <button class="btn btn-success btn-sm admin-only" id="btnDownloadCurrentExcel">
+                  <i class="fa-solid fa-file-arrow-down"></i>
+                  <span>Descargar Excel</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rapid Condensed Blind Counting Table -->
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table condensed-counting-table" id="mainInventoryTable">
+                <thead>
+                  <tr>
+                    <th style="width: 160px;">SKU / Código</th>
+                    <th>Descripción</th>
+                    <th style="width: 150px;">Ubicación</th>
+                    <th style="width: 100px;" class="text-center">ABC</th>
+                    <th style="width: 170px;" class="text-center">Conteo Físico</th>
+                    <th style="width: 150px;" class="text-center">Confirmar</th>
+                  </tr>
+                </thead>
+                <tbody id="mainInventoryTbody">
+                  <!-- Rows dynamically populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          </div> <!-- Close assignedInventoryContent -->
+
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 2: DASHBOARD DE ANALÍTICAS & EXACTITUD (IRA) - ENCARGADOS ONLY         -->
+      <!-- ========================================================================= -->
+      <section class="tab-panel admin-only" id="dashboard-tab">
+        <div class="dashboard-layout">
+
+          <!-- KPI Summary Cards -->
+          <div class="kpi-grid">
+
+            <!-- IRA Score Card -->
+            <div class="kpi-card highlight-card">
+              <div class="kpi-icon"><i class="fa-solid fa-bullseye"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-label">Exactitud de Registro (IRA)</div>
+                <div class="kpi-value"><span id="kpiIraScore">100</span>%</div>
+                <div class="kpi-sub" id="kpiIraSub">Meta estándar: &ge; 95%</div>
+              </div>
+            </div>
+
+            <!-- Cycle Progress -->
+            <div class="kpi-card">
+              <div class="kpi-icon progress-icon"><i class="fa-solid fa-chart-line"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-label">Avance del Ciclo</div>
+                <div class="kpi-value"><span id="kpiProgress">0</span>%</div>
+                <div class="kpi-sub"><span id="kpiCountedItems">0</span> de <span id="kpiTotalItems">0</span> productos</div>
+              </div>
+            </div>
+
+            <!-- Exact Matches (Cuadrados) -->
+            <div class="kpi-card success-card">
+              <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-label">Ítems Cuadrados (Exactos)</div>
+                <div class="kpi-value text-green" id="kpiExactMatches">0</div>
+                <div class="kpi-sub">Sin discrepancia física</div>
+              </div>
+            </div>
+
+            <!-- Discrepancies Count (Faltantes + Sobrantes) -->
+            <div class="kpi-card danger-card">
+              <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-label">Discrepancias Totales</div>
+                <div class="kpi-value text-red" id="kpiDiscrepancies">0</div>
+                <div class="kpi-sub"><span id="kpiMissing">0</span> faltantes &bull; <span id="kpiSurplus">0</span> sobrantes</div>
+              </div>
+            </div>
+
+            <!-- Net Variance Cost -->
+            <div class="kpi-card">
+              <div class="kpi-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-label">Impacto Financiero Neto</div>
+                <div class="kpi-value" id="kpiNetCost">$0.00</div>
+                <div class="kpi-sub">Absoluto: <span id="kpiAbsCost">$0.00</span></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Charts Section -->
+          <div class="charts-grid">
+
+            <!-- Chart 1: ABC Classification Accuracy -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">
+                  <i class="fa-solid fa-layer-group"></i>
+                  <h3>Conteo y Exactitud por Clasificación ABC</h3>
+                </div>
+              </div>
+              <div class="chart-body">
+                <canvas id="abcChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Inventory Status Donut -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">
+                  <i class="fa-solid fa-chart-pie"></i>
+                  <h3>Distribución de Estados del Ciclo</h3>
+                </div>
+              </div>
+              <div class="chart-body">
+                <canvas id="statusChart"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Top Discrepancies Alert Table -->
+          <div class="card top-discrepancies-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-triangle-exclamation text-red"></i>
+                <h3>Top Discrepancias Valorizadas (Requieren Auditoría / Reconteo)</h3>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Descripción</th>
+                    <th>Ubicación</th>
+                    <th>Sistema</th>
+                    <th>Físico</th>
+                    <th>Diferencia</th>
+                    <th>Costo Unitario</th>
+                    <th>Impacto $</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="topDiscrepanciesTbody">
+                  <tr class="empty-row">
+                    <td colspan="9">No se registran discrepancias en los artículos contados.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 3: GESTIÓN DE EQUIPO & PERSONAL POR CENTRO (ENCARGADOS ONLY)          -->
+      <!-- ========================================================================= -->
+      <section class="tab-panel admin-only" id="users-tab">
+        <div class="users-layout">
+
+          <!-- Users Header Card & Summary -->
+          <div class="card users-header-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-users text-primary"></i>
+                <div>
+                  <h2>Equipo de Inventarios &bull; <span id="usersCurrentCentroTitle">Centro 1300</span></h2>
+                  <p class="section-desc">Personal habilitado para registro de conteos físicos y conciliación</p>
+                </div>
+              </div>
+              <div class="users-actions">
+                <select id="filterUsersByCentroSelect" class="form-select">
+                  <option value="">Todos los Centros</option>
+                  <!-- Injected via JS -->
+                </select>
+                <button class="btn btn-primary" id="btnOpenAddUserModal">
+                  <i class="fa-solid fa-user-plus"></i>
+                  <span>Nuevo Operador</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Users KPI / Quick Stats Strip -->
+            <div class="users-stats-strip">
+              <div class="user-stat-item">
+                <i class="fa-solid fa-warehouse text-primary"></i>
+                <div>
+                  <span class="user-stat-label">Centro Activo</span>
+                  <span class="user-stat-val" id="userStatCentroCode">1300</span>
+                </div>
+              </div>
+              <div class="user-stat-item">
+                <i class="fa-solid fa-user-shield text-amber"></i>
+                <div>
+                  <span class="user-stat-label">Encargados</span>
+                  <span class="user-stat-val" id="usersTotalEncargadosCount">1</span>
+                </div>
+              </div>
+              <div class="user-stat-item">
+                <i class="fa-solid fa-user-check text-green"></i>
+                <div>
+                  <span class="user-stat-label">Auxiliares</span>
+                  <span class="user-stat-val" id="usersTotalAuxiliaresCount">8</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filter Search Bar -->
+            <div class="users-search-bar">
+              <div class="search-input-wrapper">
+                <div class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <input type="text" id="usersSearchInput" placeholder="Buscar por nombre, usuario o cargo..." autocomplete="off">
+              </div>
+            </div>
+          </div>
+
+          <!-- Operators Cards Grid -->
+          <div class="users-grid" id="usersCardsGrid">
+            <!-- Dynamic operator cards injected via JS -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 4: CONEXIÓN CON EXCEL & CONFIGURACIÓN DE COLUMNAS (ENCARGADOS ONLY)  -->
+      <!-- ========================================================================= -->
+      <section class="tab-panel admin-only" id="config-tab">
+        <div class="config-layout">
+
+          <!-- Upload or Link Excel Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-file-excel text-green"></i>
+                <h2>Vincular Archivo Microsoft Excel (.xlsx)</h2>
+              </div>
+            </div>
+            <div class="card-body">
+
+              <!-- File Drag and Drop Zone -->
+              <div class="file-drop-zone" id="fileDropZone">
+                <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                <h3>Arrastra y suelta tu archivo Excel aquí</h3>
+                <p>O haz clic para seleccionar un archivo .xlsx de tu computadora</p>
+                <input type="file" id="excelFileInput" accept=".xlsx, .xlsm, .xls" class="hidden">
+                <button class="btn btn-outline" id="btnBrowseFile">
+                  <i class="fa-solid fa-folder-open"></i> Explorar Archivos
+                </button>
+              </div>
+
+              <!-- Active File Path Info -->
+              <div class="active-file-details">
+                <div class="detail-row">
+                  <span class="detail-label">Ruta en Disco:</span>
+                  <code class="detail-path" id="configFilePath">Cargando...</code>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Hoja Seleccionada:</span>
+                  <select id="configSheetSelect" class="form-select"></select>
+                </div>
+              </div>
+
+              <!-- Generator of professional sample Excel -->
+              <div class="sample-generator-box">
+                <div>
+                  <h4>¿Deseas generar una plantilla nueva?</h4>
+                  <p>Crea una plantilla optimizada con artículos de prueba y columnas estándar listas.</p>
+                </div>
+                <button class="btn btn-secondary" id="btnCreateSampleExcel">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> Generar Plantilla de Muestra
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Column Mapping Wizard Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-diagram-project"></i>
+                <h2>Mapeador de Columnas de Excel</h2>
+              </div>
+              <button class="btn btn-primary btn-sm" id="btnSaveMapping">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Mapeo
+              </button>
+            </div>
+            <div class="card-body">
+              <p class="section-desc">
+                Indica a qué letra de columna de tu hoja Excel corresponde cada dato.
+              </p>
+
+              <div class="mapping-grid" id="mappingFormGrid">
+
+                <div class="mapping-item">
+                  <label for="mapSku"><i class="fa-solid fa-barcode"></i> Código / SKU / ID *</label>
+                  <input type="text" id="mapSku" class="col-input" placeholder="A" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapBarcode"><i class="fa-solid fa-qrcode"></i> Código de Barras / EAN</label>
+                  <input type="text" id="mapBarcode" class="col-input" placeholder="B" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapDescription"><i class="fa-solid fa-tag"></i> Descripción / Nombre *</label>
+                  <input type="text" id="mapDescription" class="col-input" placeholder="C" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapLocation"><i class="fa-solid fa-location-dot"></i> Ubicación / Pasillo</label>
+                  <input type="text" id="mapLocation" class="col-input" placeholder="D" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapCategory"><i class="fa-solid fa-folder"></i> Categoría / Familia</label>
+                  <input type="text" id="mapCategory" class="col-input" placeholder="E" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapAbcClass"><i class="fa-solid fa-layer-group"></i> Clasificación ABC</label>
+                  <input type="text" id="mapAbcClass" class="col-input" placeholder="F" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapUnit"><i class="fa-solid fa-boxes-packing"></i> Unidad de Medida</label>
+                  <input type="text" id="mapUnit" class="col-input" placeholder="G" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapUnitCost"><i class="fa-solid fa-dollar-sign"></i> Costo Unitario</label>
+                  <input type="text" id="mapUnitCost" class="col-input" placeholder="H" maxlength="2">
+                </div>
+
+                <div class="mapping-item highlight-map">
+                  <label for="mapSystemStock"><i class="fa-solid fa-database"></i> Stock Sistema (Teórico) *</label>
+                  <input type="text" id="mapSystemStock" class="col-input" placeholder="I" maxlength="2">
+                </div>
+
+                <div class="mapping-item highlight-map">
+                  <label for="mapPhysicalStock"><i class="fa-solid fa-clipboard-check"></i> Stock Físico (Contado) *</label>
+                  <input type="text" id="mapPhysicalStock" class="col-input" placeholder="J" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapVariance"><i class="fa-solid fa-calculator"></i> Diferencia / Variación</label>
+                  <input type="text" id="mapVariance" class="col-input" placeholder="K" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapVarianceCost"><i class="fa-solid fa-money-bill"></i> Costo Diferencia</label>
+                  <input type="text" id="mapVarianceCost" class="col-input" placeholder="L" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapLastCountDate"><i class="fa-solid fa-calendar-day"></i> Fecha Conteo</label>
+                  <input type="text" id="mapLastCountDate" class="col-input" placeholder="M" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapCounterName"><i class="fa-solid fa-user-check"></i> Responsable Conteo</label>
+                  <input type="text" id="mapCounterName" class="col-input" placeholder="N" maxlength="2">
+                </div>
+
+                <div class="mapping-item">
+                  <label for="mapStatus"><i class="fa-solid fa-flag"></i> Estado Conteo</label>
+                  <input type="text" id="mapStatus" class="col-input" placeholder="O" maxlength="2">
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Server & Network Access Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <h2>Acceso Móvil / Terminales de Almacén</h2>
+              </div>
+            </div>
+            <div class="card-body">
+              <p>Puedes conectar múltiples celulares o lectores inalámbricos abriendo esta dirección en cualquier navegador conectado a tu red local Wi-Fi:</p>
+              <div class="ip-display-box">
+                <span class="ip-url" id="mobileAccessUrl">http://localhost:3000</span>
+                <button class="btn btn-outline btn-sm" id="btnCopyUrl">
+                  <i class="fa-solid fa-copy"></i> Copiar URL
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: CONFIRMACIÓN DE MODIFICACIÓN DE CONTEO                             -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="modifyConfirmModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title text-amber">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h3>Modificar Conteo Confirmado</h3>
+          </div>
+          <button class="modal-close" id="btnCloseModifyModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>El producto <strong class="text-primary font-mono" id="modSkuText">SKU-1001</strong> (<span id="modDescText">Descripción</span>) ya se encuentra marcado como contado con <strong id="modCurrentValText">0</strong> unidades.</p>
+          <p class="mt-3 text-secondary">¿Deseas desbloquear este ítem para modificar la cantidad contada o registrar un reconteo en Excel?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="btnCancelModifyModal">Cancelar</button>
+          <button class="btn btn-primary" id="btnConfirmModifyModal">
+            <i class="fa-solid fa-pen-to-square"></i> Sí, Desbloquear y Modificar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: CONFIRMACIÓN DE MODIFICACIÓN DE CONTEO (CONTEO A CIEGAS)          -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="modifyConfirmModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title text-amber">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h3>Modificar Conteo Confirmado</h3>
+          </div>
+          <button class="modal-close" id="btnCloseModifyModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>El producto <strong class="text-primary font-mono" id="modSkuText">SKU-1001</strong> (<span id="modDescText">Descripción</span>) ya fue registrado con <strong id="modCurrentValText">0</strong> unidades.</p>
+          <p class="mt-3 text-secondary">¿Deseas desbloquear este ítem para modificar la cantidad contada?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="btnCancelModifyModal">Cancelar</button>
+          <button class="btn btn-primary" id="btnConfirmModifyModal">
+            <i class="fa-solid fa-pen-to-square"></i> Sí, Desbloquear y Modificar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: REINICIAR CICLO                                                   -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="resetCycleModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title text-amber">
+            <i class="fa-solid fa-rotate"></i>
+            <h3>Reiniciar Ciclo de Conteo</h3>
+          </div>
+          <button class="modal-close" id="btnCloseResetModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Esta acción limpiará el <strong>Stock Físico</strong> y pondrá el estado en <strong>Pendiente</strong> en tu archivo Excel para iniciar una nueva ronda de conteos. El historial de auditoría previa se mantendrá intacto.</p>
+
+          <div class="form-group mt-3">
+            <label for="resetFilterLocation">Filtrar por Pasillo/Ubicación (Opcional):</label>
+            <select id="resetFilterLocation" class="form-select">
+              <option value="">Todo el inventario</option>
+            </select>
+          </div>
+
+          <div class="form-group mt-3">
+            <label for="resetFilterAbc">Filtrar por Clase ABC (Opcional):</label>
+            <select id="resetFilterAbc" class="form-select">
+              <option value="">Todas las clases</option>
+              <option value="A">Solo Clase A</option>
+              <option value="B">Solo Clase B</option>
+              <option value="C">Solo Clase C</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="btnCancelResetModal">Cancelar</button>
+          <button class="btn btn-danger" id="btnConfirmResetCycle">
+            <i class="fa-solid fa-check"></i> Confirmar y Reiniciar en Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: INICIAR SESIÓN / CAMBIAR OPERADOR                                 -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="loginModal">
+      <div class="modal-card login-modal-card">
+        <div class="modal-header">
+          <div class="modal-title text-primary">
+            <i class="fa-solid fa-user-shield"></i>
+            <h3 id="loginModalTitle">Acceso de Operador</h3>
+          </div>
+          <button class="modal-close" id="btnCloseLoginModal">&times;</button>
+        </div>
+
+        <form id="loginForm" class="modal-body">
+          <div class="login-brand-banner">
+            <div class="login-brand-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <h4>CyclicStock PRO</h4>
+            <p>Selecciona tu Centro y credenciales de acceso</p>
+          </div>
+
+          <!-- Centro Selector in Login -->
+          <div class="form-group">
+            <label for="loginCentroSelect">
+              <i class="fa-solid fa-warehouse"></i> Centro de Trabajo
+            </label>
+            <select id="loginCentroSelect" class="form-select form-control" required>
+              <!-- 13 Centros injected via JS -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="loginUsernameInput">
+              <i class="fa-solid fa-user"></i> Usuario / Operador
+            </label>
+            <div class="input-with-icon">
+              <input type="text" id="loginUsernameInput" class="form-control" placeholder="Ej: JHAMIL o JAVIER" required autocomplete="username">
+              <span class="input-icon-right"><i class="fa-solid fa-id-badge"></i></span>
+            </div>
+            <!-- Quick operator chips for chosen centro -->
+            <div class="login-quick-users" id="loginQuickUsersList"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="loginPasswordInput">
+              <i class="fa-solid fa-lock"></i> Contraseña
+            </label>
+            <div class="input-with-icon">
+              <input type="password" id="loginPasswordInput" class="form-control" placeholder="Contraseña de acceso" required autocomplete="current-password">
+              <button type="button" class="btn-toggle-pwd" id="btnToggleLoginPassword" title="Mostrar/Ocultar contraseña">
+                <i class="fa-solid fa-eye" id="loginPwdEyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="login-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="rememberMeCheck" checked>
+              <span>Mantener sesión abierta</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-block" id="btnLoginSubmit">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span>INGRESAR AL SISTEMA</span>
+          </button>
+        </form>
+
+        <div class="login-footer">
+          <span>Sistema Multicentros &bull; CyclicStock PRO</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: AGREGAR / EDITAR OPERADOR                                         -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="userModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title text-primary">
+            <i class="fa-solid fa-user-plus"></i>
+            <h3 id="userModalTitle">Registrar Nuevo Operador</h3>
+          </div>
+          <button class="modal-close" id="btnCloseUserModal">&times;</button>
+        </div>
+        <form id="userModalForm">
+          <div class="modal-body">
+            <input type="hidden" id="userModalId">
+
+            <div class="form-group">
+              <label for="userModalNombre">Nombre Completo *</label>
+              <input type="text" id="userModalNombre" class="form-control" placeholder="Ej: JUAN PEREZ" required>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+              <div class="form-group">
+                <label for="userModalCentro">Centro *</label>
+                <select id="userModalCentro" class="form-select" required>
+                  <!-- Populated via JS with 13 centros -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="userModalCargo">Cargo *</label>
+                <select id="userModalCargo" class="form-select">
+                  <option value="AUXILIAR">AUXILIAR</option>
+                  <option value="ENCARGADO">ENCARGADO</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+              <div class="form-group">
+                <label for="userModalUsuario">Usuario (Login) *</label>
+                <input type="text" id="userModalUsuario" class="form-control" placeholder="Ej: JUAN" required>
+              </div>
+              <div class="form-group">
+                <label for="userModalPassword">Contraseña *</label>
+                <input type="text" id="userModalPassword" class="form-control" placeholder="Clave de acceso" required>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btnCancelUserModal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveUserModal">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar Operador
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: ASIGNAR CÍCLICO A AUXILIAR (ENCARGADOS ONLY)                       -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="assignCycleModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title text-primary">
+            <i class="fa-solid fa-user-check"></i>
+            <h3>Asignar Inventario Cíclico a Auxiliar</h3>
+          </div>
+          <button class="modal-close" id="btnCloseAssignModal">&times;</button>
+        </div>
+        <form id="assignCycleForm">
+          <div class="modal-body">
+            <div class="assign-banner">
+              <div class="assign-banner-icon"><i class="fa-solid fa-clipboard-user"></i></div>
+              <div class="assign-banner-info">
+                <h4>Centro <span id="assignModalCentroText">1300</span></h4>
+                <p>Asigna la orden de conteo a un auxiliar de este centro para habilitar su lista de trabajo.</p>
+              </div>
+            </div>
+
+            <div class="form-group mt-3">
+              <label for="assignAuxiliarSelect"><i class="fa-solid fa-user-tag text-primary"></i> Seleccionar Auxiliar Asignado *</label>
+              <select id="assignAuxiliarSelect" class="form-select form-control" required>
+                <!-- Populated via JS with Auxiliares of this Centro -->
+              </select>
+            </div>
+
+            <div class="form-group mt-3">
+              <label for="assignNotesInput"><i class="fa-solid fa-note-sticky text-amber"></i> Instrucciones / Observaciones (Opcional)</label>
+              <textarea id="assignNotesInput" class="form-control" rows="2" placeholder="Ej: Conteo prioritario de Pasillo A y productos Clase A..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btnCancelAssignModal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btnConfirmAssignCycle">
+              <i class="fa-solid fa-check-double"></i> Confirmar Asignación
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: FIRMA DIGITAL & CONCLUSIÓN DE CÍCLICO                              -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="signatureModal">
+      <div class="modal-card signature-modal-card">
+        <div class="modal-header">
+          <div class="modal-title text-success">
+            <i class="fa-solid fa-signature"></i>
+            <h3>Firma Digital de Conformidad</h3>
+          </div>
+          <button class="modal-close" id="btnCloseSignatureModal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Summary Certificate Card -->
+          <div class="signature-summary-card">
+            <div class="sig-badge-icon"><i class="fa-solid fa-file-circle-check"></i></div>
+            <div class="sig-summary-text">
+              <h4>Conclusión y Cierre de Inventario Cíclico</h4>
+              <p>Al firmar digitalmente, el conteo quedará auditado y se estampará la firma directamente en la hoja de Excel del <strong>Centro <span id="signCentroCodeText">1300</span></strong>.</p>
+            </div>
+          </div>
+
+          <div class="sig-meta-grid">
+            <div class="sig-meta-item">
+              <span class="sig-meta-label"><i class="fa-solid fa-user"></i> Responsable:</span>
+              <strong class="sig-meta-value" id="signOperatorNameText">ERICK MORALES</strong>
+            </div>
+            <div class="sig-meta-item">
+              <span class="sig-meta-label"><i class="fa-solid fa-user-shield"></i> Cargo:</span>
+              <strong class="sig-meta-value" id="signOperatorCargoText">AUXILIAR &bull; Centro 1300</strong>
+            </div>
+            <div class="sig-meta-item">
+              <span class="sig-meta-label"><i class="fa-solid fa-list-check"></i> Total Conteo:</span>
+              <strong class="sig-meta-value text-green" id="signCountProgressText">21 / 21 contados (100%)</strong>
+            </div>
+            <div class="sig-meta-item">
+              <span class="sig-meta-label"><i class="fa-solid fa-clock"></i> Fecha y Hora:</span>
+              <strong class="sig-meta-value" id="signTimestampText">2026-08-24 16:48</strong>
+            </div>
+          </div>
+
+          <!-- Interactive Signature Canvas Panel -->
+          <div class="signature-pad-container">
+            <div class="signature-pad-header">
+              <label><i class="fa-solid fa-pen-nib text-primary"></i> Traza tu Firma Digital en el recuadro:</label>
+              <button type="button" class="btn-clear-sig" id="btnClearSignaturePad" title="Borrar y volver a firmar">
+                <i class="fa-solid fa-eraser"></i> Borrar Firma
+              </button>
+            </div>
+            <div class="canvas-wrapper">
+              <canvas id="digitalSignaturePad" width="500" height="180"></canvas>
+              <div class="canvas-watermark" id="canvasWatermark">
+                <i class="fa-solid fa-pen"></i> Dibuja tu firma con el dedo o mouse aquí
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label for="signatureNotesInput">Notas de Cierre / Observaciones Finales (Opcional):</label>
+            <input type="text" id="signatureNotesInput" class="form-control" placeholder="Ej: Conteo físico completado sin observaciones...">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelSignatureModal">Cancelar</button>
+          <button type="button" class="btn btn-success btn-lg" id="btnSubmitSignatureAndConclude">
+            <i class="fa-solid fa-file-signature"></i> GUARDAR FIRMA Y CONCLUIR EN EXCEL
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Application Script -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,21 @@
+{
+  "1300": {
+    "centro": "1300",
+    "cycleId": "CYC-1300-7648",
+    "status": "CONCLUIDO",
+    "assignedToUserId": "usr-1300-3",
+    "assignedToUserName": "FERNANDO PINTO",
+    "assignedToUserLogin": "FERNANDO",
+    "assignedByUserName": "JAVIER LOPEZ",
+    "assignedAt": "2026-08-24 16:51:57",
+    "completedAt": "2026-08-24 20:37:38",
+    "signatureStamp": {
+      "signedBy": "FERNANDO PINTO",
+      "signedAt": "2026-08-24 20:37:38",
+      "role": "AUXILIAR",
+      "signaturePresent": true
+    },
+    "notes": "realizar el conteo hasta el miercoles",
+    "completedBy": "FERNANDO PINTO"
+  }
+}
