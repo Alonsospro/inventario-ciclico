@@ -26,7 +26,7 @@ class GoogleSheetService {
       return JSON.parse(text);
     } catch (e) {
       if (text.includes('accounts.google.com') || text.includes('Sign in') || text.includes('<!doctype') || text.includes('<html')) {
-        throw new Error('Google Apps Script requiere permisos de acceso: En tu Google Apps Script haz clic en "Implementar" -> "Administrar implementaciones" -> Editar -> Cambia "Quién tiene acceso" a "Cualquier usuario" (Anyone).');
+        throw new Error('Google Apps Script requiere permisos de acceso: En Google Apps Script haz clic en "Implementar" -> "Administrar implementaciones" -> Editar -> Cambia "Quién tiene acceso" a "Cualquier usuario" (Anyone).');
       }
       throw new Error(`Respuesta no válida de Google Apps Script: ${text.slice(0, 100)}`);
     }
@@ -75,7 +75,7 @@ class GoogleSheetService {
   }
 
   /**
-   * Get inventory items for a specific Centro
+   * Get inventory items for a specific Centro (with automatic tab name resolution)
    */
   async getInventory(webAppUrl, centro = '1300') {
     const url = this.cleanUrl(webAppUrl);
@@ -92,7 +92,25 @@ class GoogleSheetService {
       throw new Error(`Error al obtener inventario del Centro ${centro} (HTTP ${response.status})`);
     }
 
-    return await this.parseJsonResponse(response);
+    let data = await this.parseJsonResponse(response);
+
+    // If target sheet has 0 items, check if duplicate tab with suffix ' (1)' has data
+    if (data && data.success && (!data.items || data.items.length === 0)) {
+      try {
+        const altUrl = `${url}${url.includes('?') ? '&' : '?'}action=getInventory&centro=${encodeURIComponent(centro + ' (1)')}&_t=${Date.now()}`;
+        const altRes = await fetch(altUrl, { method: 'GET', headers: { 'Accept': 'application/json' }, redirect: 'follow' });
+        if (altRes.ok) {
+          const altData = await this.parseJsonResponse(altRes);
+          if (altData && altData.success && altData.items && altData.items.length > 0) {
+            data = altData;
+          }
+        }
+      } catch (e) {
+        // ignore fallback error
+      }
+    }
+
+    return data;
   }
 
   /**
@@ -113,7 +131,24 @@ class GoogleSheetService {
       throw new Error(`Error al obtener analítica del Centro ${centro} (HTTP ${response.status})`);
     }
 
-    return await this.parseJsonResponse(response);
+    let data = await this.parseJsonResponse(response);
+
+    if (data && data.success && data.totalItems === 0) {
+      try {
+        const altUrl = `${url}${url.includes('?') ? '&' : '?'}action=getAnalytics&centro=${encodeURIComponent(centro + ' (1)')}&_t=${Date.now()}`;
+        const altRes = await fetch(altUrl, { method: 'GET', headers: { 'Accept': 'application/json' }, redirect: 'follow' });
+        if (altRes.ok) {
+          const altData = await this.parseJsonResponse(altRes);
+          if (altData && altData.success && altData.totalItems > 0) {
+            data = altData;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    return data;
   }
 
   /**
