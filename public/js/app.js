@@ -592,19 +592,30 @@ function renderCondensedInventoryTable(items) {
     const countVal = isCounted ? item.physicalStock : '';
 
     tr.innerHTML = `
-      <td><strong class="font-mono text-primary">${escapeHtml(item.sku)}</strong></td>
-      <td>
-        <div style="font-weight: 600;">${escapeHtml(item.description)}</div>
-        <div class="text-muted" style="font-size: 0.75rem; font-family: var(--font-mono);"><i class="fa-solid fa-barcode"></i> ${escapeHtml(item.barcode)}</div>
+      <td class="cell-sku">
+        <span class="mobile-label">SKU:</span>
+        <strong class="font-mono text-primary">${escapeHtml(item.sku)}</strong>
       </td>
-      <td><span class="tag tag-location">${escapeHtml(item.location)}</span></td>
-      <td class="text-center"><span class="tag tag-abc">${escapeHtml(item.abcClass)}</span></td>
+      <td class="cell-desc">
+        <div class="product-title">${escapeHtml(item.description)}</div>
+        <div class="product-barcode text-muted"><i class="fa-solid fa-barcode"></i> ${escapeHtml(item.barcode)}</div>
+      </td>
+      <td class="cell-location">
+        <span class="mobile-label">Pasillo:</span>
+        <span class="tag tag-location"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(item.location)}</span>
+      </td>
+      <td class="cell-abc text-center">
+        <span class="mobile-label">Clase:</span>
+        <span class="tag tag-abc">${escapeHtml(item.abcClass)}</span>
+      </td>
       
       <!-- Input de conteo numérico -->
-      <td class="text-center">
+      <td class="cell-count text-center">
         <div class="quick-count-cell">
           <input 
             type="number" 
+            inputmode="numeric"
+            pattern="[0-9]*"
             class="quick-count-input ${isCounted ? 'locked-input' : ''}" 
             id="count-input-${item.sku}"
             data-sku="${escapeHtml(item.sku)}"
@@ -623,7 +634,7 @@ function renderCondensedInventoryTable(items) {
       </td>
 
       <!-- Caja de Confirmación -->
-      <td class="text-center">
+      <td class="cell-action text-center">
         <button 
           class="btn-confirm-count ${isCounted ? 'is-counted' : ''}" 
           id="btn-confirm-${item.sku}"
@@ -1574,6 +1585,17 @@ function openSignatureModal() {
 
   clearSignatureCanvas();
   modal.classList.remove('hidden');
+
+  // Dynamic canvas resize to fit modal width on mobile/tablets
+  setTimeout(() => {
+    const wrapper = modal.querySelector('.canvas-wrapper');
+    if (wrapper && signatureState.canvas) {
+      const w = wrapper.clientWidth || 450;
+      signatureState.canvas.width = w;
+      signatureState.canvas.height = 180;
+      clearSignatureCanvas();
+    }
+  }, 50);
 }
 
 async function handleSignatureSubmit() {
