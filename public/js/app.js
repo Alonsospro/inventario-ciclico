@@ -427,7 +427,7 @@ async function loadAppConfig() {
 
     updateBlindCountUI(data.blindCount);
   } catch (err) {
-    showToast('Error al conectar con el backend', 'error');
+    console.warn('Backend config init notice:', err.message);
   }
 }
 
@@ -548,8 +548,7 @@ async function loadInventory() {
     renderCondensedInventoryTable(items, data.blindCount);
 
   } catch (err) {
-    console.error('Error in loadInventory:', err);
-    showToast('Error al cargar productos desde Excel: ' + err.message, 'error');
+    console.warn('Error in loadInventory:', err.message);
   }
 }
 
@@ -1256,7 +1255,7 @@ function initEventListeners() {
   document.getElementById('btnRefreshInventory').addEventListener('click', () => {
     loadInventory();
     loadAnalytics();
-    showToast('Datos de Excel recargados', 'info');
+    showToast('Inventario sincronizado', 'info');
   });
 
   // Toggle Blind Count (Admin only)
@@ -1353,34 +1352,7 @@ function openLoginModal() {
   document.getElementById('loginUsernameInput').focus();
 }
 
-async function handleFileUpload(file) {
-  if (!file.name.match(/\.(xlsx|xlsm|xls)$/i)) {
-    showToast('Por favor selecciona un archivo de Excel válido (.xlsx, .xlsm)', 'error');
-    return;
-  }
 
-  const formData = new FormData();
-  formData.append('excelFile', file);
-  showToast('Subiendo y vinculando archivo Excel...', 'info');
-
-  try {
-    const res = await fetch('/api/config/upload-excel', {
-      method: 'POST',
-      body: formData
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast('Archivo Excel vinculado exitosamente', 'success');
-      loadAppConfig();
-      loadInventory();
-      loadAnalytics();
-    } else {
-      throw new Error(data.error);
-    }
-  } catch (err) {
-    showToast('Error al procesar archivo Excel: ' + err.message, 'error');
-  }
-}
 
 // Toast Notifications Helper
 function showToast(message, type = 'info') {
@@ -1634,18 +1606,18 @@ async function handleSignatureSubmit() {
     const data = await res.json();
     if (data.success) {
       sfx.saveSuccess();
-      showToast('🎉 ¡Inventario Cíclico CONCLUIDO y FIRMADO con éxito en Excel!', 'success');
+      showToast('🎉 ¡Inventario Cíclico CONCLUIDO y FIRMADO con éxito!', 'success');
       document.getElementById('signatureModal').classList.add('hidden');
       loadInventory();
       loadAnalytics();
     } else {
-      throw new Error(data.error || 'Error al guardar firma en Excel');
+      throw new Error(data.error || 'Error al guardar firma');
     }
   } catch (err) {
     sfx.error();
     showToast('Error al concluir ciclo: ' + err.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-file-signature"></i> GUARDAR FIRMA Y CONCLUIR EN EXCEL';
+    btn.innerHTML = '<i class="fa-solid fa-file-signature"></i> GUARDAR FIRMA Y CONCLUIR';
   }
 }

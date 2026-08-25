@@ -1,7 +1,7 @@
 /**
  * Google Sheets Service via Google Apps Script Web App API
- * Allows zero-maintenance, real-time synchronization between the web app
- * and a Google Spreadsheet workbook in the cloud without committing Excel files to Git.
+ * Zero-maintenance, real-time cloud synchronization between the web app
+ * and Google Spreadsheet.
  */
 
 class GoogleSheetService {
@@ -15,6 +15,21 @@ class GoogleSheetService {
       trimmed = 'https://' + trimmed;
     }
     return trimmed;
+  }
+
+  /**
+   * Safely parse JSON response from Google Apps Script, detecting Google login redirects
+   */
+  async parseJsonResponse(response) {
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      if (text.includes('accounts.google.com') || text.includes('Sign in') || text.includes('<!doctype') || text.includes('<html')) {
+        throw new Error('Google Apps Script requiere permisos de acceso: En tu Google Apps Script haz clic en "Implementar" -> "Administrar implementaciones" -> Editar -> Cambia "Quién tiene acceso" a "Cualquier usuario" (Anyone).');
+      }
+      throw new Error(`Respuesta no válida de Google Apps Script: ${text.slice(0, 100)}`);
+    }
   }
 
   /**
@@ -35,8 +50,7 @@ class GoogleSheetService {
       throw new Error(`Error de conexión con Google Apps Script (HTTP ${response.status})`);
     }
 
-    const data = await response.json();
-    return data;
+    return await this.parseJsonResponse(response);
   }
 
   /**
@@ -57,7 +71,7 @@ class GoogleSheetService {
       throw new Error(`Error al consultar hojas (HTTP ${response.status})`);
     }
 
-    return await response.json();
+    return await this.parseJsonResponse(response);
   }
 
   /**
@@ -78,7 +92,7 @@ class GoogleSheetService {
       throw new Error(`Error al obtener inventario del Centro ${centro} (HTTP ${response.status})`);
     }
 
-    return await response.json();
+    return await this.parseJsonResponse(response);
   }
 
   /**
@@ -99,7 +113,7 @@ class GoogleSheetService {
       throw new Error(`Error al obtener analítica del Centro ${centro} (HTTP ${response.status})`);
     }
 
-    return await response.json();
+    return await this.parseJsonResponse(response);
   }
 
   /**
@@ -131,8 +145,7 @@ class GoogleSheetService {
       throw new Error(`Error al actualizar conteo en Google Sheets (HTTP ${response.status})`);
     }
 
-    const data = await response.json();
-    return data;
+    return await this.parseJsonResponse(response);
   }
 
   /**
@@ -162,7 +175,7 @@ class GoogleSheetService {
       throw new Error(`Error al reiniciar ciclo en Google Sheets (HTTP ${response.status})`);
     }
 
-    return await response.json();
+    return await this.parseJsonResponse(response);
   }
 
   /**
@@ -190,7 +203,7 @@ class GoogleSheetService {
       throw new Error(`Error al registrar conclusión en Google Sheets (HTTP ${response.status})`);
     }
 
-    return await response.json();
+    return await this.parseJsonResponse(response);
   }
 }
 

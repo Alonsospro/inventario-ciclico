@@ -7,7 +7,7 @@ const storagePath = require('./storagePath');
 // Pega aquí la URL de tu Google Apps Script Web App (terminada en /exec)
 // o configúrala en las variables de entorno como GOOGLE_SHEET_URL.
 // ============================================================================
-const GOOGLE_SHEET_URL = process.env.GOOGLE_SHEET_URL || 'https://script.google.com/macros/s/AKfycb.../exec';
+const GOOGLE_SHEET_URL = process.env.GOOGLE_SHEET_URL || 'https://script.google.com/macros/s/AKfycbwpJ5klIWQmhhM4RNgxfG4QabqLOOb2KCVhLPhyIWvHeUsQ39wgHjMt3sHLJo9tH-9p/exec';
 
 const DEFAULT_CONFIG = {
   activeFilePath: storagePath.getDataFilePath('CICLICOS NIBOL MULTIMARCAS.xlsx'),
