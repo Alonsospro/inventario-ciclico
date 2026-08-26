@@ -4,8 +4,18 @@ const storagePath = require('./storagePath');
 
 const USERS_FILE = storagePath.getDataFilePath('users.json');
 
-// Master list of all 35 users and 13 Centros from official company roster
+// Master list of all users and 13 Centros from official company roster + Global Admins
 const ALL_MASTER_USERS = [
+  // =========================================================================
+  // ADMINISTRADORES GLOBALES (Acceso a todos los Centros)
+  // =========================================================================
+  { id: 'usr-admin-absael', nombre: 'ABSAEL', centro: 'TODOS', cargo: 'ADMIN', usuario: 'ABSAEL', password: 'ABS', avatarColor: '#6366f1', activo: true, ultimoAcceso: null, canManageAccess: false },
+  { id: 'usr-admin-jcarlos', nombre: 'JUAN CARLOS', centro: 'TODOS', cargo: 'ADMIN', usuario: 'JCARLOS', password: 'JCS', avatarColor: '#3b82f6', activo: true, ultimoAcceso: null, canManageAccess: false },
+  { id: 'usr-admin-alonso', nombre: 'ALONSO', centro: 'TODOS', cargo: 'ADMIN', usuario: 'ALONSO', password: 'ADM', avatarColor: '#10b981', activo: true, ultimoAcceso: null, canManageAccess: true, isSuperAdmin: true },
+
+  // =========================================================================
+  // CENTROS Y OPERADORES
+  // =========================================================================
   // Centro 1300
   { id: 'usr-1300-1', nombre: 'JHAMIL CADIMA', centro: '1300', cargo: 'AUXILIAR', usuario: 'JHAMIL', password: 'JHD', avatarColor: '#3b82f6', activo: true, ultimoAcceso: null },
   { id: 'usr-1300-2', nombre: 'ERICK MORALES', centro: '1300', cargo: 'AUXILIAR', usuario: 'ERICK', password: 'ROCA', avatarColor: '#10b981', activo: true, ultimoAcceso: null },
@@ -13,7 +23,7 @@ const ALL_MASTER_USERS = [
   { id: 'usr-1300-4', nombre: 'JOSE MANUEL', centro: '1300', cargo: 'AUXILIAR', usuario: 'JOSE', password: 'JSM', avatarColor: '#f59e0b', activo: true, ultimoAcceso: null },
   { id: 'usr-1300-5', nombre: 'SAMIR', centro: '1300', cargo: 'AUXILIAR', usuario: 'SAMIR', password: 'TURCO', avatarColor: '#06b6d4', activo: true, ultimoAcceso: null },
   { id: 'usr-1300-6', nombre: 'JORGE RIOS', centro: '1300', cargo: 'AUXILIAR', usuario: 'JORGE', password: 'BIGOTE', avatarColor: '#ec4899', activo: true, ultimoAcceso: null },
-  { id: 'usr-1300-7', nombre: 'ALONSO RIOS', centro: '1300', cargo: 'AUXILIAR', usuario: 'ALONSO', password: 'POTER', avatarColor: '#14b8a6', activo: true, ultimoAcceso: null },
+  { id: 'usr-1300-7', nombre: 'ALONSO RIOS', centro: '1300', cargo: 'AUXILIAR', usuario: 'ALONSOR', password: 'POTER', avatarColor: '#14b8a6', activo: true, ultimoAcceso: null },
   { id: 'usr-1300-8', nombre: 'GERMAN MENDEZ', centro: '1300', cargo: 'AUXILIAR', usuario: 'GERMAN', password: 'NOCHI', avatarColor: '#f97316', activo: true, ultimoAcceso: null },
   { id: 'usr-1300-9', nombre: 'JAVIER LOPEZ', centro: '1300', cargo: 'ENCARGADO', usuario: 'JAVIER', password: 'JVLP', avatarColor: '#6366f1', activo: true, ultimoAcceso: null },
 
@@ -99,18 +109,38 @@ class UsersService {
 
   loadUsers() {
     try {
+      let currentUsers = [];
       if (fs.existsSync(USERS_FILE)) {
         const raw = fs.readFileSync(USERS_FILE, 'utf8');
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length >= ALL_MASTER_USERS.length) {
-          return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          currentUsers = parsed;
         }
       }
+
+      // Merge master users and administrators into file
+      const merged = [...ALL_MASTER_USERS];
+      currentUsers.forEach(cu => {
+        const idx = merged.findIndex(mu => mu.id === cu.id || (mu.usuario.toUpperCase() === cu.usuario.toUpperCase() && mu.centro === cu.centro));
+        if (idx !== -1) {
+          // If admin, keep authoritative master passwords/privileges
+          if (merged[idx].cargo === 'ADMIN') {
+            merged[idx] = { ...merged[idx], ultimoAcceso: cu.ultimoAcceso || null };
+          } else {
+            merged[idx] = { ...merged[idx], ...cu };
+          }
+        } else {
+          merged.push(cu);
+        }
+      });
+
+      this.saveUsers(merged);
+      return merged;
     } catch (err) {
       console.warn('Error al leer users.json, cargando master roster:', err.message);
+      this.saveUsers(ALL_MASTER_USERS);
+      return ALL_MASTER_USERS;
     }
-    this.saveUsers(ALL_MASTER_USERS);
-    return ALL_MASTER_USERS;
   }
 
   saveUsers(usersList) {
@@ -122,6 +152,13 @@ class UsersService {
     } catch (err) {
       console.error('Error al guardar users.json:', err.message);
       throw err;
+    }
+  }
+
+  assertCanManageAccess(requestingUser) {
+    const cleanReqUser = String(requestingUser || '').trim().toUpperCase();
+    if (cleanReqUser !== 'ALONSO') {
+      throw new Error('Permiso denegado: Únicamente el usuario administrador ALONSO tiene autorización para crear, modificar accesos o eliminar operadores.');
     }
   }
 
@@ -141,17 +178,19 @@ class UsersService {
   }
 
   getPublicUsers(centro = null) {
+    this.users = this.loadUsers();
     let list = this.users.filter(u => u.activo);
-    if (centro) {
-      list = list.filter(u => u.centro === String(centro).trim());
+    if (centro && centro !== 'TODOS') {
+      list = list.filter(u => u.centro === String(centro).trim() || u.cargo === 'ADMIN');
     }
     return list.map(({ password, ...safeUser }) => safeUser);
   }
 
   getAllUsersWithDetails(centro = null) {
+    this.users = this.loadUsers();
     let list = this.users;
-    if (centro) {
-      list = list.filter(u => u.centro === String(centro).trim());
+    if (centro && centro !== 'TODOS') {
+      list = list.filter(u => u.centro === String(centro).trim() || u.cargo === 'ADMIN');
     }
     return list.map(({ password, ...safeUser }) => ({
       ...safeUser,
@@ -160,17 +199,36 @@ class UsersService {
   }
 
   authenticate(username, password, centro = null) {
+    this.users = this.loadUsers();
     if (!username || !password) {
       return { success: false, error: 'Usuario y contraseña son requeridos' };
     }
 
-    const cleanUsername = username.trim().toUpperCase();
-    const cleanPassword = password.trim();
+    const cleanUsername = String(username).trim().toUpperCase();
+    const cleanPassword = String(password).trim();
     const cleanCentro = centro ? String(centro).trim() : null;
 
-    // Search user matching username and password (scoped to centro if provided)
+    // 1. Check if Global Administrator is logging in
+    const adminUsers = this.users.filter(
+      u => u.usuario.toUpperCase() === cleanUsername && u.cargo === 'ADMIN' && u.activo
+    );
+    for (const adminUser of adminUsers) {
+      const matchExact = adminUser.password === cleanPassword;
+      const matchUpper = adminUser.password.toUpperCase() === cleanPassword.toUpperCase();
+      if (matchExact || matchUpper) {
+        adminUser.ultimoAcceso = new Date().toISOString();
+        this.saveUsers(this.users);
+        const { password: _, ...userData } = adminUser;
+        return {
+          success: true,
+          user: userData
+        };
+      }
+    }
+
+    // 2. Standard user search (scoped to centro if provided)
     let user = null;
-    if (cleanCentro) {
+    if (cleanCentro && cleanCentro !== 'TODOS') {
       user = this.users.find(
         u => u.usuario.toUpperCase() === cleanUsername && u.centro === cleanCentro && u.activo
       );
@@ -184,8 +242,7 @@ class UsersService {
       if (candidates.length === 1) {
         user = candidates[0];
       } else if (candidates.length > 1) {
-        // Disambiguate by matching password
-        user = candidates.find(u => u.password === cleanPassword) || candidates[0];
+        user = candidates.find(u => u.password === cleanPassword || u.password.toUpperCase() === cleanPassword.toUpperCase()) || candidates[0];
       }
     }
 
@@ -193,7 +250,9 @@ class UsersService {
       return { success: false, error: 'Usuario no encontrado en el centro seleccionado' };
     }
 
-    if (user.password !== cleanPassword) {
+    const matchExact = user.password === cleanPassword;
+    const matchUpper = user.password.toUpperCase() === cleanPassword.toUpperCase();
+    if (!matchExact && !matchUpper) {
       return { success: false, error: 'Contraseña incorrecta' };
     }
 
@@ -208,7 +267,9 @@ class UsersService {
     };
   }
 
-  addUser({ nombre, centro = '1300', cargo = 'AUXILIAR', usuario, password, avatarColor = '#3b82f6' }) {
+  addUser({ nombre, centro = '1300', cargo = 'AUXILIAR', usuario, password, avatarColor = '#3b82f6' }, requestingUser = null) {
+    this.assertCanManageAccess(requestingUser);
+
     if (!nombre || !usuario || !password) {
       throw new Error('Nombre, usuario y contraseña son obligatorios.');
     }
@@ -216,7 +277,7 @@ class UsersService {
     const cleanUsername = usuario.trim().toUpperCase();
     const cleanCentro = String(centro).trim();
 
-    // Allow same username if in different centros, but check inside same centro
+    // Check if user already exists
     const exists = this.users.some(
       u => u.usuario.toUpperCase() === cleanUsername && u.centro === cleanCentro && u.activo
     );
@@ -243,7 +304,9 @@ class UsersService {
     return userData;
   }
 
-  updateUser(id, updates) {
+  updateUser(id, updates, requestingUser = null) {
+    this.assertCanManageAccess(requestingUser);
+
     const userIndex = this.users.findIndex(u => u.id === id);
 
     if (userIndex === -1) {
@@ -268,11 +331,18 @@ class UsersService {
     return userData;
   }
 
-  deleteUser(id) {
+  deleteUser(id, requestingUser = null) {
+    this.assertCanManageAccess(requestingUser);
+
     const userIndex = this.users.findIndex(u => u.id === id);
 
     if (userIndex === -1) {
       throw new Error('Usuario no encontrado.');
+    }
+
+    // Do not allow deleting superadmin
+    if (this.users[userIndex].usuario.toUpperCase() === 'ALONSO' && this.users[userIndex].cargo === 'ADMIN') {
+      throw new Error('No es posible eliminar al Super Administrador principal.');
     }
 
     this.users[userIndex].activo = false;

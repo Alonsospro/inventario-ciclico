@@ -6,6 +6,12 @@
   "autoBackup": true,
   "varianceThreshold": 0,
   "googleSheetUrl": "https://script.google.com/macros/s/AKfycbwpJ5klIWQmhhM4RNgxfG4QabqLOOb2KCVhLPhyIWvHeUsQ39wgHjMt3sHLJo9tH-9p/exec",
+  "googleSheetUrls": {
+    "ciclico": "https://script.google.com/macros/s/AKfycbwpJ5klIWQmhhM4RNgxfG4QabqLOOb2KCVhLPhyIWvHeUsQ39wgHjMt3sHLJo9tH-9p/exec",
+    "semanal": "https://script.google.com/macros/s/AKfycbxCEDud8PvY4nF31KusgUAa9HJvTwxTzJQsyrfBcPb1cXp4Gg9vJJh_Xo6hQ91DcgnwZw/exec",
+    "mensual": "https://script.google.com/macros/s/AKfycbyF903sRTv0jkn_nxAFEZogK0cY_sLSMkgJzViImuIgYMaBV_1MSI1hsINhmD43Gro4Cg/exec",
+    "barrido": "https://script.google.com/macros/s/AKfycbysHHX9TYzpV3jDBvcDtcHmCAc0PO3vRpiivGqHz373qr4aB3mfmmcxjtWXhuemv3FyvQ/exec"
+  },
   "syncMode": "google_sheets",
   "columnMapping": {
     "sku": "A",
@@ -22,6 +28,8 @@
     "varianceCost": "L",
     "lastCountDate": "M",
     "counterName": "N",
-    "status": "O"
+    "status": "O",
+    "damagedStock": "P",
+    "malEstado": "P"
   }
 }

@@ -1,5 +1,42 @@
 [
   {
+    "id": "usr-admin-absael",
+    "nombre": "ABSAEL",
+    "centro": "TODOS",
+    "cargo": "ADMIN",
+    "usuario": "ABSAEL",
+    "password": "ABS",
+    "avatarColor": "#6366f1",
+    "activo": true,
+    "ultimoAcceso": "2026-08-26T17:43:16.559Z",
+    "canManageAccess": false
+  },
+  {
+    "id": "usr-admin-jcarlos",
+    "nombre": "JUAN CARLOS",
+    "centro": "TODOS",
+    "cargo": "ADMIN",
+    "usuario": "JCARLOS",
+    "password": "JCS",
+    "avatarColor": "#3b82f6",
+    "activo": true,
+    "ultimoAcceso": "2026-08-25T18:30:16.090Z",
+    "canManageAccess": false
+  },
+  {
+    "id": "usr-admin-alonso",
+    "nombre": "ALONSO",
+    "centro": "TODOS",
+    "cargo": "ADMIN",
+    "usuario": "ALONSO",
+    "password": "ADM",
+    "avatarColor": "#10b981",
+    "activo": true,
+    "ultimoAcceso": "2026-08-26T19:07:26.192Z",
+    "canManageAccess": true,
+    "isSuperAdmin": true
+  },
+  {
     "id": "usr-1300-1",
     "nombre": "JHAMIL CADIMA",
     "centro": "1300",
@@ -8,7 +45,7 @@
     "password": "JHD",
     "avatarColor": "#3b82f6",
     "activo": true,
-    "ultimoAcceso": "2026-08-24T16:14:54.569Z"
+    "ultimoAcceso": "2026-08-26T15:44:22.137Z"
   },
   {
     "id": "usr-1300-2",
@@ -19,7 +56,7 @@
     "password": "ROCA",
     "avatarColor": "#10b981",
     "activo": true,
-    "ultimoAcceso": "2026-08-25T02:58:55.552Z"
+    "ultimoAcceso": "2026-08-26T19:02:28.951Z"
   },
   {
     "id": "usr-1300-3",
@@ -30,7 +67,7 @@
     "password": "CEPI",
     "avatarColor": "#8b5cf6",
     "activo": true,
-    "ultimoAcceso": "2026-08-24T20:37:11.311Z"
+    "ultimoAcceso": "2026-08-26T15:44:22.147Z"
   },
   {
     "id": "usr-1300-4",
@@ -41,7 +78,7 @@
     "password": "JSM",
     "avatarColor": "#f59e0b",
     "activo": true,
-    "ultimoAcceso": null
+    "ultimoAcceso": "2026-08-26T15:44:22.153Z"
   },
   {
     "id": "usr-1300-5",
@@ -52,7 +89,7 @@
     "password": "TURCO",
     "avatarColor": "#06b6d4",
     "activo": true,
-    "ultimoAcceso": null
+    "ultimoAcceso": "2026-08-26T17:47:49.726Z"
   },
   {
     "id": "usr-1300-6",
@@ -63,7 +100,7 @@
     "password": "BIGOTE",
     "avatarColor": "#ec4899",
     "activo": true,
-    "ultimoAcceso": null
+    "ultimoAcceso": "2026-08-26T15:44:22.164Z"
   },
   {
     "id": "usr-1300-7",
@@ -74,7 +111,7 @@
     "password": "POTER",
     "avatarColor": "#14b8a6",
     "activo": true,
-    "ultimoAcceso": null
+    "ultimoAcceso": "2026-08-26T15:44:22.170Z"
   },
   {
     "id": "usr-1300-8",
@@ -85,7 +122,7 @@
     "password": "NOCHI",
     "avatarColor": "#f97316",
     "activo": true,
-    "ultimoAcceso": null
+    "ultimoAcceso": "2026-08-26T15:44:22.176Z"
   },
   {
     "id": "usr-1300-9",
@@ -96,7 +133,7 @@
     "password": "JVLP",
     "avatarColor": "#6366f1",
     "activo": true,
-    "ultimoAcceso": "2026-08-25T02:59:08.651Z"
+    "ultimoAcceso": "2026-08-26T16:31:36.078Z"
   },
   {
     "id": "usr-1800-1",
@@ -107,7 +144,7 @@
     "password": "ESJ",
     "avatarColor": "#3b82f6",
     "activo": true,
-    "ultimoAcceso": "2026-08-24T16:14:54.580Z"
+    "ultimoAcceso": "2026-08-26T15:42:49.855Z"
   },
   {
     "id": "usr-1340-1",
@@ -118,7 +155,7 @@
     "password": "RSS",
     "avatarColor": "#10b981",
     "activo": true,
-    "ultimoAcceso": null
+    "ultimoAcceso": "2026-08-26T18:35:30.341Z"
   },
   {
     "id": "usr-1340-2",
@@ -129,7 +166,7 @@
     "password": "DRW",
     "avatarColor": "#8b5cf6",
     "activo": true,
-    "ultimoAcceso": null
+    "ultimoAcceso": "2026-08-25T14:02:06.726Z"
   },
   {
     "id": "usr-1820-1",
@@ -151,7 +188,7 @@
     "password": "WDS",
     "avatarColor": "#06b6d4",
     "activo": true,
-    "ultimoAcceso": null
+    "ultimoAcceso": "2026-08-25T13:04:52.205Z"
   },
   {
     "id": "usr-1120-2",

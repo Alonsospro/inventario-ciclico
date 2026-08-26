@@ -18,7 +18,9 @@ const DEFAULT_MAPPING = {
   varianceCost: 'L',
   lastCountDate: 'M',
   counterName: 'N',
-  status: 'O'
+  status: 'O',
+  damagedStock: 'P',
+  malEstado: 'P'
 };
 
 const DEFAULT_HEADERS = {
@@ -36,7 +38,8 @@ const DEFAULT_HEADERS = {
   L: 'Costo_Diferencia',
   M: 'Fecha_Ultimo_Conteo',
   N: 'Responsable',
-  O: 'Estado'
+  O: 'Estado',
+  P: 'Mal_Estado'
 };
 
 const CENTROS_CONFIG = [
@@ -80,9 +83,10 @@ class ExcelService {
 
     // 1. Try matching with centro code (e.g. '1300', 'Centro_1300', 'Centro 1300', 'C1300')
     if (centro) {
-      const cStr = String(centro).trim().toLowerCase();
+      const cStr = String(centro).replace(/^Centro\s*/i, '').trim().toLowerCase();
       for (const ws of workbook.worksheets) {
         const wsNameNorm = ws.name.toLowerCase().trim();
+        if (wsNameNorm.startsWith('auditoria') || wsNameNorm.startsWith('auditoría') || wsNameNorm.startsWith('cierre')) continue;
         if (
           wsNameNorm === cStr ||
           wsNameNorm === `centro_${cStr}` ||
@@ -102,7 +106,10 @@ class ExcelService {
     }
 
     // 3. Fallback: first non-audit worksheet
-    const nonAudit = workbook.worksheets.find(w => w.name !== 'Auditoria_Conteos');
+    const nonAudit = workbook.worksheets.find(w => {
+      const name = w.name.toLowerCase();
+      return !name.startsWith('auditoria') && !name.startsWith('auditoría') && !name.startsWith('cierre');
+    });
     return nonAudit || workbook.worksheets[0];
   }
 
@@ -133,7 +140,7 @@ class ExcelService {
    */
   async inspectWorkbook(filePath) {
     if (!fs.existsSync(filePath)) {
-      throw new Error(`Archivo no encontrado: ${filePath}`);
+      throw new Error(`El archivo '${path.basename(filePath)}' no existe`);
     }
 
     const workbook = new ExcelJS.Workbook();
@@ -149,11 +156,14 @@ class ExcelService {
         headers[colLetter] = this.getCellValue(cell);
       });
 
+      const wsLower = worksheet.name.toLowerCase();
+      const isAudit = wsLower.startsWith('auditoria') || wsLower.startsWith('auditoría') || wsLower.startsWith('cierre');
+
       sheets.push({
         name: worksheet.name,
         rowCount: worksheet.rowCount > 0 ? worksheet.rowCount - 1 : 0,
         headers,
-        isAuditSheet: worksheet.name === 'Auditoria_Conteos'
+        isAuditSheet: isAudit
       });
     });
 
@@ -245,6 +255,8 @@ class ExcelService {
 
       const lastCountDate = map.lastCountDate ? this.getCellValue(row.getCell(map.lastCountDate)) : '';
       const counterName = map.counterName ? this.getCellValue(row.getCell(map.counterName)) : '';
+      const damagedStockRaw = (map.damagedStock || map.malEstado) ? Number(this.getCellValue(row.getCell(map.damagedStock || map.malEstado || 'P'))) : 0;
+      const damagedStock = isNaN(damagedStockRaw) ? 0 : damagedStockRaw;
       
       let status = 'Pendiente';
       if (physicalStock !== null) {
@@ -265,6 +277,7 @@ class ExcelService {
         unitCost: unitCost,
         systemStock: systemStock,
         physicalStock: physicalStock,
+        damagedStock: damagedStock,
         variance: variance,
         varianceCost: varianceCost,
         lastCountDate: lastCountDate,
@@ -301,14 +314,19 @@ class ExcelService {
     let targetRow = null;
     let rowNum = -1;
 
+    const skuClean = String(sku || '').trim().toLowerCase().replace(/^jd[_-]?/i, '');
+    const barcodeTarget = String(countData.barcode || countData.cleanSku || '').trim().toLowerCase();
+
     for (let r = 2; r <= worksheet.rowCount; r++) {
       const row = worksheet.getRow(r);
       const rowSku = this.getCellValue(row.getCell(map.sku));
       const rowBarcode = this.getCellValue(row.getCell(map.barcode));
+      const rowSkuClean = String(rowSku || '').trim().toLowerCase().replace(/^jd[_-]?/i, '');
+      const rowBarcodeClean = String(rowBarcode || '').trim().toLowerCase().replace(/^jd[_-]?/i, '');
 
       if (
-        (rowSku && String(rowSku).trim().toLowerCase() === String(sku).trim().toLowerCase()) ||
-        (rowBarcode && String(rowBarcode).trim().toLowerCase() === String(sku).trim().toLowerCase())
+        (rowBarcode && (String(rowBarcode).trim().toLowerCase() === String(sku).trim().toLowerCase() || rowBarcodeClean === skuClean || String(rowBarcode).trim().toLowerCase() === barcodeTarget)) ||
+        (rowSku && (String(rowSku).trim().toLowerCase() === String(sku).trim().toLowerCase() || rowSkuClean === skuClean || rowSkuClean === String(sku).trim().toLowerCase()))
       ) {
         targetRow = row;
         rowNum = r;
@@ -317,7 +335,35 @@ class ExcelService {
     }
 
     if (!targetRow) {
-      throw new Error(`Producto con código/SKU "${sku}" no fue encontrado en la pestaña del Centro ${worksheet.name}.`);
+      // Auto-append row to worksheet so local Excel mirrors Google Sheets real inventory
+      const currentSystemStock = Number(systemStock) || 0;
+      const currentCost = Number(unitCost) || 0;
+      const countedVal = Number(physicalStock);
+      const varianceVal = countedVal - currentSystemStock;
+      const varianceCostVal = Number((varianceVal * currentCost).toFixed(2));
+      let statusText = 'Cuadrado';
+      if (varianceVal < 0) statusText = 'Faltante';
+      if (varianceVal > 0) statusText = 'Sobrante';
+      const now = new Date();
+      const formattedDate = now.toISOString().replace('T', ' ').substring(0, 19);
+
+      targetRow = worksheet.addRow([
+        sku,
+        sku,
+        countData.description || `Item ${sku}`,
+        countData.location || 'S/U',
+        'General',
+        'B',
+        'UND',
+        currentCost,
+        currentSystemStock,
+        countedVal,
+        varianceVal,
+        varianceCostVal,
+        formattedDate,
+        counterName || 'Operador Web',
+        statusText
+      ]);
     }
 
     const currentSystemStock = Number(this.getCellValue(targetRow.getCell(map.systemStock))) || systemStock || 0;
@@ -333,6 +379,17 @@ class ExcelService {
     const now = new Date();
     const formattedDate = now.toISOString().replace('T', ' ').substring(0, 19);
 
+    const prevCountVal = this.getCellValue(targetRow.getCell(map.physicalStock));
+    const hasPreviousCount = prevCountVal !== null && prevCountVal !== undefined && prevCountVal !== '';
+    const isRecount = Boolean(countData.isModification || hasPreviousCount);
+    const eventType = isRecount ? 'RECONTEO_EDICION' : 'PRIMER_CONTEO';
+    const previousStockVal = hasPreviousCount ? Number(prevCountVal) : (countData.previousStock !== undefined && countData.previousStock !== null ? Number(countData.previousStock) : null);
+
+    // If updated location string provided (multi-locations), update Location cell
+    if (countData.locationString) {
+      targetRow.getCell(map.location).value = countData.locationString;
+    }
+
     // Update main inventory row in this Centro's sheet
     targetRow.getCell(map.physicalStock).value = countedVal;
     if (map.variance) targetRow.getCell(map.variance).value = varianceVal;
@@ -340,11 +397,11 @@ class ExcelService {
     if (map.lastCountDate) targetRow.getCell(map.lastCountDate).value = formattedDate;
     if (map.counterName) targetRow.getCell(map.counterName).value = counterName || 'Operador Web';
     if (map.status) targetRow.getCell(map.status).value = statusText;
+    targetRow.getCell(map.damagedStock || map.malEstado || 'P').value = Number(countData.damagedStock) || 0;
 
-    targetRow.commit();
-
-    // Ensure Historical Audit Sheet exists
-    const auditSheetName = 'Auditoria_Conteos';
+    // Ensure Historical Audit Sheet exists for this specific Centro
+    const cleanCentro = String(worksheet.name || targetCentro || '1300').replace(/^Centro\s*/i, '').trim();
+    const auditSheetName = `Auditoria_${cleanCentro}`;
     let auditSheet = workbook.getWorksheet(auditSheetName);
     if (!auditSheet) {
       auditSheet = workbook.addWorksheet(auditSheetName, {
@@ -360,6 +417,8 @@ class ExcelService {
         'Ubicacion',
         'Stock_Sistema',
         'Stock_Fisico_Contado',
+        'Stock_Anterior',
+        'Tipo_Evento',
         'Diferencia',
         'Costo_Diferencia',
         'Estado',
@@ -385,6 +444,8 @@ class ExcelService {
         { width: 16 },
         { width: 14 },
         { width: 18 },
+        { width: 15 },
+        { width: 18 },
         { width: 14 },
         { width: 18 },
         { width: 14 },
@@ -406,6 +467,8 @@ class ExcelService {
       location,
       currentSystemStock,
       countedVal,
+      previousStockVal !== null ? previousStockVal : '-',
+      eventType,
       varianceVal,
       varianceCostVal,
       statusText,
@@ -418,8 +481,13 @@ class ExcelService {
     return {
       success: true,
       sku,
+      description,
+      location,
       centro: worksheet.name,
       physicalStock: countedVal,
+      previousStock: previousStockVal,
+      isRecount,
+      eventType,
       systemStock: currentSystemStock,
       variance: varianceVal,
       varianceCost: varianceCostVal,
@@ -715,6 +783,385 @@ class ExcelService {
       abcStats,
       topDiscrepancies
     };
+  }
+
+  /**
+   * Generates a clean, standalone workbook with ONLY the items and audit of a single Centro
+   */
+  async generateRevisedCentroWorkbook(centro, items, auditEntries = [], adminName = 'ADMIN', finalNotes = '') {
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'CyclicStock PRO - Nibol';
+    workbook.created = new Date();
+
+    const targetCentro = String(centro || '1300').trim();
+    const worksheet = workbook.addWorksheet(`Centro ${targetCentro}`, {
+      views: [{ state: 'frozen', ySplit: 1 }]
+    });
+
+    const headers = [
+      'SKU', 'Codigo_Barras', 'Descripcion', 'Ubicacion', 'Categoria', 'Clasificacion_ABC', 'Unidad',
+      'Costo_Unitario', 'Stock_Sistema', 'Stock_Fisico_1er', 'Conteo_Final_Verificado',
+      'Diferencia_Final', 'Impacto_Financiero', 'Estado_Final', 'Tipo_Justificacion',
+      'Comentarios_Causa', 'Evidencias_Fotos', 'Verificado_Por', 'Fecha_Verificacion'
+    ];
+
+    const headerRow = worksheet.addRow(headers);
+    headerRow.height = 28;
+    headerRow.eachCell((cell) => {
+      cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF0F172A' }
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    worksheet.columns = [
+      { width: 14 },
+      { width: 16 },
+      { width: 34 },
+      { width: 14 },
+      { width: 16 },
+      { width: 16 },
+      { width: 10 },
+      { width: 16 },
+      { width: 14 },
+      { width: 16 },
+      { width: 18 },
+      { width: 16 },
+      { width: 18 },
+      { width: 16 },
+      { width: 22 },
+      { width: 30 },
+      { width: 28 },
+      { width: 18 },
+      { width: 20 }
+    ];
+
+    (items || []).forEach((it, idx) => {
+      const photosStr = Array.isArray(it.photos) ? it.photos.join(' | ') : '';
+      const row = worksheet.addRow([
+        it.sku || '',
+        it.barcode || '',
+        it.description || '',
+        it.location || 'S/U',
+        it.category || 'General',
+        it.abcClass || 'B',
+        it.unit || 'UND',
+        Number(it.unitCost) || 0,
+        Number(it.systemStock) || 0,
+        it.physicalStock !== null && it.physicalStock !== undefined ? Number(it.physicalStock) : '-',
+        it.finalVerifiedStock !== null && it.finalVerifiedStock !== undefined ? Number(it.finalVerifiedStock) : (it.physicalStock || 0),
+        Number(it.variance) || 0,
+        Number(it.varianceCost) || 0,
+        it.status || 'Cuadrado',
+        it.justificationType || 'Sin Discrepancia',
+        it.comments || '',
+        photosStr,
+        it.verifiedBy || adminName,
+        it.verifiedAt || new Date().toISOString().substring(0, 10)
+      ]);
+
+      const isEven = idx % 2 === 0;
+      row.eachCell((cell, colNum) => {
+        cell.font = { name: 'Segoe UI', size: 10 };
+        cell.alignment = { vertical: 'middle' };
+        if (isEven) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF8FAFC' }
+          };
+        }
+        if ([1, 2, 4, 6, 7, 14, 18, 19].includes(colNum)) {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        }
+        if ([8, 13].includes(colNum)) {
+          cell.numFmt = '$#,##0.00';
+          cell.alignment = { vertical: 'middle', horizontal: 'right' };
+        }
+        if ([9, 10, 11, 12].includes(colNum)) {
+          cell.numFmt = '#,##0';
+          cell.alignment = { vertical: 'middle', horizontal: 'right' };
+        }
+      });
+    });
+
+    // Auditoria Sheet específica del Centro
+    const cleanCentro = String(targetCentro || '1300').replace(/^Centro\s*/i, '').trim();
+    const auditSheet = workbook.addWorksheet(`Auditoria_${cleanCentro}`, {
+      views: [{ state: 'frozen', ySplit: 1 }]
+    });
+
+    const auditHeaders = [
+      'Marca_Temporal', 'Centro', 'SKU', 'Descripcion', 'Ubicacion',
+      'Costo_Unitario', 'Stock_Sistema', 'Stock_Fisico', 'Diferencia',
+      'Costo_Diferencia', 'Responsable', 'Observaciones'
+    ];
+
+    const aHeaderRow = auditSheet.addRow(auditHeaders);
+    aHeaderRow.height = 26;
+    aHeaderRow.eachCell((cell) => {
+      cell.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF1E293B' }
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    auditSheet.columns = [
+      { width: 20 },
+      { width: 14 },
+      { width: 16 },
+      { width: 34 },
+      { width: 16 },
+      { width: 16 },
+      { width: 14 },
+      { width: 14 },
+      { width: 14 },
+      { width: 16 },
+      { width: 20 },
+      { width: 34 }
+    ];
+
+    (auditEntries || []).forEach(entry => {
+      auditSheet.addRow([
+        entry.timestamp || new Date().toISOString().replace('T', ' ').substring(0, 19),
+        `Centro ${targetCentro}`,
+        entry.sku || '',
+        entry.description || '',
+        entry.location || '',
+        Number(entry.unitCost) || 0,
+        Number(entry.systemStock) || 0,
+        Number(entry.physicalStock) || 0,
+        Number(entry.variance) || 0,
+        Number(entry.varianceCost) || 0,
+        entry.counterName || adminName,
+        entry.notes || ''
+      ]);
+    });
+
+    // Add conclusion audit row
+    auditSheet.addRow([
+      new Date().toISOString().replace('T', ' ').substring(0, 19),
+      `Centro ${targetCentro}`,
+      'TODO_EL_CENTRO',
+      'REVISIÓN FINAL Y JUSTIFICACIONES CONCLUIDA',
+      'TODAS LAS UBICACIONES',
+      0,
+      0,
+      0,
+      0,
+      0,
+      adminName,
+      `[REVISIÓN TERMINADA] ${finalNotes || 'Revisión finalizada y guardada en Google Drive (Nibol/ciclicos)'}`
+    ]);
+
+    return workbook;
+  }
+
+  /**
+   * Generates a standalone, certified Excel workbook for a completed Barrido inventory
+   */
+  async generateBarridoCentroWorkbook(targetCentro, items = [], auditEntries = [], operatorName = 'Operador', notes = '', dateStr = '') {
+    const workbook = new ExcelJS.Workbook();
+    const cleanCentro = String(targetCentro || '1300').replace(/^Centro\s*/i, '').trim();
+    const nowFull = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const reportDate = dateStr || new Date().toISOString().substring(0, 10);
+
+    // ==========================================
+    // HOJA 1: Barrido_Centro_[CENTRO] (16 Columnas)
+    // ==========================================
+    const worksheet = workbook.addWorksheet(`Barrido_${cleanCentro}`, {
+      views: [{ state: 'frozen', ySplit: 1 }]
+    });
+
+    const headers = [
+      'SKU',
+      'Codigo_Barras',
+      'Descripcion',
+      'Ubicacion',
+      'Categoria',
+      'Clasificacion_ABC',
+      'Unidad',
+      'Costo_Unitario',
+      'Stock_Sistema',
+      'Stock_Fisico',
+      'Diferencia',
+      'Costo_Diferencia',
+      'Fecha_Ultimo_Conteo',
+      'Responsable',
+      'Estado',
+      'Mal_Estado'
+    ];
+
+    const headerRow = worksheet.addRow(headers);
+    headerRow.height = 28;
+    headerRow.eachCell((cell) => {
+      cell.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF0F766E' } // Deep Teal for Barrido
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FF115E59' } },
+        bottom: { style: 'medium', color: { argb: 'FF134E4A' } }
+      };
+    });
+
+    worksheet.columns = [
+      { width: 16 }, // A: SKU
+      { width: 18 }, // B: Codigo_Barras
+      { width: 34 }, // C: Descripcion
+      { width: 22 }, // D: Ubicacion
+      { width: 18 }, // E: Categoria
+      { width: 16 }, // F: Clasificacion_ABC
+      { width: 10 }, // G: Unidad
+      { width: 15 }, // H: Costo_Unitario
+      { width: 14 }, // I: Stock_Sistema
+      { width: 14 }, // J: Stock_Fisico
+      { width: 14 }, // K: Diferencia
+      { width: 16 }, // L: Costo_Diferencia
+      { width: 20 }, // M: Fecha_Ultimo_Conteo
+      { width: 22 }, // N: Responsable
+      { width: 18 }, // O: Estado
+      { width: 14 }  // P: Mal_Estado
+    ];
+
+    (items || []).forEach((it, idx) => {
+      const row = worksheet.addRow([
+        it.sku || '',
+        it.barcode || '',
+        it.description || '',
+        it.location || 'S/U',
+        it.category || 'General',
+        it.abcClass || 'B',
+        it.unit || 'UND',
+        Number(it.unitCost) || 0,
+        Number(it.systemStock) || 0,
+        it.physicalStock !== null && it.physicalStock !== undefined ? Number(it.physicalStock) : 0,
+        Number(it.variance) || 0,
+        Number(it.varianceCost) || 0,
+        it.lastCountDate || nowFull,
+        it.counterName || operatorName,
+        it.status || (Number(it.variance) === 0 ? 'SIN_DIFERENCIA' : 'CON_DIFERENCIA'),
+        Number(it.damagedStock) || 0
+      ]);
+
+      const isEven = idx % 2 === 0;
+      row.eachCell((cell, colNum) => {
+        cell.font = { name: 'Segoe UI', size: 10 };
+        cell.alignment = { vertical: 'middle' };
+        if (isEven) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF0FDFA' } // Subtle teal tint
+          };
+        }
+        if ([1, 2, 4, 6, 7, 13, 14, 15].includes(colNum)) {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        }
+        if ([8, 12].includes(colNum)) {
+          cell.numFmt = '$#,##0.00';
+          cell.alignment = { vertical: 'middle', horizontal: 'right' };
+        }
+        if ([9, 10, 11, 16].includes(colNum)) {
+          cell.numFmt = '#,##0';
+          cell.alignment = { vertical: 'middle', horizontal: 'right' };
+        }
+      });
+    });
+
+    // ==========================================
+    // HOJA 2: Auditoria_Barrido_[CENTRO]
+    // ==========================================
+    const auditSheet = workbook.addWorksheet(`Auditoria_${cleanCentro}`, {
+      views: [{ state: 'frozen', ySplit: 1 }]
+    });
+
+    const auditHeaders = [
+      'Marca_Temporal', 'Centro', 'SKU', 'Descripcion', 'Ubicacion',
+      'Costo_Unitario', 'Stock_Sistema', 'Stock_Fisico', 'Diferencia',
+      'Costo_Diferencia', 'Responsable', 'Observaciones'
+    ];
+
+    const aHeaderRow = auditSheet.addRow(auditHeaders);
+    aHeaderRow.height = 26;
+    aHeaderRow.eachCell((cell) => {
+      cell.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF1E293B' }
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    auditSheet.columns = [
+      { width: 20 }, { width: 14 }, { width: 16 }, { width: 34 }, { width: 16 },
+      { width: 16 }, { width: 14 }, { width: 14 }, { width: 14 }, { width: 16 },
+      { width: 20 }, { width: 34 }
+    ];
+
+    (auditEntries || []).forEach(entry => {
+      auditSheet.addRow([
+        entry.timestamp || nowFull,
+        `Centro ${cleanCentro}`,
+        entry.sku || '',
+        entry.description || '',
+        entry.location || '',
+        Number(entry.unitCost) || 0,
+        Number(entry.systemStock) || 0,
+        Number(entry.physicalStock) || 0,
+        Number(entry.variance) || 0,
+        Number(entry.varianceCost) || 0,
+        entry.counterName || operatorName,
+        entry.notes || ''
+      ]);
+    });
+
+    // Final conclusion stamp row
+    auditSheet.addRow([
+      nowFull,
+      `Centro ${cleanCentro}`,
+      'TODO_EL_BARRIDO',
+      'INVENTARIO DE BARRIDO Y SANEAMIENTO CONCLUIDO',
+      'TODAS LAS UBICACIONES',
+      0, 0, 0, 0, 0,
+      operatorName,
+      `[CIERRE BARRIDO] ${notes || 'Inventario de barrido finalizado exitosamente'}`
+    ]);
+
+    // ==========================================
+    // HOJA 3: Resumen_Cierre
+    // ==========================================
+    const summarySheet = workbook.addWorksheet('Resumen_Cierre');
+    summarySheet.columns = [{ width: 28 }, { width: 34 }];
+
+    const totalCounted = (items || []).filter(i => i.physicalStock !== null && i.physicalStock !== undefined).length;
+    const exactCount = (items || []).filter(i => Number(i.variance) === 0).length;
+    const damagedCount = (items || []).reduce((acc, i) => acc + (Number(i.damagedStock) || 0), 0);
+    const ira = totalCounted > 0 ? ((exactCount / totalCounted) * 100).toFixed(2) : '100.00';
+
+    summarySheet.addRow(['INFORME OFICIAL DE CIERRE - INVENTARIO DE BARRIDO', '']);
+    summarySheet.addRow(['Empresa:', 'NIBOL S.A.']);
+    summarySheet.addRow(['Centro Operativo:', `Centro ${cleanCentro}`]);
+    summarySheet.addRow(['Fecha y Hora de Cierre:', nowFull]);
+    summarySheet.addRow(['Responsable del Conteo:', operatorName]);
+    summarySheet.addRow(['Total Productos Barridos:', totalCounted]);
+    summarySheet.addRow(['Exactitud (IRA %):', `${ira}%`]);
+    summarySheet.addRow(['Total Unidades en Mal Estado (Col P):', damagedCount]);
+    summarySheet.addRow(['Observaciones Finales:', notes || 'Sin observaciones']);
+
+    summarySheet.getRow(1).font = { name: 'Segoe UI', size: 13, bold: true, color: { argb: 'FF0F766E' } };
+
+    return workbook;
   }
 }
 

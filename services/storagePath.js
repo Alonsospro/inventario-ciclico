@@ -33,6 +33,16 @@ function getDataFilePath(filename) {
   return path.join(ACTIVE_DATA_DIR, filename);
 }
 
+function getDataDirectory() {
+  ensureDataDirectory();
+  return ACTIVE_DATA_DIR;
+}
+
+function getDataDir() {
+  ensureDataDirectory();
+  return ACTIVE_DATA_DIR;
+}
+
 function getUploadsDir() {
   const uploadsDir = path.join(ACTIVE_DATA_DIR, 'uploads');
   if (!fs.existsSync(uploadsDir)) {
@@ -46,5 +56,7 @@ module.exports = {
   ACTIVE_DATA_DIR,
   ensureDataDirectory,
   getDataFilePath,
+  getDataDirectory,
+  getDataDir,
   getUploadsDir
 };

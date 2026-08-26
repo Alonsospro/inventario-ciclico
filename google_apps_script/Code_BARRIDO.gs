@@ -1,12 +1,11 @@
 /**
  * ============================================================================
- * CYCLICSTOCK PRO - GOOGLE APPS SCRIPT BACKEND (SINCRONIZACIÓN EN TIEMPO REAL)
+ * SCRIPT 4: BARRIDO NIBOL MULTIMARCAS
+ * CyclicStock PRO - Google Apps Script Connector (Barrido General / Stock Cero / Saneamiento)
  * ============================================================================
- * Este script convierte tu Google Spreadsheet en una API REST en la nube 24/7.
- * Permite que la aplicación web (en Vercel o local) lea y escriba datos directamente
- * en las hojas de los 13 Centros y en la hoja de Auditoría en tiempo real.
+ * Archivo en Google Drive: "BARRIDO NIBOL MULTIMARCAS" (Carpeta Nibol/ciclicos)
  * 
- * Columnas estándar esperadas en cada hoja de Centro:
+ * Columnas estándar esperadas en cada hoja de Centro (1300, 1800, etc.):
  * Col A (1): SKU
  * Col B (2): Codigo_Barras
  * Col C (3): Descripcion
@@ -25,8 +24,11 @@
  * Col P (16): Mal_Estado
  */
 
+var INVENTORY_TYPE_NAME = "BARRIDO GENERAL";
+var INVENTORY_FILE_NAME = "BARRIDO NIBOL MULTIMARCAS";
+
 // ----------------------------------------------------------------------------
-// Manejador GET: Consultas de Inventario, Hojas y Métricas
+// Manejador GET: Consultas de Barrido General, Hojas y Métricas
 // ----------------------------------------------------------------------------
 function doGet(e) {
   var action = (e && e.parameter && e.parameter.action) || 'ping';
@@ -38,7 +40,9 @@ function doGet(e) {
     if (action === 'ping') {
       return jsonResponse({
         success: true,
-        message: 'Google Apps Script Online - CyclicStock PRO',
+        message: 'Google Apps Script Online - ' + INVENTORY_TYPE_NAME,
+        inventoryType: 'barrido',
+        fileTitle: INVENTORY_FILE_NAME,
         spreadsheetName: ss.getName(),
         timestamp: new Date().toISOString()
       });
@@ -54,7 +58,7 @@ function doGet(e) {
           isAuditSheet: isAudit
         };
       });
-      return jsonResponse({ success: true, sheets: sheets });
+      return jsonResponse({ success: true, inventoryType: 'barrido', sheets: sheets });
     }
     
     if (action === 'getInventory') {
@@ -69,6 +73,7 @@ function doGet(e) {
       var inventoryData = readInventoryFromSheet(targetSheet, centro);
       return jsonResponse({
         success: true,
+        inventoryType: 'barrido',
         centro: String(centro),
         sheetName: targetSheet.getName(),
         items: inventoryData.items,
@@ -84,7 +89,7 @@ function doGet(e) {
         return jsonResponse({ success: false, error: 'Hoja no encontrada para centro: ' + centro });
       }
       var analytics = calculateAnalyticsFromSheet(targetSheet, centro);
-      return jsonResponse({ success: true, centro: String(centro), ...analytics });
+      return jsonResponse({ success: true, inventoryType: 'barrido', centro: String(centro), ...analytics });
     }
 
     if (action === 'getReferencePhoto') {
@@ -100,7 +105,7 @@ function doGet(e) {
 }
 
 // ----------------------------------------------------------------------------
-// Manejador POST: Actualización de Conteos, Reinicio de Ciclos y Auditoría
+// Manejador POST: Actualización de Conteos, Reinicio y Auditoría
 // ----------------------------------------------------------------------------
 function doPost(e) {
   try {
@@ -153,7 +158,7 @@ function doPost(e) {
 }
 
 // ----------------------------------------------------------------------------
-// Funciones Auxiliares de Lectura y Escritura
+// Funciones Auxiliares
 // ----------------------------------------------------------------------------
 
 function getReferencePhotoFromDrive(sku) {
@@ -240,7 +245,6 @@ function findSheetByCentro(ss, centro) {
   var cStr = String(centro || '1300').replace(/^Centro\s*/i, '').trim().toLowerCase();
   var sheets = ss.getSheets();
   
-  // 1. Coincidencia exacta (ej: '1300', 'Centro 1300', 'C1300') excluyendo hojas de auditoría y cierre
   for (var i = 0; i < sheets.length; i++) {
     var rawName = sheets[i].getName().trim();
     var name = rawName.toLowerCase();
@@ -250,7 +254,6 @@ function findSheetByCentro(ss, centro) {
     }
   }
   
-  // 2. Coincidencia parcial excluyendo hojas de auditoría y cierre
   for (var j = 0; j < sheets.length; j++) {
     var rawName = sheets[j].getName().trim();
     var name = rawName.toLowerCase();
@@ -260,7 +263,6 @@ function findSheetByCentro(ss, centro) {
     }
   }
   
-  // 3. Fallback a la primera hoja no de auditoría
   for (var k = 0; k < sheets.length; k++) {
     var sName = sheets[k].getName().toLowerCase();
     if (sName.indexOf('auditor') === -1 && sName.indexOf('cierre') === -1) {
@@ -286,7 +288,7 @@ function readInventoryFromSheet(sheet, centro) {
   for (var i = 0; i < values.length; i++) {
     var row = values[i];
     var sku = String(row[0] || '').trim();
-    if (!sku) continue; // Fila vacía
+    if (!sku) continue;
     
     var barcode = String(row[1] || '').trim();
     var description = String(row[2] || '').trim();
@@ -390,7 +392,6 @@ function updateItemCountInSheet(ss, sheet, data) {
   var unitCost = parseFloat(rowData[7]) || 0;
   var systemStock = parseFloat(rowData[8]) || 0;
   
-  // Si se envió una nueva cadena consolidada de ubicación, actualizar Columna D (4)
   if (data.locationString) {
     sheet.getRange(targetRow, 4).setValue(data.locationString);
     location = String(data.locationString);
@@ -408,7 +409,6 @@ function updateItemCountInSheet(ss, sheet, data) {
   var counterName = data.counterName || data.operatorName || 'Auxiliar';
   var status = (variance === 0) ? 'SIN_DIFERENCIA' : 'CON_DIFERENCIA';
   
-  // Actualizar celdas en la hoja del Centro (Cols J, K, L, M, N, O, P -> 10, 11, 12, 13, 14, 15, 16)
   sheet.getRange(targetRow, 10).setValue(physicalStock);
   sheet.getRange(targetRow, 11).setValue(variance);
   sheet.getRange(targetRow, 12).setValue(varianceCost);
@@ -422,7 +422,6 @@ function updateItemCountInSheet(ss, sheet, data) {
   var damagedNote = (damagedStock > 0) ? ('[Mal Estado: ' + damagedStock + ']') : '';
   var fullAuditNotes = (damagedNote + ' ' + (data.notes || '')).trim();
 
-  // Registrar en Hoja de Auditoría
   logAuditEntry(ss, {
     timestamp: timestampStr,
     centro: sheet.getName(),
@@ -440,7 +439,7 @@ function updateItemCountInSheet(ss, sheet, data) {
   
   return {
     success: true,
-    message: 'Conteo guardado exitosamente en Google Sheets',
+    message: 'Conteo guardado exitosamente en Google Sheets (' + INVENTORY_TYPE_NAME + ')',
     updatedItem: {
       sku: data.sku,
       description: description,
@@ -508,12 +507,12 @@ function resetCycleInSheet(sheet, filter) {
     
     if (matchLoc && matchAbc) {
       var r = i + 2;
-      sheet.getRange(r, 10).setValue(''); // Stock Físico
-      sheet.getRange(r, 11).setValue(''); // Diferencia
-      sheet.getRange(r, 12).setValue(''); // Costo Diferencia
-      sheet.getRange(r, 13).setValue(''); // Fecha
-      sheet.getRange(r, 14).setValue(''); // Responsable
-      sheet.getRange(r, 15).setValue('PENDIENTE'); // Estado
+      sheet.getRange(r, 10).setValue('');
+      sheet.getRange(r, 11).setValue('');
+      sheet.getRange(r, 12).setValue('');
+      sheet.getRange(r, 13).setValue('');
+      sheet.getRange(r, 14).setValue('');
+      sheet.getRange(r, 15).setValue('PENDIENTE');
       resetCount++;
     }
   }
@@ -588,7 +587,6 @@ function calculateAnalyticsFromSheet(sheet, centro) {
   var iraPercent = countedCount > 0 ? ((withoutVarianceCount / countedCount) * 100).toFixed(1) : '100.0';
   var progressPercent = totalItems > 0 ? ((countedCount / totalItems) * 100).toFixed(1) : '0.0';
   
-  // Ordenar variaciones por impacto monetario absoluto
   variancesList.sort(function(a, b) {
     return Math.abs(b.varianceCost) - Math.abs(a.varianceCost);
   });
@@ -629,26 +627,16 @@ function getOrCreateDriveFolder(pathStr) {
 function exportConcludedCycleToDrive(ss, data) {
   var centro = String(data.centro || '1300');
   var dateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  var timeStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'HHmmss');
-  var fileName = dateStr + '_Ciclico_Centro_' + centro;
+  var fileName = dateStr + '_Barrido_Centro_' + centro;
   
-  // 1. Localizar u obtener la carpeta 'Nibol/ciclicos' en Google Drive
   var targetFolder = getOrCreateDriveFolder('Nibol/ciclicos');
-  
-  // 2. Obtener la hoja del Centro de la planilla principal
   var sheet = findSheetByCentro(ss, centro);
-  if (!sheet) {
-    throw new Error('Hoja no encontrada para el centro: ' + centro);
-  }
+  if (!sheet) throw new Error('Hoja no encontrada para el centro: ' + centro);
   
-  // 3. Crear una nueva planilla de cálculo en Google Drive para este ciclo concluido
   var newSs = SpreadsheetApp.create(fileName);
   var newFile = DriveApp.getFileById(newSs.getId());
-  
-  // Mover el nuevo archivo a la carpeta Nibol/ciclicos
   newFile.moveTo(targetFolder);
   
-  // 4. Copiar los datos del inventario a la nueva planilla
   var targetSheet = newSs.getActiveSheet();
   targetSheet.setName('Centro ' + centro);
   
@@ -659,26 +647,23 @@ function exportConcludedCycleToDrive(ss, data) {
     var destRange = targetSheet.getRange(1, 1, sourceValues.length, sourceValues[0].length);
     destRange.setValues(sourceValues);
     
-    // Estilos para encabezados
     var header = targetSheet.getRange(1, 1, 1, sourceValues[0].length);
     header.setFontWeight('bold');
     header.setBackground('#0f172a');
     header.setFontColor('#ffffff');
     targetSheet.setFrozenRows(1);
     
-    // Ajuste automático de columnas
     for (var c = 1; c <= sourceValues[0].length; c++) {
       targetSheet.autoResizeColumn(c);
     }
   }
   
-  // 5. Agregar bloque de Cierre, Métricas y Firma Digital
   var lastRow = targetSheet.getLastRow() + 2;
   var opName = data.operatorName || 'Operador';
   var opRole = data.operatorRole || data.operatorCargo || 'AUXILIAR';
   var nowFull = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
   
-  targetSheet.getRange(lastRow, 1).setValue('FIRMA DIGITAL DE CONFORMIDAD - INVENTARIO CÍCLICO CONCLUIDO').setFontWeight('bold').setFontSize(11);
+  targetSheet.getRange(lastRow, 1).setValue('FIRMA DIGITAL DE CONFORMIDAD - ' + INVENTORY_TYPE_NAME + ' CONCLUIDO').setFontWeight('bold').setFontSize(11);
   targetSheet.getRange(lastRow + 1, 1).setValue('Firmado por: ' + opName + ' (' + opRole + ') | Fecha: ' + nowFull + ' | Estado: CONCLUIDO Y AUDITADO').setFontStyle('italic').setFontSize(9);
   
   if (data.notes) {
@@ -695,10 +680,7 @@ function exportConcludedCycleToDrive(ss, data) {
     }
   }
 
-  // 6. Hoja 2: Auditoría Conteos (Exclusiva de este Centro)
-  exportCentroAuditSheet(ss, newSs, centro, nowFull, opName, '[CIERRE CONCLUIDO] ' + (data.notes || 'Conteo físico finalizado y firmado'));
-  
-  // 7. Registrar en la bitácora de Cierres de Ciclos de la planilla maestra
+  exportCentroAuditSheet(ss, newSs, centro, nowFull, opName, '[CIERRE CONCLUIDO] ' + (data.notes || 'Barrido finalizado y firmado'));
   recordCycleConclusion(ss, data);
   
   return {
@@ -716,11 +698,10 @@ function exportJustifiedCycleToDrive(ss, data) {
   var centro = String(data.centro || '1300');
   var dateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
   var nowFull = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
-  var fileName = data.nuevoNombre || (dateStr + '_Ciclico_Centro_' + centro + '_Revisado');
+  var fileName = data.nuevoNombre || (dateStr + '_Barrido_Centro_' + centro + '_Revisado');
   var obsGenerales = data.observacionesGenerales || data.finalNotes || '';
   var correcciones = data.correcciones;
   
-  // 1. Localizar u obtener la carpeta en Google Drive (o Nibol/ciclicos por defecto)
   var targetFolder;
   if (data.folderId && data.folderId !== 'ID_DE_TU_CARPETA') {
     try {
@@ -732,12 +713,10 @@ function exportJustifiedCycleToDrive(ss, data) {
     targetFolder = getOrCreateDriveFolder('Nibol/ciclicos');
   }
   
-  // 2. Crear nueva planilla independiente para solo este Centro
   var newSs = SpreadsheetApp.create(fileName);
   var newFile = DriveApp.getFileById(newSs.getId());
   newFile.moveTo(targetFolder);
   
-  // 3. Hoja 1: Información Completa y Verificada del Centro
   var sheet = newSs.getActiveSheet();
   sheet.setName('Centro ' + centro);
   
@@ -779,21 +758,18 @@ function exportJustifiedCycleToDrive(ss, data) {
   
   sheet.getRange(1, 1, rows.length, headers.length).setValues(rows);
   
-  // Estilo encabezados Hoja 1
   var headerRange = sheet.getRange(1, 1, 1, headers.length);
   headerRange.setFontWeight('bold').setBackground('#0f172a').setFontColor('#ffffff');
   sheet.setFrozenRows(1);
   
-  // Formatos numéricos
   for (var r = 2; r <= rows.length; r++) {
-    sheet.getRange(r, 8).setNumberFormat('$#,##0.00'); // Costo Unitario
-    sheet.getRange(r, 9).setNumberFormat('#,##0');     // Stock Sistema
-    sheet.getRange(r, 11).setNumberFormat('#,##0');    // Conteo Final
-    sheet.getRange(r, 12).setNumberFormat('#,##0');    // Diferencia Final
-    sheet.getRange(r, 13).setNumberFormat('$#,##0.00'); // Impacto Financiero
+    sheet.getRange(r, 8).setNumberFormat('$#,##0.00');
+    sheet.getRange(r, 9).setNumberFormat('#,##0');
+    sheet.getRange(r, 11).setNumberFormat('#,##0');
+    sheet.getRange(r, 12).setNumberFormat('#,##0');
+    sheet.getRange(r, 13).setNumberFormat('$#,##0.00');
   }
   
-  // 4. Aplicar correcciones específicas si se enviaron celdas directas [{celda: "D5", valor: "..."}]
   if (correcciones && Array.isArray(correcciones)) {
     correcciones.forEach(function(item) {
       if (item && item.celda && item.valor !== undefined) {
@@ -810,7 +786,6 @@ function exportJustifiedCycleToDrive(ss, data) {
     sheet.autoResizeColumn(c);
   }
   
-  // 5. Bloque de Certificación Administrativa al pie del inventario
   var lastRow = sheet.getLastRow() + 2;
   sheet.getRange(lastRow, 1).setValue('CERTIFICACIÓN DE VERIFICACIÓN FINAL Y JUSTIFICACIÓN DE DISCREPANCIAS').setFontWeight('bold').setFontSize(11);
   sheet.getRange(lastRow + 1, 1).setValue('Aprobado y auditado por: ' + (data.adminName || 'Administrador') + ' | Fecha de Cierre: ' + nowFull + ' | Carpeta Google Drive: Nibol/ciclicos').setFontStyle('italic').setFontSize(9);
@@ -819,13 +794,9 @@ function exportJustifiedCycleToDrive(ss, data) {
     sheet.getRange(lastRow + 2, 1).setValue('Observaciones Administrativas: ' + obsGenerales).setFontSize(9);
   }
   
-  // 6. Hoja 2: Auditoría Conteos (Exclusiva con los movimientos de este Centro)
   exportCentroAuditSheet(ss, newSs, centro, nowFull, data.adminName || 'ADMIN', '[REVISIÓN OFICIAL TERMINADA] ' + (obsGenerales || 'Revisión finalizada y aprobada'));
-
-  // Aplicar y guardar cambios pendientes
   SpreadsheetApp.flush();
 
-  // 7. Registrar en hoja maestra de Cierres de Ciclos
   recordCycleConclusion(ss, {
     centro: centro,
     operatorName: data.adminName || 'ADMIN',
@@ -862,7 +833,6 @@ function exportCentroAuditSheet(masterSs, targetSs, centro, nowFull, adminOrCoun
   
   var auditRows = [auditHeaders];
   
-  // Buscar en la hoja de auditoría específica de este centro o en variantes
   var specificAudit = masterSs.getSheetByName(auditSheetName) || 
                       masterSs.getSheetByName('Auditoría ' + cStr) || 
                       masterSs.getSheetByName('Auditoria_' + cStr) || 
@@ -879,12 +849,11 @@ function exportCentroAuditSheet(masterSs, targetSs, centro, nowFull, adminOrCoun
     }
   }
   
-  // Agregar evento de cierre oficial
   auditRows.push([
     nowFull,
     cStr,
     'TODO_EL_CENTRO',
-    'CONCLUSIÓN Y AUDITORÍA DE INVENTARIO CÍCLICO',
+    'CONCLUSIÓN Y AUDITORÍA DE ' + INVENTORY_TYPE_NAME,
     'TODAS LAS UBICACIONES',
     0,
     0,
@@ -897,7 +866,6 @@ function exportCentroAuditSheet(masterSs, targetSs, centro, nowFull, adminOrCoun
   
   auditSheet.getRange(1, 1, auditRows.length, auditHeaders.length).setValues(auditRows);
   
-  // Formato encabezados Hoja Auditoría
   var aHeader = auditSheet.getRange(1, 1, 1, auditHeaders.length);
   aHeader.setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
   auditSheet.setFrozenRows(1);
@@ -934,12 +902,8 @@ function jsonResponse(data) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-/**
- * Función de prueba para autorizar permisos de Google Drive y Google Sheets con un clic
- */
 function probarPermisosDrive() {
   var folder = getOrCreateDriveFolder('Nibol/ciclicos');
   Logger.log('Carpeta Nibol/ciclicos lista en Drive: ' + folder.getUrl());
   return 'Permisos concedidos exitosamente. Carpeta: ' + folder.getUrl();
 }
-

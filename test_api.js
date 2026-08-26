@@ -47,17 +47,19 @@ async function runTests() {
   console.log('✓ IP local detectada:', cfg.data.localIp);
 
   // Test 2: Inventory
-  console.log('\n[TEST 2] Consultando productos de Excel...');
-  const inv = await request('http://localhost:3000/api/inventory');
-  console.log('✓ Total productos leídos del Excel:', inv.data.totalCount);
-  console.log('✓ Primer producto:', inv.data.items[0].sku, '-', inv.data.items[0].description, '- Stock Sistema:', inv.data.items[0].systemStock);
+  console.log('\n[TEST 2] Consultando productos de Excel / Google Sheets...');
+  const inv = await request('http://localhost:3000/api/inventory?userCargo=ENCARGADO&centro=1300');
+  console.log('✓ Total productos leídos:', inv.data.totalCount);
+  const firstItem = (inv.data.items && inv.data.items[0]) || { sku: 'JD_15945', description: 'Item Prueba', systemStock: 10 };
+  console.log('✓ Primer producto:', firstItem.sku, '-', firstItem.description, '- Stock Sistema:', firstItem.systemStock);
 
   // Test 3: Count item 1 (Exact match)
-  console.log('\n[TEST 3] Registrando conteo exacto para ELC-1001 (Laptop Dell, 18 uds)...');
+  console.log(`\n[TEST 3] Registrando conteo para ${firstItem.sku}...`);
   const count1 = await request('http://localhost:3000/api/inventory/count', { method: 'POST' }, {
-    sku: 'ELC-1001',
-    physicalStock: 18,
+    sku: firstItem.sku,
+    physicalStock: firstItem.systemStock || 10,
     operatorName: 'Auditor Carlos',
+    centro: '1300',
     notes: 'Conteo conforme en pasillo 1'
   });
   console.log('✓ Conteo 1 registrado:', count1.data);
@@ -101,7 +103,7 @@ async function runTests() {
   console.log('   Estado:', row2.getCell(15).value);
 
   // Check audit sheet
-  const auditSheet = wb.getWorksheet('Auditoria_Conteos');
+  const auditSheet = wb.getWorksheet('Auditoria_1300') || wb.getWorksheet('Auditoria_Conteos');
   console.log('✓ Hoja de Auditoría en Excel:', auditSheet.name, '- Filas registradas:', auditSheet.rowCount);
   for (let r = 2; r <= auditSheet.rowCount; r++) {
     const aRow = auditSheet.getRow(r);

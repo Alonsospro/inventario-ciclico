@@ -19,6 +19,9 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- HTML5 QR / Barcode Scanner Engine -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
   <!-- App Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -113,6 +116,17 @@
         <span>Métricas & Exactitud (IRA)</span>
       </button>
 
+      <button class="nav-tab admin-only" data-tab="history-tab" id="navHistoryBtn">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>Historial de Cíclicos</span>
+      </button>
+
+      <button class="nav-tab admin-only" data-tab="justifications-tab" id="navJustificationsBtn">
+        <i class="fa-solid fa-file-shield"></i>
+        <span>Verificación & Justificaciones</span>
+        <span class="badge badge-discrepancies" id="justificationsPendingBadge">0</span>
+      </button>
+
       <button class="nav-tab admin-only" data-tab="users-tab" id="navUsersBtn">
         <i class="fa-solid fa-users"></i>
         <span id="navUsersLabel">Equipo & Personal</span>
@@ -171,158 +185,610 @@
       </section>
 
       <!-- ========================================================================= -->
-      <!-- TAB 1 (PRINCIPAL): PLAN DE CONTEO CÍCLICO RÁPIDO & CONDENSADO            -->
+      <!-- ========================================================================= -->
+      <!-- TAB 1 (PRINCIPAL): PLAN DE CONTROL DE INVENTARIOS POR TAREAS              -->
       <!-- ========================================================================= -->
       <section class="tab-panel active" id="inventory-tab">
         <div class="inventory-layout">
 
-          <!-- Rapid Counting Progress Header Strip -->
-          <div class="counting-progress-strip">
-            <div class="progress-info-group">
-              <div class="progress-title">
-                <i class="fa-solid fa-list-check text-primary"></i>
-                <h2>Hoja de Conteo en Vivo &bull; <span class="text-primary font-mono"
-                    id="conteoCurrentCentroTitle">Centro 1300</span></h2>
-              </div>
-
-              <!-- Cycle Assignment Status Indicator -->
-              <div class="assignment-status-badge" id="assignmentStatusBadge">
-                <i class="fa-solid fa-user-tag text-primary"></i>
-                <span>Asignado a: <strong id="assignedAuxiliarNameText">Sin Asignar</strong></span>
-                <span class="badge-cycle-status" id="cycleStatusBadgeText">Pendiente</span>
-              </div>
-
-              <div class="progress-stats-pills">
-                <span class="stat-pill"><i class="fa-solid fa-boxes-stacked text-primary"></i> Total: <strong
-                    id="invCountTotal">0</strong></span>
-                <span class="stat-pill pill-success"><i class="fa-solid fa-circle-check text-green"></i> Contados:
-                  <strong id="invCountDone">0</strong></span>
-                <span class="stat-pill pill-warning"><i class="fa-solid fa-clock text-amber"></i> Pendientes: <strong
-                    id="invCountPending">0</strong></span>
-                <span class="stat-pill"><i class="fa-solid fa-chart-line"></i> Avance: <strong
-                    id="invProgressPercent">0%</strong></span>
-              </div>
-            </div>
-
-            <div class="progress-bar-container">
-              <div class="progress-bar-fill" id="invProgressBarFill" style="width: 0%;"></div>
-            </div>
-
-            <!-- Cycle Action Strip (Assign & Conclude) -->
-            <div class="cycle-action-strip">
-              <div class="cycle-actions-left">
-                <button class="btn btn-outline btn-sm admin-only" id="btnOpenAssignModal"
-                  title="Asignar este ciclo a un auxiliar del centro">
-                  <i class="fa-solid fa-user-check"></i>
-                  <span>Asignar a Auxiliar</span>
-                </button>
-              </div>
-              <div class="cycle-actions-right">
-                <button class="btn btn-success btn-sm btn-conclude-cycle" id="btnOpenSignatureModal"
-                  title="Firmar y concluir ciclo en Excel">
-                  <i class="fa-solid fa-signature"></i>
-                  <span>CONCLUIR Y FIRMAR CÍCLICO</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Unassigned Locked State View (When Auxiliar has no cycle assigned) -->
-          <div class="unassigned-cycle-card hidden" id="unassignedCycleView">
-            <div class="lock-icon-box">
-              <i class="fa-solid fa-lock"></i>
-            </div>
-            <h2>Inventario Cíclico no Asignado</h2>
-            <p id="unassignedReasonText">
-              No tienes ninguna orden de conteo cíclico asignada en este momento para el Centro. Solicita a tu Encargado
-              de Centro que asigne la tarea de conteo para habilitar tu lista.
-            </p>
-            <div class="unassigned-meta">
-              <span><i class="fa-solid fa-warehouse text-primary"></i> Centro: <strong
-                  id="unassignedCentroCode">1300</strong></span>
-              <span><i class="fa-solid fa-user text-primary"></i> Operador: <strong
-                  id="unassignedUserName">Usuario</strong></span>
-            </div>
-          </div>
-
-          <!-- Inventory Content Wrapper (Hidden when unassigned) -->
-          <div id="assignedInventoryContent">
-
-            <!-- Filters & Action Toolbar -->
-            <div class="toolbar-card">
-              <div class="toolbar-top">
-                <div class="search-box">
-                  <i class="fa-solid fa-magnifying-glass"></i>
-                  <input type="text" id="invSearchInput"
-                    placeholder="Buscar SKU, descripción o pasillo (Filtrado en vivo)...">
+          <!-- VISTA 1: DASHBOARD DE BLOQUES DE TAREA (4 TIPOS DE CONTROL) -->
+          <div class="tasks-dashboard-view" id="inventoryTasksDashboardView">
+            <div class="card tasks-header-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <i class="fa-solid fa-list-check text-primary"></i>
+                  <div>
+                    <h2>Plan de Control de Inventarios &bull; <span class="text-primary font-mono" id="tasksCentroTitle">Centro 1300</span></h2>
+                    <p class="section-desc">Gestiona tus inventarios como tareas separadas. Cada control está conectado a su propia hoja de cálculo independiente.</p>
+                  </div>
                 </div>
-
-                <div class="filter-controls">
-                  <select id="invLocationFilter" class="form-select" title="Filtrar por Pasillo / Ubicación">
-                    <option value="">Todos los Pasillos / Ubicaciones</option>
-                  </select>
-
-                  <select id="invAbcFilter" class="form-select" title="Filtrar por Clasificación ABC">
-                    <option value="">Todas las Clases ABC</option>
-                    <option value="A">Clase A (Críticos)</option>
-                    <option value="B">Clase B (Medios)</option>
-                    <option value="C">Clase C (Bajos)</option>
-                  </select>
-
-                  <select id="invStatusFilter" class="form-select" title="Filtrar por Estado de Conteo">
-                    <option value="">Todos los Productos</option>
-                    <option value="Pendiente">Solo Pendientes por Contar</option>
-                    <option value="Contado">Solo Contados (Check Verde)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="toolbar-bottom">
-                <div class="toolbar-stats">
-                  <span>Mostrando: <strong id="invCountShown">0</strong> productos</span>
-                  &bull;
-                  <span class="keyboard-hint"><span class="kbd">Tab</span> para siguiente &bull; <span
-                      class="kbd">Enter</span> para confirmar</span>
-                </div>
-
-                <div class="toolbar-actions">
-                  <button class="btn btn-secondary btn-sm admin-only" id="btnResetCycleModal">
-                    <i class="fa-solid fa-rotate"></i>
-                    <span>Reiniciar Ciclo</span>
-                  </button>
-                  <button class="btn btn-primary btn-sm" id="btnRefreshInventory" title="Recargar archivo Excel">
+                <div class="tasks-actions-header">
+                  <div class="history-centro-badge">
+                    <i class="fa-solid fa-warehouse text-primary"></i>
+                    <span>Centro <strong id="tasksCentroCodeText">1300</strong></span>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" id="btnRefreshTasksDashboard" title="Recargar tareas">
                     <i class="fa-solid fa-arrows-rotate"></i>
-                    <span>Recargar</span>
-                  </button>
-                  <button class="btn btn-success btn-sm admin-only" id="btnDownloadCurrentExcel">
-                    <i class="fa-solid fa-file-arrow-down"></i>
-                    <span>Descargar Excel</span>
+                    <span>Actualizar</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <!-- Rapid Condensed Blind Counting Table -->
-            <div class="table-card">
-              <div class="table-responsive">
-                <table class="data-table condensed-counting-table" id="mainInventoryTable">
-                  <thead>
-                    <tr>
-                      <th style="width: 160px;">SKU / Código</th>
-                      <th>Descripción</th>
-                      <th style="width: 150px;">Ubicación</th>
-                      <th style="width: 100px;" class="text-center">ABC</th>
-                      <th style="width: 170px;" class="text-center">Conteo Físico</th>
-                      <th style="width: 150px;" class="text-center">Confirmar</th>
-                    </tr>
-                  </thead>
-                  <tbody id="mainInventoryTbody">
-                    <!-- Rows dynamically populated via JS -->
-                  </tbody>
-                </table>
+            <!-- 4 Task Blocks Grid -->
+            <div class="inventory-tasks-grid" id="inventoryTasksGrid">
+              <!-- Dynamically populated via JS with 4 modern task cards: Cíclico, Semanal, Mensual, Barrido -->
+            </div>
+          </div>
+
+          <!-- VISTA 2: HOJA DE CONTEO EN VIVO PARA LA TAREA SELECCIONADA (OCULTA POR DEFECTO) -->
+          <div class="counting-sheet-view hidden" id="inventoryCountingSheetView">
+
+            <!-- Active Task Breadcrumb Navigation Bar -->
+            <div class="active-task-breadcrumb-bar">
+              <button class="btn btn-outline btn-sm" id="btnBackToTasksDashboard" title="Volver al panel de tareas">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Volver a Tareas de Control</span>
+              </button>
+              <div class="active-task-meta-tag">
+                <span class="badge badge-task-type" id="activeTaskTypeBadge"><i class="fa-solid fa-boxes-stacked"></i> INVENTARIO CÍCLICO</span>
+                <span class="file-sheet-name"><i class="fa-brands fa-google-drive text-green"></i> Archivo: <strong id="activeTaskFileTitle">CICLICOS NIBOL MULTIMARCAS</strong></span>
               </div>
             </div>
-          </div> <!-- Close assignedInventoryContent -->
+
+            <!-- Rapid Counting Progress Header Strip -->
+            <div class="counting-progress-strip">
+              <div class="progress-info-group">
+                <div class="progress-title">
+                  <i class="fa-solid fa-list-check text-primary"></i>
+                  <h2>Hoja de Conteo &bull; <span class="text-primary font-mono" id="conteoCurrentCentroTitle">Centro 1300</span></h2>
+                </div>
+
+                <!-- Cycle Assignment Status Indicator -->
+                <div class="assignment-status-badge" id="assignmentStatusBadge">
+                  <i class="fa-solid fa-user-tag text-primary"></i>
+                  <span>Asignado a: <strong id="assignedAuxiliarNameText">Sin Asignar</strong></span>
+                  <span class="badge-cycle-status" id="cycleStatusBadgeText">Pendiente</span>
+                </div>
+
+                <div class="progress-stats-pills">
+                  <span class="stat-pill"><i class="fa-solid fa-boxes-stacked text-primary"></i> Total: <strong id="invCountTotal">0</strong></span>
+                  <span class="stat-pill pill-success"><i class="fa-solid fa-circle-check text-green"></i> Contados: <strong id="invCountDone">0</strong></span>
+                  <span class="stat-pill pill-warning"><i class="fa-solid fa-clock text-amber"></i> Pendientes: <strong id="invCountPending">0</strong></span>
+                  <span class="stat-pill"><i class="fa-solid fa-chart-line"></i> Avance: <strong id="invProgressPercent">0%</strong></span>
+                </div>
+              </div>
+
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="invProgressBarFill" style="width: 0%;"></div>
+              </div>
+
+              <!-- Cycle Action Strip (Assign & Conclude) -->
+              <div class="cycle-action-strip">
+                <div class="cycle-actions-left">
+                  <button class="btn btn-outline btn-sm admin-only" id="btnOpenAssignModal" title="Asignar esta tarea a un auxiliar del centro">
+                    <i class="fa-solid fa-user-check"></i>
+                    <span>Asignar a Auxiliar</span>
+                  </button>
+                </div>
+                <div class="cycle-actions-right">
+                  <button class="btn btn-success btn-sm btn-conclude-cycle" id="btnOpenSignatureModal" title="Firmar y concluir inventario">
+                    <i class="fa-solid fa-signature"></i>
+                    <span id="btnConcludeCycleText">CONCLUIR Y FIRMAR</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Unassigned Locked State View (When Auxiliar has no cycle assigned) -->
+            <div class="unassigned-cycle-card hidden" id="unassignedCycleView">
+              <div class="lock-icon-box">
+                <i class="fa-solid fa-lock"></i>
+              </div>
+              <h2 id="unassignedTitleText">Inventario no Asignado</h2>
+              <p id="unassignedReasonText">
+                No tienes ninguna orden de conteo asignada en este momento para el Centro. Solicita a tu Encargado
+                de Centro que asigne la tarea de conteo para habilitar tu lista.
+              </p>
+              <div class="unassigned-meta">
+                <span><i class="fa-solid fa-warehouse text-primary"></i> Centro: <strong id="unassignedCentroCode">1300</strong></span>
+                <span><i class="fa-solid fa-user text-primary"></i> Operador: <strong id="unassignedUserName">Usuario</strong></span>
+              </div>
+            </div>
+
+            <!-- Inventory Content Wrapper (Hidden when unassigned) -->
+            <div id="assignedInventoryContent">
+
+              <!-- Filters & Action Toolbar -->
+              <div class="toolbar-card">
+                <div class="toolbar-top">
+                  <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="invSearchInput" placeholder="Buscar SKU, descripción o pasillo (Filtrado en vivo)...">
+                  </div>
+
+                  <div class="filter-controls">
+                    <select id="invLocationFilter" class="form-select" title="Filtrar por Pasillo / Ubicación">
+                      <option value="">Todos los Pasillos / Ubicaciones</option>
+                    </select>
+
+                    <select id="invAbcFilter" class="form-select" title="Filtrar por Clasificación ABC">
+                      <option value="">Todas las Clases ABC</option>
+                      <option value="A">Clase A (Críticos)</option>
+                      <option value="B">Clase B (Medios)</option>
+                      <option value="C">Clase C (Bajos)</option>
+                    </select>
+
+                    <select id="invStatusFilter" class="form-select" title="Filtrar por Estado de Conteo">
+                      <option value="">Todos los Productos</option>
+                      <option value="Pendiente">Solo Pendientes por Contar</option>
+                      <option value="Contado">Solo Contados (Check Verde)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="toolbar-bottom">
+                  <div class="toolbar-stats">
+                    <span>Mostrando: <strong id="invCountShown">0</strong> productos</span>
+                    &bull;
+                    <span class="keyboard-hint"><span class="kbd">Tab</span> para siguiente &bull; <span class="kbd">Enter</span> para confirmar</span>
+                  </div>
+
+                  <div class="toolbar-actions">
+                    <button class="btn btn-secondary btn-sm admin-only" id="btnResetCycleModal">
+                      <i class="fa-solid fa-rotate"></i>
+                      <span>Reiniciar Conteo</span>
+                    </button>
+                    <button class="btn btn-primary btn-sm" id="btnRefreshInventory" title="Recargar hoja">
+                      <i class="fa-solid fa-arrows-rotate"></i>
+                      <span>Recargar</span>
+                    </button>
+                    <button class="btn btn-success btn-sm admin-only" id="btnDownloadCurrentExcel">
+                      <i class="fa-solid fa-file-arrow-down"></i>
+                      <span>Descargar Excel</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rapid Condensed Blind Counting Table -->
+              <div class="table-card">
+                <div class="table-responsive">
+                  <table class="data-table condensed-counting-table" id="mainInventoryTable">
+                    <thead>
+                      <tr>
+                        <th style="width: 140px;">SKU / Código</th>
+                        <th>Descripción</th>
+                        <th style="width: 180px;">Ubicación (Clic para agregar)</th>
+                        <th style="width: 70px;" class="text-center">ABC</th>
+                        <th style="width: 130px;" class="text-center">Conteo Físico</th>
+                        <th style="width: 120px;" class="text-center">Mal Estado</th>
+                        <th style="width: 90px;" class="text-center">Evidencia</th>
+                        <th style="width: 120px;" class="text-center">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mainInventoryTbody">
+                      <!-- Rows dynamically populated via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div> <!-- Close assignedInventoryContent -->
+
+          </div> <!-- Close inventoryCountingSheetView -->
+
+          <!-- ========================================================================= -->
+          <!-- VISTA 3: ENTORNO DEDICADO DE CONTEO BARRIDO GENERAL & SANEAMIENTO         -->
+          <!-- ========================================================================= -->
+          <div class="barrido-environment-view hidden" id="barridoCountingView">
+
+            <!-- Barrido Sticky Navigation Topbar -->
+            <div class="barrido-topbar">
+              <div class="barrido-topbar-left">
+                <button type="button" class="btn btn-outline btn-sm btn-back-barrido" id="btnBackFromBarrido" title="Salir del entorno de barrido">
+                  <i class="fa-solid fa-arrow-left"></i>
+                  <span>Volver a Tareas</span>
+                </button>
+                <div class="barrido-badge-brand">
+                  <span class="barrido-glowing-dot"></span>
+                  <i class="fa-solid fa-broom text-amber"></i>
+                  <strong>MODO BARRIDO & SANEAMIENTO</strong>
+                </div>
+              </div>
+
+              <div class="barrido-topbar-meta">
+                <div class="barrido-meta-pill">
+                  <i class="fa-solid fa-warehouse text-primary"></i>
+                  <span>Centro <strong id="barridoActiveCentroText">1300</strong></span>
+                </div>
+                <div class="barrido-meta-pill">
+                  <i class="fa-regular fa-calendar-check text-green"></i>
+                  <span>Inicio: <strong id="barridoSessionStartText">--/--/----</strong></span>
+                </div>
+                <div class="barrido-meta-pill">
+                  <i class="fa-solid fa-boxes-packing text-amber"></i>
+                  <span>Barridos en Sesión: <strong id="barridoSessionCountBadge">0</strong></span>
+                </div>
+              </div>
+
+              <div class="barrido-topbar-right">
+                <button type="button" class="btn btn-success btn-sm btn-finish-barrido" id="btnFinishBarridoSession" title="Finalizar inventario de barrido y generar reporte Excel">
+                  <i class="fa-solid fa-flag-checkered"></i>
+                  <span>Finalizar Barrido</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-icon-only btn-sm" id="btnToggleBarridoFullscreen" title="Pantalla Completa">
+                  <i class="fa-solid fa-expand"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- SUB-VISTA A: PANTALLA PRINCIPAL DE INGRESO DE CÓDIGO Y ESCÁNER DE CÁMARA -->
+            <div class="barrido-screen-wrapper" id="barridoScreenCodeEntry">
+              <div class="barrido-scanner-layout">
+
+                <!-- Left Column: Code Input & Manual Entry -->
+                <div class="barrido-input-card card">
+                  <div class="barrido-card-hero">
+                    <div class="barrido-hero-icon">
+                      <i class="fa-solid fa-barcode"></i>
+                    </div>
+                    <div class="barrido-hero-text">
+                      <h2>Ingreso de Producto Barrido</h2>
+                      <p>Ingresa el código SKU o código de barras del producto hallado en pasillo o usa la cámara para escanear.</p>
+                    </div>
+                  </div>
+
+                  <form id="barridoCodeForm" class="barrido-code-form" onsubmit="return false;">
+                    <div class="barrido-input-group">
+                      <div class="barrido-input-wrapper">
+                        <i class="fa-solid fa-qrcode input-prefix-icon"></i>
+                        <input type="text" id="barridoCodeInput" class="barrido-main-input" placeholder="Ingresa o escanea código SKU / Barras..." autocomplete="off" autofocus>
+                        <button type="button" class="btn-input-clear hidden" id="btnBarridoClearCode" title="Limpiar código">
+                          <i class="fa-solid fa-xmark"></i>
+                        </button>
+                      </div>
+                      <button type="submit" class="btn btn-primary btn-barrido-search" id="btnBarridoSearchCode">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Buscar Item</span>
+                      </button>
+                    </div>
+                    <div class="barrido-search-hint">
+                      <i class="fa-solid fa-circle-info"></i> Compatible con pistolas lectoras USB / Bluetooth y teclado directo (presiona Enter para buscar).
+                    </div>
+                  </form>
+
+                  <!-- Recent Session Sweeps List (Collapsible Drawer) -->
+                  <div class="barrido-recent-sweeps-box mt-4">
+                    <div class="recent-sweeps-header">
+                      <div class="recent-title">
+                        <i class="fa-solid fa-clock-rotate-left text-amber"></i>
+                        <span>Últimos Productos Barridos en esta Sesión</span>
+                      </div>
+                      <span class="badge badge-subtle" id="barridoRecentCounter">0 items</span>
+                    </div>
+                    <div class="recent-sweeps-list" id="barridoRecentSweepsList">
+                      <div class="recent-sweeps-empty">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                        <p>Aún no has registrado ningún producto en esta sesión de barrido.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column: Camera Viewport with Focus Reticle & 1s Delay -->
+                <div class="barrido-camera-card card">
+                  <div class="card-header barrido-camera-header">
+                    <div class="card-title">
+                      <i class="fa-solid fa-camera text-amber"></i>
+                      <div>
+                        <h3>Lector de Cámara con Enfoque Preciso</h3>
+                        <p class="section-desc">Lectura de código de barras y QR con retardo de 1 segundo para enfoque y estabilización óptima.</p>
+                      </div>
+                    </div>
+                    <div class="camera-status-pill" id="barridoCameraStatusPill">
+                      <span class="status-dot"></span>
+                      <span id="barridoCameraStatusText">Cámara Lista</span>
+                    </div>
+                  </div>
+
+                  <!-- Focus Reticle Aspect Ratio & Sizing Toolbar -->
+                  <div class="barrido-reticle-toolbar">
+                    <div class="reticle-preset-group">
+                      <span class="toolbar-label"><i class="fa-solid fa-crop-simple"></i> Enfoque:</span>
+                      <button type="button" class="btn btn-sm btn-reticle-preset active" data-preset="barcode" id="btnPresetBarcode" title="Marco horizontal para códigos de barra (3:1)">
+                        <i class="fa-solid fa-barcode"></i> Código de Barras
+                      </button>
+                      <button type="button" class="btn btn-sm btn-reticle-preset" data-preset="qr" id="btnPresetQr" title="Marco cuadrado para códigos QR (1:1)">
+                        <i class="fa-solid fa-qrcode"></i> Código QR
+                      </button>
+                      <button type="button" class="btn btn-sm btn-reticle-preset" data-preset="custom" id="btnPresetCustom" title="Ajustar tamaño del recuadro manualmente">
+                        <i class="fa-solid fa-sliders"></i> Ajustar
+                      </button>
+                    </div>
+
+                    <div class="camera-hw-controls">
+                      <button type="button" class="btn btn-sm btn-outline" id="btnSwitchBarridoCamera" title="Cambiar Cámara">
+                        <i class="fa-solid fa-camera-rotate"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline" id="btnToggleBarridoTorch" title="Linterna / Flash">
+                        <i class="fa-solid fa-bolt"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-primary" id="btnToggleBarridoCamera">
+                        <i class="fa-solid fa-video"></i> <span id="btnToggleBarridoCameraText">Iniciar Cámara</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Custom Reticle Resizing Sliders Panel (Visible when 'Ajustar' is active) -->
+                  <div class="barrido-reticle-sliders-panel hidden" id="barridoReticleSlidersPanel">
+                    <div class="slider-control-row">
+                      <label for="barridoReticleWidthSlider"><i class="fa-solid fa-arrows-left-right"></i> Ancho del Recuadro: <span id="barridoReticleWidthVal">280px</span></label>
+                      <input type="range" id="barridoReticleWidthSlider" min="160" max="380" step="10" value="280">
+                    </div>
+                    <div class="slider-control-row">
+                      <label for="barridoReticleHeightSlider"><i class="fa-solid fa-arrows-up-down"></i> Alto del Recuadro: <span id="barridoReticleHeightVal">140px</span></label>
+                      <input type="range" id="barridoReticleHeightSlider" min="80" max="320" step="10" value="140">
+                    </div>
+                  </div>
+
+                  <!-- Video Viewport Container -->
+                  <div class="barrido-scanner-viewport" id="barridoScannerViewport">
+                    <!-- HTML5 QR Code Mount -->
+                    <div id="barridoScannerReader" class="scanner-reader-box"></div>
+
+                    <!-- Native Video Element Fallback -->
+                    <video id="barridoNativeVideo" class="scanner-native-video hidden" playsinline muted></video>
+
+                    <!-- Interactive Visual Focus Reticle Overlay -->
+                    <div class="barrido-focus-reticle-overlay" id="barridoFocusReticleOverlay">
+                      <div class="barrido-reticle-box" id="barridoReticleBox">
+                        <!-- Corner Brackets -->
+                        <span class="reticle-corner corner-tl"></span>
+                        <span class="reticle-corner corner-tr"></span>
+                        <span class="reticle-corner corner-bl"></span>
+                        <span class="reticle-corner corner-br"></span>
+
+                        <!-- Animated Scanning Laser Beam -->
+                        <div class="reticle-laser-beam" id="barridoLaserBeam"></div>
+
+                        <!-- 1-Second Stabilization Lock Ring & Indicator -->
+                        <div class="reticle-stabilization-indicator hidden" id="barridoStabilizationIndicator">
+                          <div class="stabilization-spinner">
+                            <svg viewBox="0 0 40 40">
+                              <circle class="bg" cx="20" cy="20" r="16"></circle>
+                              <circle class="progress" id="barridoStabilizeProgressCircle" cx="20" cy="20" r="16"></circle>
+                            </svg>
+                            <i class="fa-solid fa-crosshairs lock-icon"></i>
+                          </div>
+                          <div class="stabilization-text">
+                            <strong id="barridoCandidateCode">Detectando...</strong>
+                            <span>Estabilizando lectura (1s)...</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Viewport Inactive Overlay -->
+                    <div class="scanner-inactive-overlay" id="barridoCameraInactiveOverlay">
+                      <div class="inactive-content">
+                        <i class="fa-solid fa-camera-retro"></i>
+                        <h4>Cámara en Pausa</h4>
+                        <p>Haz clic en "Iniciar Cámara" para activar el escaneo automático con enfoque guiado.</p>
+                        <button type="button" class="btn btn-primary btn-sm mt-2" id="btnStartCameraOverlay">
+                          <i class="fa-solid fa-play"></i> Activar Lector de Cámara
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="barrido-scanner-footer">
+                    <div class="scanner-tip">
+                      <i class="fa-solid fa-lightbulb text-amber"></i> Centra el código dentro del recuadro iluminado. El sistema confirmará la lectura automáticamente tras 1 segundo de estabilidad.
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- SUB-VISTA B: PANTALLA DE DETALLE DE ITEM ENCONTRADO & REGISTRO DE CONTEO -->
+            <div class="barrido-screen-wrapper hidden" id="barridoScreenItemDetail">
+              <div class="barrido-item-detail-layout">
+
+                <!-- 1. Top Reference Image Card (Drive: nibol/ciclicos/fotosreferencias) -->
+                <div class="barrido-reference-photo-card card">
+                  <div class="ref-photo-header">
+                    <div class="ref-photo-title">
+                      <i class="fa-solid fa-image text-amber"></i>
+                      <span>Foto de Referencia del Ítem</span>
+                    </div>
+                    <div class="ref-drive-tag" id="barridoRefDriveTag" title="Ubicación en Google Drive">
+                      <i class="fa-brands fa-google-drive text-green"></i>
+                      <span>nibol/ciclicos/fotosreferencias</span>
+                    </div>
+                  </div>
+
+                  <div class="ref-photo-display-box" id="barridoRefPhotoDisplayBox">
+                    <!-- Loading State -->
+                    <div class="ref-photo-loading hidden" id="barridoRefPhotoLoading">
+                      <i class="fa-solid fa-spinner fa-spin"></i>
+                      <span>Buscando foto en Google Drive...</span>
+                    </div>
+
+                    <!-- Image Display -->
+                    <div class="ref-photo-img-wrap hidden" id="barridoRefImgWrap">
+                      <img id="barridoRefImg" src="" alt="Foto de Referencia" class="ref-photo-img">
+                      <button type="button" class="btn-ref-zoom" id="btnZoomBarridoRefPhoto" title="Ampliar imagen">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                      </button>
+                      <span class="ref-photo-sku-badge" id="barridoRefSkuBadge">SKU</span>
+                    </div>
+
+                    <!-- Placeholder when not found -->
+                    <div class="ref-photo-placeholder" id="barridoRefPhotoPlaceholder">
+                      <div class="placeholder-icon">
+                        <i class="fa-regular fa-image"></i>
+                      </div>
+                      <div class="placeholder-text">
+                        <h4 id="barridoRefPlaceholderSku">SKU</h4>
+                        <p>Sin foto de referencia en <span class="font-mono">nibol/ciclicos/fotosreferencias</span></p>
+                        <span class="text-subtle" style="font-size: 0.8rem;">El nombre del archivo en Drive debe coincidir con el código del ítem.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Item Main Information Card -->
+                <div class="barrido-item-info-card card">
+                  <div class="item-header-strip">
+                    <div class="item-title-section">
+                      <span class="item-sku-tag" id="barridoDetailSku">SKU-000</span>
+                      <h2 class="item-description-title" id="barridoDetailDescription">Nombre del Producto o Repuesto</h2>
+                    </div>
+                    <div class="item-badges-strip">
+                      <span class="badge badge-subtle" id="barridoDetailBarcode"><i class="fa-solid fa-barcode"></i> S/C</span>
+                      <span class="badge badge-subtle" id="barridoDetailCategory"><i class="fa-solid fa-tags"></i> Repuestos</span>
+                      <span class="badge badge-abc-a" id="barridoDetailAbc">Clase A</span>
+                    </div>
+                  </div>
+
+                  <!-- 3. Ubicaciones (Locations) Manager with Multiple Locations -->
+                  <div class="barrido-locations-section mt-3">
+                    <div class="section-sub-header">
+                      <label class="section-label">
+                        <i class="fa-solid fa-location-dot text-amber"></i> Ubicación del Producto:
+                      </label>
+                      <button type="button" class="btn btn-outline btn-xs" id="btnAddBarridoExtraLocation">
+                        <i class="fa-solid fa-plus"></i> + Agregar otra Ubicación
+                      </button>
+                    </div>
+
+                    <!-- Original Registered Location Row (Read-Only & Locked) -->
+                    <div class="location-row primary-location-row location-row-readonly">
+                      <div class="location-input-wrap">
+                        <span class="location-badge-label location-badge-readonly" title="Ubicación registrada en base de datos (Solo lectura)">
+                          <i class="fa-solid fa-lock"></i> Original:
+                        </span>
+                        <input type="text" id="barridoPrimaryLocationInput" class="form-control location-input location-input-readonly" readonly placeholder="Sin ubicación registrada" tabindex="-1">
+                      </div>
+                    </div>
+
+                    <!-- Dynamic Additional Locations List -->
+                    <div class="extra-locations-list" id="barridoExtraLocationsList"></div>
+                  </div>
+
+                  <!-- 4. Quantities Split Block (Total vs Mal Estado) -->
+                  <div class="barrido-quantities-grid mt-3">
+                    <!-- Quantity Block 1: Cantidad Total -->
+                    <div class="qty-block qty-block-total">
+                      <div class="qty-block-header">
+                        <i class="fa-solid fa-boxes-stacked text-primary"></i>
+                        <label for="barridoTotalStockInput">CANTIDAD TOTAL</label>
+                      </div>
+                      <div class="qty-stepper-wrap">
+                        <button type="button" class="btn-stepper btn-stepper-minus" id="btnBarridoTotalMinus">
+                          <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <input type="number" id="barridoTotalStockInput" class="qty-main-input" value="1" min="0" step="1">
+                        <button type="button" class="btn-stepper btn-stepper-plus" id="btnBarridoTotalPlus">
+                          <i class="fa-solid fa-plus"></i>
+                        </button>
+                      </div>
+                      <span class="qty-hint">Total de unidades físicas contadas</span>
+                    </div>
+
+                    <!-- Quantity Block 2: En Mal Estado -->
+                    <div class="qty-block qty-block-damaged">
+                      <div class="qty-block-header">
+                        <i class="fa-solid fa-triangle-exclamation text-amber"></i>
+                        <label for="barridoDamagedStockInput">EN MAL ESTADO</label>
+                      </div>
+                      <div class="qty-stepper-wrap">
+                        <button type="button" class="btn-stepper btn-stepper-minus" id="btnBarridoDamagedMinus">
+                          <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <input type="number" id="barridoDamagedStockInput" class="qty-main-input damaged-input" value="0" min="0" step="1">
+                        <button type="button" class="btn-stepper btn-stepper-plus" id="btnBarridoDamagedPlus">
+                          <i class="fa-solid fa-plus"></i>
+                        </button>
+                      </div>
+                      <span class="qty-hint text-amber">Unidades defectuosas / rotas</span>
+                    </div>
+                  </div>
+
+                  <!-- 5. Damaged Item Photo Capture (Conditionally Enabled) -->
+                  <div class="barrido-damaged-photo-section mt-3" id="barridoDamagedPhotoSection">
+                    <div class="damaged-photo-action-bar">
+                      <button type="button" class="btn btn-damaged-photo-trigger disabled" id="btnBarridoDamagedPhotoTrigger" disabled title="Ingresa una cantidad mayor a 0 en 'Mal Estado' para habilitar la cámara">
+                        <i class="fa-solid fa-camera"></i>
+                        <span id="btnBarridoDamagedPhotoText">Tomar Foto de Mal Estado</span>
+                      </button>
+                      <div class="damaged-photo-requirement-info" id="barridoDamagedPhotoInfo">
+                        <i class="fa-solid fa-lock" id="barridoDamagedLockIcon"></i>
+                        <span id="barridoDamagedLockText">La cámara se habilitará automáticamente al ingresar unidades en mal estado.</span>
+                      </div>
+                    </div>
+
+                    <!-- Damaged Photo Preview (When captured) -->
+                    <div class="damaged-photo-preview-box hidden" id="barridoDamagedPhotoPreviewBox">
+                      <div class="preview-thumbnail-wrap">
+                        <img id="barridoDamagedPhotoThumbnail" src="" alt="Evidencia de Mal Estado">
+                      </div>
+                      <div class="preview-meta-info">
+                        <div class="preview-status-tag">
+                          <i class="fa-solid fa-circle-check text-green"></i> Foto de Evidencia Lista
+                        </div>
+                        <span class="preview-file-name" id="barridoDamagedFileName">[SKU].jpg</span>
+                        <span class="preview-drive-path"><i class="fa-brands fa-google-drive text-green"></i> Se guardará en: <strong id="barridoDamagedTargetFolder">nibol/fotos/[FECHA]</strong></span>
+                      </div>
+                      <div class="preview-actions">
+                        <button type="button" class="btn btn-outline btn-xs" id="btnRetakeBarridoDamagedPhoto">
+                          <i class="fa-solid fa-rotate-left"></i> Cambiar
+                        </button>
+                        <button type="button" class="btn btn-danger btn-xs" id="btnRemoveBarridoDamagedPhoto">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Hidden Input for Damaged Photo selection fallback -->
+                    <input type="file" accept="image/*" id="barridoDamagedFileInput" style="display: none;">
+                  </div>
+
+                  <!-- 6. Comments Box -->
+                  <div class="barrido-comments-section mt-3">
+                    <label for="barridoNotesInput" class="section-label">
+                      <i class="fa-solid fa-comment-dots text-primary"></i> Comentarios / Observaciones:
+                    </label>
+                    <textarea id="barridoNotesInput" class="form-control barrido-notes-textarea" rows="2" placeholder="Observaciones de saneamiento, daños en empaque, pieza sin código, notas de pasillo..."></textarea>
+                    
+                    <!-- Quick Chip Suggestions -->
+                    <div class="quick-comment-chips mt-1">
+                      <button type="button" class="chip-comment" data-comment="Caja o empaque roto">Caja rota</button>
+                      <button type="button" class="chip-comment" data-comment="Oxidación o deterioro">Oxidación</button>
+                      <button type="button" class="chip-comment" data-comment="Sin empaque original">Sin empaque</button>
+                      <button type="button" class="chip-comment" data-comment="Hallado fuera de pasillo">Hallado en pasillo</button>
+                      <button type="button" class="chip-comment" data-comment="Buen estado">Buen estado</button>
+                    </div>
+                  </div>
+
+                  <!-- 7. Action Footer (Submit / Reset) -->
+                  <div class="barrido-item-actions-footer mt-4">
+                    <button type="button" class="btn btn-outline btn-cancel-item" id="btnBarridoCancelItem">
+                      <i class="fa-solid fa-xmark"></i> Cancelar & Buscar Otro
+                    </button>
+                    <button type="button" class="btn btn-primary btn-submit-count" id="btnBarridoSubmitCount">
+                      <i class="fa-solid fa-check-double"></i>
+                      <span>REGISTRAR CONTEO & SIGUIENTE</span>
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+
+          </div>
 
         </div>
       </section>
@@ -453,6 +919,101 @@
             </div>
           </div>
 
+          <!-- ================================================================= -->
+          <!-- SECCIÓN: EFICACIA DE OPERADORES & AUDITORÍA DE RE-CONTEOS        -->
+          <!-- ================================================================= -->
+          <div class="card operator-efficiency-card mt-4">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-user-check text-primary"></i>
+                <div>
+                  <h3>Eficacia, Precisión y Tasa de Repetición por Operador</h3>
+                  <p class="section-desc">Auditoría de primer conteo vs modificaciones/re-conteos para medir la exactitud individual</p>
+                </div>
+              </div>
+              <div class="efficiency-header-stats">
+                <div class="eff-stat-pill">
+                  <span class="eff-label"><i class="fa-solid fa-list-ol text-primary"></i> Registros:</span>
+                  <strong class="eff-val text-primary" id="effTotalAuditLogs">0</strong>
+                </div>
+                <div class="eff-stat-pill">
+                  <span class="eff-label"><i class="fa-solid fa-arrows-rotate text-amber"></i> Re-conteos:</span>
+                  <strong class="eff-val text-amber" id="effTotalRecounts">0</strong>
+                </div>
+                <div class="eff-stat-pill">
+                  <span class="eff-label"><i class="fa-solid fa-percent text-green"></i> Eficacia Media:</span>
+                  <strong class="eff-val text-green" id="effAvgAccuracy">100%</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Operator Performance Table -->
+            <div class="table-responsive">
+              <table class="data-table operator-efficiency-table">
+                <thead>
+                  <tr>
+                    <th>Operador</th>
+                    <th>Rol & Centro</th>
+                    <th class="text-center">Total Acciones</th>
+                    <th class="text-center">1er Conteo</th>
+                    <th class="text-center">Re-conteos (Edición)</th>
+                    <th class="text-center">Tasa Repetición</th>
+                    <th class="text-center">% Eficacia 1er Intento</th>
+                    <th class="text-center">Exactitud Final</th>
+                    <th class="text-center">Calificación</th>
+                  </tr>
+                </thead>
+                <tbody id="operatorEfficiencyTbody">
+                  <tr class="empty-row">
+                    <td colspan="9">No hay registros de conteo para calcular la eficacia en este centro.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Live Recount & Audit Trail Table -->
+          <div class="card recount-audit-card mt-4">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-clock-rotate-left text-amber"></i>
+                <div>
+                  <h3>Trazabilidad en Vivo de Conteos y Modificaciones</h3>
+                  <p class="section-desc">Histórico completo línea por línea de cada conteo y edición registrada</p>
+                </div>
+              </div>
+              <div class="audit-search-wrapper">
+                <div class="search-input-wrapper">
+                  <div class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                  <input type="text" id="auditTrailSearchInput" placeholder="Buscar por SKU, operador o tipo de evento..." autocomplete="off">
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table audit-trail-table">
+                <thead>
+                  <tr>
+                    <th style="width: 140px;">Fecha / Hora</th>
+                    <th style="width: 80px;">Centro</th>
+                    <th style="width: 130px;">SKU</th>
+                    <th>Descripción</th>
+                    <th style="width: 100px;">Ubicación</th>
+                    <th style="width: 80px;" class="text-center">Sistema</th>
+                    <th style="width: 140px;" class="text-center">Conteo Físico</th>
+                    <th style="width: 80px;" class="text-center">Diferencia</th>
+                    <th style="width: 140px;" class="text-center">Tipo Evento</th>
+                    <th style="width: 130px;">Operador</th>
+                    <th style="width: 100px;" class="text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="auditTrailTbody">
+                  <tr class="empty-row">
+                    <td colspan="11">No hay registros de auditoría de conteos para mostrar.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -527,7 +1088,226 @@
         </div>
       </section>
 
+      <!-- ========================================================================= -->
+      <!-- TAB 4: HISTORIAL DE CÍCLICOS ASIGNADOS (ENCARGADOS ONLY)                 -->
+      <!-- ========================================================================= -->
+      <section class="tab-panel admin-only" id="history-tab">
+        <div class="history-layout">
 
+          <!-- History Header Card & Stats -->
+          <div class="card history-header-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-clock-rotate-left text-primary"></i>
+                <div>
+                  <h2>Historial de Cíclicos &bull; <span id="historyCurrentCentroTitle">Centro 1300</span></h2>
+                  <p class="section-desc">Auditoría, trazabilidad de operadores responsables, resultados y firmas digitales</p>
+                </div>
+              </div>
+              <div class="history-actions">
+                <div class="history-centro-badge" id="historyCentroBadge">
+                  <i class="fa-solid fa-warehouse text-primary"></i>
+                  <span>Centro <strong id="historyCentroCodeText">1300</strong></span>
+                </div>
+                <select id="filterHistoryStatusSelect" class="form-select">
+                  <option value="">Todos los Estados</option>
+                  <option value="CONCLUIDO">Solo Concluidos / Firmados</option>
+                  <option value="ASIGNADO">Solo En Proceso / Asignados</option>
+                </select>
+                <button class="btn btn-secondary btn-sm" id="btnRefreshHistory" title="Recargar historial">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                  <span>Actualizar</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- History Stats Strip -->
+            <div class="history-stats-strip">
+              <div class="hist-stat-item">
+                <i class="fa-solid fa-clipboard-list text-primary"></i>
+                <div>
+                  <span class="hist-stat-label">Total Cíclicos</span>
+                  <span class="hist-stat-val" id="histStatTotalCount">0</span>
+                </div>
+              </div>
+              <div class="hist-stat-item">
+                <i class="fa-solid fa-circle-check text-green"></i>
+                <div>
+                  <span class="hist-stat-label">Concluidos</span>
+                  <span class="hist-stat-val" id="histStatCompletedCount">0</span>
+                </div>
+              </div>
+              <div class="hist-stat-item">
+                <i class="fa-solid fa-clock text-amber"></i>
+                <div>
+                  <span class="hist-stat-label">En Proceso</span>
+                  <span class="hist-stat-val" id="histStatPendingCount">0</span>
+                </div>
+              </div>
+              <div class="hist-stat-item">
+                <i class="fa-solid fa-bullseye text-primary"></i>
+                <div>
+                  <span class="hist-stat-label">IRA Promedio</span>
+                  <span class="hist-stat-val" id="histStatAvgIra">100%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search Bar for History -->
+            <div class="history-search-bar">
+              <div class="search-input-wrapper">
+                <div class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <input type="text" id="historySearchInput" placeholder="Buscar por código de cíclico (ej: CYC-1300), auxiliar, encargado o centro..." autocomplete="off">
+              </div>
+            </div>
+          </div>
+
+          <!-- History List Container -->
+          <div class="history-list-container" id="historyListContainer">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 5: VERIFICACIÓN FINAL & JUSTIFICACIONES EN GOOGLE DRIVE (ADMIN ONLY)  -->
+      <!-- ========================================================================= -->
+      <section class="tab-panel admin-only" id="justifications-tab">
+        <div class="justifications-layout">
+
+          <!-- Header Card -->
+          <div class="card justifications-header-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-file-shield text-amber"></i>
+                <div>
+                  <h2>Verificación Final de Faltantes / Sobrantes & Justificaciones</h2>
+                  <p class="section-desc">Conciliación administrativa, ajuste de cantidades finales, registro de causas y respaldo gráfico en Google Drive</p>
+                </div>
+              </div>
+              <div class="justifications-header-actions">
+                <button type="button" class="btn btn-success btn-sm btn-finish-review" id="btnFinishJustificationsReview" title="Terminar revisión y guardar planilla en Google Drive (Nibol/ciclicos)" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
+                  <i class="fa-solid fa-flag-checkered"></i>
+                  <span>Terminar Revisión</span>
+                </button>
+                <a href="#" id="btnDownloadJustifDoc" class="btn btn-outline btn-sm" title="Descargar documento Excel oficial del inventario cíclico con fecha">
+                  <i class="fa-solid fa-file-excel text-green"></i>
+                  <span id="justifDocFileNameText">2026-08-25_Ciclico_Centro_1300.xlsx</span>
+                </a>
+                <a href="https://drive.google.com/drive/folders/1eYg5xYTpWVhgBk_vLDJH3_ZxAMxGc-wY?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn btn-drive-link" id="justifDriveLinkBtn" title="Abrir carpeta compartida en Google Drive">
+                  <i class="fa-brands fa-google-drive"></i>
+                  <span>Abrir Google Drive</span>
+                </a>
+                <button class="btn btn-secondary btn-sm" id="btnRefreshJustifications" title="Recargar lista de verificación">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                  <span>Actualizar</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Google Drive Auto-Folder Structure Banner -->
+            <div class="drive-structure-banner">
+              <div class="drive-banner-icon">
+                <i class="fa-brands fa-google-drive text-amber"></i>
+              </div>
+              <div class="drive-banner-content">
+                <div class="drive-banner-title">
+                  <strong>Estructura de Respaldo en Google Drive</strong>
+                  <span class="drive-badge">Carpeta Conectada</span>
+                </div>
+                <p class="drive-banner-desc">
+                  Por cada cíclico realizado se crea la subcarpeta con fecha: 
+                  <code class="drive-path-code" id="justifTargetFolderCode">Centro_1300_2026-08-25</code>.
+                  Los archivos y fotos se nombran con fecha: 
+                  <code class="drive-path-code">[Fecha]_[SKU]_[NombreItem].jpg</code>
+                </p>
+              </div>
+            </div>
+
+            <!-- Justifications KPI Strip -->
+            <div class="justifications-kpi-strip">
+              <div class="justif-kpi-card">
+                <div class="justif-kpi-icon icon-discrepancies"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="justif-kpi-info">
+                  <span class="justif-kpi-label">Discrepancias Totales</span>
+                  <strong class="justif-kpi-val text-red" id="justifKpiDiscrepancies">0</strong>
+                </div>
+              </div>
+              <div class="justif-kpi-card">
+                <div class="justif-kpi-icon icon-justified"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="justif-kpi-info">
+                  <span class="justif-kpi-label">Justificados / Con Foto</span>
+                  <strong class="justif-kpi-val text-green" id="justifKpiJustified">0</strong>
+                </div>
+              </div>
+              <div class="justif-kpi-card">
+                <div class="justif-kpi-icon icon-pending"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div class="justif-kpi-info">
+                  <span class="justif-kpi-label">Pendientes de Justificar</span>
+                  <strong class="justif-kpi-val text-amber" id="justifKpiPending">0</strong>
+                </div>
+              </div>
+              <div class="justif-kpi-card">
+                <div class="justif-kpi-icon icon-net"><i class="fa-solid fa-dollar-sign"></i></div>
+                <div class="justif-kpi-info">
+                  <span class="justif-kpi-label">Impacto Neto ($)</span>
+                  <strong class="justif-kpi-val" id="justifKpiNetCost">$0.00</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="justifications-filter-bar">
+              <div class="search-input-wrapper">
+                <div class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <input type="text" id="justifSearchInput" placeholder="Buscar por SKU, descripción o ubicación..." autocomplete="off">
+              </div>
+              <select id="justifStatusFilter" class="form-select">
+                <option value="DISCREPANCIAS">Solo Discrepancias (Faltantes / Sobrantes)</option>
+                <option value="FALTANTES">Solo Faltantes</option>
+                <option value="SOBRANTES">Solo Sobrantes</option>
+                <option value="TODOS">Ver Todo el Inventario</option>
+              </select>
+              <select id="justifJustifiedFilter" class="form-select">
+                <option value="">Todos los Estados de Justificación</option>
+                <option value="PENDIENTE">Solo Pendientes de Justificar</option>
+                <option value="JUSTIFICADO">Solo Justificados</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Main Verification & Justifications Table Card -->
+          <div class="card justifications-table-card">
+            <div class="table-responsive">
+              <table class="data-table justifications-table">
+                <thead>
+                  <tr>
+                    <th style="width: 120px;">SKU</th>
+                    <th>Descripción & Ubicación</th>
+                    <th style="width: 75px;" class="text-center">Sistema</th>
+                    <th style="width: 75px;" class="text-center">Físico 1er</th>
+                    <th style="width: 110px;" class="text-center">Conteo Final (Admin)</th>
+                    <th style="width: 90px;" class="text-center">Diferencia</th>
+                    <th style="width: 95px;" class="text-center">Impacto $</th>
+                    <th style="width: 90px;" class="text-center">Estado</th>
+                    <th style="width: 150px;">Causa / Tipo</th>
+                    <th style="width: 200px;">Comentarios / Justificación</th>
+                    <th style="width: 170px;">Evidencias (Fotos)</th>
+                    <th style="width: 110px;" class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="justificationsTbody">
+                  <tr class="empty-row">
+                    <td colspan="12">Cargando inventario para verificación final...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
 
     </main>
 
@@ -552,33 +1332,6 @@
               id="modCurrentValText">0</strong> unidades.</p>
           <p class="mt-3 text-secondary">¿Deseas desbloquear este ítem para modificar la cantidad contada o registrar un
             reconteo en Excel?</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline" id="btnCancelModifyModal">Cancelar</button>
-          <button class="btn btn-primary" id="btnConfirmModifyModal">
-            <i class="fa-solid fa-pen-to-square"></i> Sí, Desbloquear y Modificar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- MODAL: CONFIRMACIÓN DE MODIFICACIÓN DE CONTEO (CONTEO A CIEGAS)          -->
-    <!-- ========================================================================= -->
-    <div class="modal-overlay hidden" id="modifyConfirmModal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <div class="modal-title text-amber">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <h3>Modificar Conteo Confirmado</h3>
-          </div>
-          <button class="modal-close" id="btnCloseModifyModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>El producto <strong class="text-primary font-mono" id="modSkuText">SKU-1001</strong> (<span
-              id="modDescText">Descripción</span>) ya fue registrado con <strong id="modCurrentValText">0</strong>
-            unidades.</p>
-          <p class="mt-3 text-secondary">¿Deseas desbloquear este ítem para modificar la cantidad contada?</p>
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline" id="btnCancelModifyModal">Cancelar</button>
@@ -789,8 +1542,17 @@
             </div>
 
             <div class="form-group mt-3">
-              <label for="assignAuxiliarSelect"><i class="fa-solid fa-user-tag text-primary"></i> Seleccionar Auxiliar
-                Asignado *</label>
+              <label for="assignInventoryTypeSelect"><i class="fa-solid fa-layer-group text-primary"></i> Tipo de Inventario *</label>
+              <select id="assignInventoryTypeSelect" class="form-select form-control">
+                <option value="ciclico">📦 Inventario Cíclico (CICLICOS NIBOL MULTIMARCAS)</option>
+                <option value="semanal">📅 Inventario Semanal (SEMANALES NIBOL MULTIMARCAS)</option>
+                <option value="mensual">🗓️ Inventario Mensual (MENSUALES NIBOL MULTIMARCAS)</option>
+                <option value="barrido">🧹 Barrido General (BARRIDO NIBOL MULTIMARCAS)</option>
+              </select>
+            </div>
+
+            <div class="form-group mt-3">
+              <label for="assignAuxiliarSelect"><i class="fa-solid fa-user-tag text-primary"></i> Seleccionar Auxiliar Asignado *</label>
               <select id="assignAuxiliarSelect" class="form-select form-control" required>
                 <!-- Populated via JS with Auxiliares of this Centro -->
               </select>
@@ -884,6 +1646,721 @@
           <button type="button" class="btn btn-success btn-lg" id="btnSubmitSignatureAndConclude">
             <i class="fa-solid fa-file-signature"></i> GUARDAR FIRMA Y CONCLUIR EN EXCEL
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: DETALLE Y CERTIFICADO DE CÍCLICO HISTÓRICO                         -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="cycleDetailModal">
+      <div class="modal-card cycle-detail-modal-card">
+        <div class="modal-header">
+          <div class="modal-title text-primary">
+            <i class="fa-solid fa-file-contract"></i>
+            <h3 id="cycleDetailModalTitle">Detalle de Inventario Cíclico</h3>
+          </div>
+          <button class="modal-close" id="btnCloseCycleDetailModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="signature-summary-card">
+            <div class="sig-badge-icon"><i class="fa-solid fa-circle-check text-green"></i></div>
+            <div class="sig-summary-text">
+              <h4 id="cycleDetailIdHeader">CYC-1300-8410</h4>
+              <p id="cycleDetailCentroSubtitle">Centro 1300 &bull; Estado: Concluido y Auditado</p>
+            </div>
+          </div>
+
+          <div class="sig-meta-grid" style="margin-top: 16px;">
+            <div class="sig-meta-item">
+              <span class="sig-meta-label"><i class="fa-solid fa-user-tag text-primary"></i> Auxiliar Responsable:</span>
+              <strong class="sig-meta-value" id="cycleDetailAuxiliarText">-</strong>
+            </div>
+            <div class="sig-meta-item">
+              <span class="sig-meta-label"><i class="fa-solid fa-user-shield text-amber"></i> Asignado por:</span>
+              <strong class="sig-meta-value" id="cycleDetailEncargadoText">-</strong>
+            </div>
+            <div class="sig-meta-item">
+              <span class="sig-meta-label"><i class="fa-solid fa-calendar-plus text-primary"></i> Fecha Asignación:</span>
+              <strong class="sig-meta-value" id="cycleDetailAssignedAtText">-</strong>
+            </div>
+            <div class="sig-meta-item">
+              <span class="sig-meta-label"><i class="fa-solid fa-calendar-check text-green"></i> Fecha Conclusión:</span>
+              <strong class="sig-meta-value" id="cycleDetailCompletedAtText">-</strong>
+            </div>
+          </div>
+
+          <!-- Summary Metric Cards -->
+          <div class="cycle-detail-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 16px 0;">
+            <div class="metric-box" style="background: var(--bg-surface-elevated); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-subtle);">
+              <span class="m-lbl" style="display: block; font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Artículos</span>
+              <span class="m-val" id="cycleDetailItemsVal" style="font-size: 1.1rem; font-weight: 700;">0 / 0</span>
+            </div>
+            <div class="metric-box" style="background: var(--bg-surface-elevated); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-subtle);">
+              <span class="m-lbl" style="display: block; font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Exactitud IRA</span>
+              <span class="m-val text-green" id="cycleDetailIraVal" style="font-size: 1.1rem; font-weight: 700;">100%</span>
+            </div>
+            <div class="metric-box" style="background: var(--bg-surface-elevated); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-subtle);">
+              <span class="m-lbl" style="display: block; font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Cuadrados</span>
+              <span class="m-val text-green" id="cycleDetailExactVal" style="font-size: 1.1rem; font-weight: 700;">0</span>
+            </div>
+            <div class="metric-box" style="background: var(--bg-surface-elevated); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-subtle);">
+              <span class="m-lbl" style="display: block; font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Discrepancias</span>
+              <span class="m-val text-red" id="cycleDetailDiscrepanciesVal" style="font-size: 1.1rem; font-weight: 700;">0</span>
+            </div>
+            <div class="metric-box" style="background: var(--bg-surface-elevated); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-subtle);">
+              <span class="m-lbl" style="display: block; font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Impacto Neto</span>
+              <span class="m-val" id="cycleDetailNetVal" style="font-size: 1.1rem; font-weight: 700;">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Notes section -->
+          <div class="cycle-detail-notes" id="cycleDetailNotesBox" style="background: var(--bg-surface-elevated); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-top: 10px;">
+            <span class="notes-lbl" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;"><i class="fa-solid fa-note-sticky text-amber"></i> Observaciones del ciclo:</span>
+            <p id="cycleDetailNotesText" style="font-size: 0.88rem; color: var(--text-primary); margin: 0;">Sin observaciones adicionales.</p>
+          </div>
+
+          <!-- Google Drive Concluded File Link -->
+          <div class="cycle-detail-drive-box" id="cycleDetailDriveBox" style="margin-top: 14px; background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.35); padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fa-brands fa-google-drive" style="font-size: 1.6rem; color: #10b981;"></i>
+              <div>
+                <strong style="font-size: 0.88rem; color: var(--text-primary); display: block;">Planilla de Conteo en Google Drive</strong>
+                <span style="font-size: 0.76rem; color: var(--text-secondary);">Carpeta en Drive: <strong>Nibol / ciclicos</strong></span>
+              </div>
+            </div>
+            <a href="#" target="_blank" rel="noopener noreferrer" id="cycleDetailDriveLink" class="btn btn-success btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir en Google Drive
+            </a>
+          </div>
+
+          <!-- Digital Signature Preview (if available) -->
+          <div class="cycle-detail-sig-box mt-3" id="cycleDetailSignatureBox" style="margin-top: 14px;">
+            <span class="sig-preview-lbl" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;"><i class="fa-solid fa-signature text-primary"></i> Estampa de Firma Digital:</span>
+            <div class="sig-img-container" id="cycleDetailSigImgContainer" style="background: #ffffff; padding: 14px; border-radius: 8px; text-align: center; margin-top: 6px; border: 1px solid var(--border-subtle); min-height: 80px; display: flex; align-items: center; justify-content: center;">
+              <img id="cycleDetailSigImg" src="" alt="Firma Digital" style="max-height: 110px; max-width: 100%; display: none;">
+              <span id="cycleDetailNoSigText" class="text-muted" style="font-size: 0.85rem; color: #475569;"><i class="fa-solid fa-certificate text-green"></i> Certificado de Conformidad registrado</span>
+            </div>
+          </div>
+
+          <!-- Items Table Section inside Detail Modal -->
+          <div class="cycle-detail-items-section" style="margin-top: 18px; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+              <strong style="font-size: 0.95rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-boxes-stacked text-primary"></i> Lista de Artículos del Cíclico
+                <span class="badge" id="cycleDetailItemsBadge" style="background: var(--bg-surface-elevated); color: var(--text-primary); border: 1px solid var(--border-subtle);">0</span>
+              </strong>
+              <div class="search-box" style="max-width: 250px; height: 32px; padding: 4px 10px;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 0.8rem;"></i>
+                <input type="text" id="cycleDetailItemsSearch" placeholder="Buscar SKU, descripción..." style="font-size: 0.8rem;">
+              </div>
+            </div>
+            <div class="table-responsive" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: 8px;">
+              <table class="inventory-table condensed-table" id="cycleDetailItemsTable">
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Descripción</th>
+                    <th>Ubicación</th>
+                    <th style="text-align: right;">Costo</th>
+                    <th style="text-align: right;">Sistema</th>
+                    <th style="text-align: right;">Físico</th>
+                    <th style="text-align: right;">Diferencia</th>
+                    <th style="text-align: center;">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="cycleDetailItemsTbody">
+                  <tr><td colspan="8" class="text-center text-muted" style="padding: 16px;">Cargando artículos del centro...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="btnCloseCycleDetailModalBtn">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: ELIMINAR INVENTARIO CÍCLICO (CONFIRMACIÓN CON CLAVE)              -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="deleteCycleModal">
+      <div class="modal-card" style="max-width: 500px;">
+        <div class="modal-header">
+          <div class="modal-title text-danger">
+            <i class="fa-solid fa-trash-can"></i>
+            <h3>Eliminar Inventario Cíclico</h3>
+          </div>
+          <button class="modal-close" id="btnCloseDeleteCycleModal">&times;</button>
+        </div>
+        <form id="deleteCycleForm">
+          <div class="modal-body">
+            <div class="alert alert-danger" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; font-size: 0.88rem; margin-bottom: 16px; color: var(--text-primary);">
+              <i class="fa-solid fa-triangle-exclamation text-danger" style="margin-right: 6px;"></i>
+              <strong>Atención:</strong> Esta acción eliminará el registro del historial. Los artículos se liberarán para que vuelvan a aparecer disponibles en el <strong>Plan de Cíclicos</strong> del Encargado.
+            </div>
+
+            <div class="reopen-cycle-summary" style="background: var(--bg-surface-elevated); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Cíclico a Eliminar:</span>
+                <strong class="text-primary font-mono" id="deleteCycleIdText">CYC-1300-XXXX</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Centro:</span>
+                <strong id="deleteCentroText">Centro 1300</strong>
+              </div>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="deleteAdminUserInput" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                <i class="fa-solid fa-user-shield text-primary"></i> Usuario Encargado / Admin:
+              </label>
+              <input type="text" id="deleteAdminUserInput" class="form-control" placeholder="Tu usuario" required>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="deleteAdminPasswordInput" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                <i class="fa-solid fa-key text-amber"></i> Ingresa tu Contraseña para confirmar *:
+              </label>
+              <input type="password" id="deleteAdminPasswordInput" class="form-control" placeholder="Contraseña de confirmación" required autocomplete="current-password">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btnCancelDeleteCycle">Cancelar</button>
+            <button type="submit" class="btn btn-danger" id="btnSubmitDeleteCycle" style="background: #ef4444; border-color: #ef4444; color: #fff;">
+              <i class="fa-solid fa-trash-can"></i> Confirmar y Eliminar Cíclico
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: AUTORIZACIÓN ADMINISTRATIVA PARA REAPERTURA DE CÍCLICO             -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="reopenAuthModal">
+      <div class="modal-card" style="max-width: 520px;">
+        <div class="modal-header">
+          <div class="modal-title text-amber">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h3>Autorización para Reabrir Conteo</h3>
+          </div>
+          <button class="modal-close" id="btnCloseReopenAuthModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; font-size: 0.88rem; margin-bottom: 16px; color: var(--text-primary);">
+            <i class="fa-solid fa-triangle-exclamation text-amber" style="margin-right: 6px;"></i>
+            <strong>Control de Seguridad:</strong> La reapertura de un ciclo concluido permite modificar los conteos físicos y quedará registrada en la bitácora de auditoría con la firma del administrador autorizante.
+          </div>
+
+          <!-- Target Cycle Summary -->
+          <div class="reopen-cycle-summary" style="background: var(--bg-surface-elevated); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Orden de Cíclico:</span>
+              <strong class="text-primary" id="reopenCycleIdText">CYC-1300-XXXX</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Centro:</span>
+              <strong id="reopenCentroText">Centro 1300</strong>
+            </div>
+          </div>
+
+          <!-- Admin Authorization Form -->
+          <form id="reopenAuthForm" onsubmit="return false;">
+            <div class="form-group mb-3">
+              <label for="reopenAdminUserInput"><i class="fa-solid fa-user-shield text-amber"></i> Usuario Encargado / Administrador:</label>
+              <input type="text" id="reopenAdminUserInput" class="form-control" placeholder="Ej: JAVIER" required autocomplete="username">
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="reopenAdminPasswordInput"><i class="fa-solid fa-key text-amber"></i> Contraseña de Autorización:</label>
+              <input type="password" id="reopenAdminPasswordInput" class="form-control" placeholder="Ingresa tu clave de encargado" required autocomplete="current-password">
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="reopenReasonInput"><i class="fa-solid fa-comment-dots text-primary"></i> Motivo de la Reapertura / Justificación:</label>
+              <textarea id="reopenReasonInput" class="form-control" rows="2" placeholder="Ej: Corrección de conteo en pasillo B por discrepancia física solicitada por gerencia..." required></textarea>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelReopenModal">Cancelar</button>
+          <button type="button" class="btn btn-warning btn-lg" id="btnSubmitReopenCycle">
+            <i class="fa-solid fa-lock-open"></i> AUTORIZAR Y REABRIR
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: NOTIFICACIÓN DE CÍCLICO ASIGNADO AL AUXILIAR (MEDIA PANTALLA)       -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden modal-overlay-blur" id="assignedCyclicAlertModal">
+      <div class="modal-card assigned-alert-modal-card">
+        
+        <!-- Header Banner with Animated Pulse & Attention Badge -->
+        <div class="assigned-alert-hero">
+          <div class="assigned-alert-icon-wrap">
+            <div class="assigned-alert-pulse-ring"></div>
+            <div class="assigned-alert-icon-box">
+              <i class="fa-solid fa-clipboard-check"></i>
+            </div>
+          </div>
+          <div class="assigned-alert-hero-text">
+            <div class="assigned-alert-tag">
+              <i class="fa-solid fa-bell"></i> ORDEN DE TRABAJO ASIGNADA
+            </div>
+            <h2>¡Tienes un Inventario Cíclico Asignado!</h2>
+            <p>Hola <strong id="alertAuxiliarName">Operador</strong> 👋, se te ha asignado la siguiente orden de conteo físico para realizar:</p>
+          </div>
+          <button class="modal-close assigned-alert-close" id="btnCloseAssignedAlertModal" title="Cerrar notificación">&times;</button>
+        </div>
+
+        <div class="modal-body assigned-alert-body">
+          <!-- Key Meta Information Grid -->
+          <div class="assigned-alert-grid">
+            <div class="alert-info-card">
+              <div class="alert-info-icon"><i class="fa-solid fa-warehouse"></i></div>
+              <div class="alert-info-details">
+                <span class="alert-info-label">Centro de Trabajo</span>
+                <strong class="alert-info-val" id="alertCentroText">Centro 1300</strong>
+              </div>
+            </div>
+
+            <div class="alert-info-card">
+              <div class="alert-info-icon"><i class="fa-solid fa-barcode"></i></div>
+              <div class="alert-info-details">
+                <span class="alert-info-label">ID de Ciclo / Orden</span>
+                <strong class="alert-info-val text-primary" id="alertCycleIdText">CYC-1300-001</strong>
+              </div>
+            </div>
+
+            <div class="alert-info-card">
+              <div class="alert-info-icon"><i class="fa-solid fa-user-shield"></i></div>
+              <div class="alert-info-details">
+                <span class="alert-info-label">Asignado por</span>
+                <strong class="alert-info-val" id="alertAssignedByText">Encargado</strong>
+              </div>
+            </div>
+
+            <div class="alert-info-card">
+              <div class="alert-info-icon"><i class="fa-solid fa-clock"></i></div>
+              <div class="alert-info-details">
+                <span class="alert-info-label">Fecha y Hora</span>
+                <strong class="alert-info-val" id="alertAssignedAtText">2026-08-25 09:00</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes / Special Instructions Callout Box -->
+          <div class="assigned-alert-instructions">
+            <div class="instructions-title">
+              <i class="fa-solid fa-note-sticky text-amber"></i>
+              <span>Instrucciones / Observaciones del Encargado:</span>
+            </div>
+            <p id="alertNotesText">
+              Realiza el conteo físico de los artículos asignados e ingresa las cantidades directamente en la tabla. Al finalizar, podrás firmar de conformidad.
+            </p>
+          </div>
+
+          <!-- Status Highlight Tip -->
+          <div class="assigned-alert-tip">
+            <i class="fa-solid fa-circle-info text-blue"></i>
+            <span>Tu lista de conteo ya se encuentra habilitada y sincronizada en tiempo real.</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons Footer -->
+        <div class="modal-footer assigned-alert-footer">
+          <button type="button" class="btn btn-outline" id="btnDismissAssignedAlert">
+            <i class="fa-solid fa-xmark"></i> Cerrar
+          </button>
+          <button type="button" class="btn btn-primary btn-lg btn-start-cycle-pulse" id="btnStartAssignedCycleNow">
+            <i class="fa-solid fa-play"></i> ¡COMENZAR CONTEO AHORA!
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: CONFIRMAR FINALIZACIÓN DE REVISIÓN & JUSTIFICACIONES               -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="finishReviewConfirmModal">
+      <div class="modal-card" style="max-width: 540px;">
+        <div class="modal-header">
+          <div class="modal-title text-success">
+            <i class="fa-solid fa-file-shield"></i>
+            <h3>Finalizar Revisión de Cíclico</h3>
+          </div>
+          <button class="modal-close" id="btnCloseFinishReviewConfirmModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 12px; font-size: 0.88rem; margin-bottom: 16px; color: var(--text-primary);">
+            <i class="fa-solid fa-cloud-arrow-up text-green" style="margin-right: 6px;"></i>
+            <strong>Guardado en Google Drive:</strong> Al terminar la revisión, se generará la planilla oficial final en la carpeta <code>Nibol/ciclicos</code> en tu Google Drive.
+          </div>
+
+          <div class="reopen-cycle-summary" style="background: var(--bg-surface-elevated); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Centro:</span>
+              <strong class="text-primary" id="finishReviewCentroText">Centro 1300</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Discrepancias Totales:</span>
+              <strong class="text-red" id="finishReviewDiscrepanciesText">0 ítems</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Justificados / Con Evidencia:</span>
+              <strong class="text-green" id="finishReviewJustifiedText">0 ítems</strong>
+            </div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="finishReviewFinalNotes"><i class="fa-solid fa-comment-dots text-primary"></i> Observaciones / Conclusiones del Administrador (Opcional):</label>
+            <textarea id="finishReviewFinalNotes" class="form-control" rows="2" placeholder="Ej: Revisión y justificación aprobada por auditoría interna..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelFinishReviewModal">Cancelar</button>
+          <button type="button" class="btn btn-success btn-lg" id="btnSubmitFinishReview">
+            <i class="fa-solid fa-flag-checkered"></i> GUARDAR EN DRIVE Y TERMINAR
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: PREGUNTAR DESCARGA DE REPORTE REVISADO & ÉXITO EN DRIVE            -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="finishReviewSuccessModal">
+      <div class="modal-card" style="max-width: 540px; text-align: center;">
+        <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto; color: #10b981; font-size: 1.8rem;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+        </div>
+        <div class="modal-body" style="padding-top: 10px;">
+          <h3 style="font-size: 1.3rem; margin-bottom: 8px; color: var(--text-primary);">¡Revisión Finalizada con Éxito!</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
+            La copia revisada del inventario cíclico se ha guardado correctamente en tu Google Drive en la carpeta <strong>Nibol / ciclicos</strong>.
+          </p>
+
+          <div style="background: var(--bg-surface-elevated); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 20px; font-family: monospace; font-size: 0.85rem; color: var(--text-primary); display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fa-brands fa-google-drive text-green"></i>
+            <span id="finishSuccessFileName">2026-08-25_Ciclico_Centro_1300_Revisado</span>
+          </div>
+
+          <!-- The question prompted to the user -->
+          <div style="background: rgba(59, 130, 246, 0.08); border: 1px dashed rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+            <h4 style="font-size: 1rem; color: var(--text-primary); margin-bottom: 6px;">
+              <i class="fa-solid fa-circle-question text-primary"></i> ¿Deseas descargar el reporte revisado ahora?
+            </h4>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0;">
+              Puedes descargar una copia directa en formato Excel (.xlsx) a tu computadora o abrirlo en Google Drive.
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+          <div style="display: flex; gap: 10px; width: 100%; flex-wrap: wrap;">
+            <a href="#" id="btnDownloadRevisedExcelDoc" class="btn btn-primary btn-lg" style="flex: 1; min-width: 220px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700;">
+              <i class="fa-solid fa-file-arrow-down"></i> Sí, Descargar Reporte (.xlsx)
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer" id="btnOpenRevisedGoogleDrive" class="btn btn-success btn-lg" style="flex: 1; min-width: 200px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700;">
+              <i class="fa-brands fa-google-drive"></i> Abrir en Google Drive
+            </a>
+          </div>
+          <button type="button" class="btn btn-outline btn-block" id="btnCloseFinishReviewSuccessModal">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- ========================================================================= -->
+    <!-- MODAL: GESTIÓN DE MÚLTIPLES UBICACIONES & CONTEO POR UBICACIÓN            -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="multiLocationModal">
+      <div class="modal-card" style="max-width: 680px;">
+        <div class="modal-header">
+          <div class="modal-title text-primary" style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+              <i class="fa-solid fa-map-location-dot text-primary"></i>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 1.15rem;">Múltiples Ubicaciones por SKU</h3>
+              <p class="modal-subtitle" id="multiLocItemSubtitle" style="margin: 0; font-size: 0.8rem; color: var(--text-secondary);">SKU: -</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close" id="btnCloseMultiLocModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="multi-loc-prompt-card" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px;">
+            <i class="fa-solid fa-circle-question text-primary" style="font-size: 1.3rem; margin-top: 2px;"></i>
+            <div>
+              <strong style="color: var(--text-primary); font-size: 0.92rem;">¿Se encuentra este artículo en diferentes ubicaciones?</strong>
+              <p style="margin: 3px 0 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.35;">
+                Registra cada ubicación encontrada con su conteo físico y la cantidad en mal estado. El sistema consolidará automáticamente los totales y la celda de ubicación.
+              </p>
+            </div>
+          </div>
+
+          <div class="table-responsive" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: 8px;">
+            <table class="data-table" style="margin: 0;">
+              <thead>
+                <tr style="background: var(--bg-surface-elevated);">
+                  <th style="width: 45%;">Ubicación / Pasillo</th>
+                  <th style="width: 25%;" class="text-center">Stock Físico</th>
+                  <th style="width: 20%;" class="text-center">Mal Estado</th>
+                  <th style="width: 10%;" class="text-center">Quitar</th>
+                </tr>
+              </thead>
+              <tbody id="multiLocRowsTbody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-3" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <button type="button" class="btn btn-outline btn-sm" id="btnAddLocRowBtn" style="border-color: var(--primary); color: var(--primary); font-weight: 600;">
+              <i class="fa-solid fa-plus"></i> + Agregar Otra Ubicación
+            </button>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">Puedes agregar todas las ubicaciones necesarias</span>
+          </div>
+
+          <!-- Live Totals Summary Card -->
+          <div class="multi-loc-summary-card mt-3" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block;">Total Stock Físico:</span>
+              <strong class="text-primary" id="multiLocTotalPhysical" style="font-size: 1.25rem; font-family: var(--font-mono);">0</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block;">Total Mal Estado:</span>
+              <strong class="text-amber" id="multiLocTotalDamaged" style="font-size: 1.25rem; font-family: var(--font-mono);">0</strong>
+            </div>
+            <div style="grid-column: span 2; border-top: 1px dashed var(--border-subtle); padding-top: 8px;">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 3px;">Ubicación Real Consolidada:</span>
+              <code id="multiLocConsolidatedString" style="background: var(--bg-surface); padding: 4px 8px; border-radius: 6px; font-size: 0.88rem; color: var(--primary); display: block; overflow-x: auto; white-space: nowrap; border: 1px solid var(--border-subtle);">-</code>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelMultiLocModal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnSaveMultiLocModal">
+            <i class="fa-solid fa-check-double"></i> Guardar Ubicaciones y Conteos
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: CAPTURA DE CÁMARA EN VIVO / RESPALDO GRÁFICO DE MAL ESTADO         -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="cameraCaptureModal">
+      <div class="modal-card camera-modal-card">
+        <div class="modal-header">
+          <div class="modal-title text-amber" style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+              <i class="fa-solid fa-camera text-amber"></i>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 1.15rem;">Cámara &bull; Respaldo Gráfico</h3>
+              <p class="modal-subtitle" id="cameraItemSubtitle" style="margin: 0; font-size: 0.8rem; color: var(--text-secondary);">SKU: -</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close" id="btnCloseCameraModal">&times;</button>
+        </div>
+
+        <div class="modal-body camera-modal-body">
+          <div class="camera-target-banner">
+            <span class="camera-sku-pill font-mono" id="cameraSkuPill">SKU</span>
+            <span class="camera-item-name" id="cameraItemName">Descripción</span>
+            <span class="camera-mal-estado-badge" id="cameraMalEstadoBadge">0 en Mal Estado</span>
+          </div>
+
+          <!-- Video Viewfinder Container -->
+          <div class="camera-viewfinder" id="cameraViewfinder">
+            <video id="cameraVideoFeed" autoplay playsinline muted></video>
+            <canvas id="cameraCanvas" style="display: none;"></canvas>
+            <img id="cameraSnapshotPreview" class="camera-snapshot-img hidden" alt="Captura de evidencia">
+
+            <!-- Viewfinder Overlay Guides -->
+            <div class="viewfinder-guides" id="viewfinderGuides">
+              <div class="guide-corner top-left"></div>
+              <div class="guide-corner top-right"></div>
+              <div class="guide-corner bottom-left"></div>
+              <div class="guide-corner bottom-right"></div>
+              <div class="viewfinder-live-badge"><i class="fa-solid fa-circle live-dot"></i> CÁMARA EN VIVO</div>
+            </div>
+
+            <!-- Permission Denied / Error State -->
+            <div class="camera-error-state hidden" id="cameraErrorState">
+              <i class="fa-solid fa-video-slash"></i>
+              <h4>Acceso a la cámara no disponible</h4>
+              <p id="cameraErrorMessage">Por favor otorga permiso de cámara en el navegador o selecciona una imagen de tu dispositivo.</p>
+              <button type="button" class="btn btn-primary btn-sm" id="btnCameraFallbackUpload">
+                <i class="fa-solid fa-folder-open"></i> Seleccionar Foto de Galería
+              </button>
+            </div>
+          </div>
+
+          <!-- Live & Review Controls -->
+          <div class="camera-controls">
+            <!-- Mode 1: Live Capture -->
+            <div class="camera-live-bar" id="cameraLiveBar">
+              <button type="button" class="btn-camera-ctrl" id="btnSwitchCameraFacing" title="Cambiar cámara frontal / trasera">
+                <i class="fa-solid fa-camera-rotate"></i>
+              </button>
+
+              <button type="button" class="btn-shutter-main" id="btnShutterCapture" title="Tomar Fotografía">
+                <div class="shutter-circle"></div>
+              </button>
+
+              <button type="button" class="btn-camera-ctrl" id="btnOpenGalleryPicker" title="Subir desde galería o archivo">
+                <i class="fa-solid fa-images"></i>
+              </button>
+            </div>
+
+            <!-- Mode 2: Snapshot Review -->
+            <div class="camera-review-bar hidden" id="cameraReviewBar">
+              <button type="button" class="btn btn-outline" id="btnRetakeSnapshot">
+                <i class="fa-solid fa-rotate-left"></i> Reintentar
+              </button>
+              <button type="button" class="btn btn-success" id="btnConfirmUploadSnapshot">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Drive
+              </button>
+            </div>
+          </div>
+
+          <!-- Hidden Input for file selection -->
+          <input type="file" accept="image/*" id="cameraModalFileInput" style="display: none;">
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: VISOR DE FOTOS / EVIDENCIAS (LIGHTBOX)                             -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="imageLightboxModal">
+      <div class="modal-card lightbox-modal-card">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="fa-solid fa-image text-primary"></i>
+            <h3 id="lightboxTitle">Evidencia Fotográfica</h3>
+          </div>
+          <button class="modal-close" id="btnCloseLightbox">&times;</button>
+        </div>
+        <div class="modal-body text-center">
+          <div class="lightbox-img-wrapper">
+            <img id="lightboxImg" src="" alt="Evidencia de inventario">
+          </div>
+          <div class="lightbox-footer-info mt-2">
+            <span class="text-muted" id="lightboxSubtitle">Ruta de archivo</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a href="#" target="_blank" id="lightboxOpenNewTabBtn" class="btn btn-outline">
+            <i class="fa-solid fa-up-right-from-square"></i> Abrir en pestaña nueva
+          </a>
+          <button class="btn btn-primary" id="btnCloseLightboxBtn">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: CONFIRMAR FINALIZACIÓN DE INVENTARIO BARRIDO                       -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="finishBarridoModal">
+      <div class="modal-card" style="max-width: 560px;">
+        <div class="modal-header">
+          <div class="modal-title text-success">
+            <i class="fa-solid fa-flag-checkered"></i>
+            <h3>Finalizar Inventario de Barrido</h3>
+          </div>
+          <button class="modal-close" id="btnCloseFinishBarridoModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info" style="background: rgba(15, 118, 110, 0.1); border: 1px solid rgba(15, 118, 110, 0.3); border-radius: 8px; padding: 12px; font-size: 0.88rem; margin-bottom: 16px; color: var(--text-primary);">
+            <i class="fa-solid fa-file-excel text-teal" style="margin-right: 6px;"></i>
+            <strong>Generación Automática de Excel:</strong> Al finalizar, se concluirá el ciclo de barrido del Centro y se generará el archivo oficial en Excel con las 16 columnas completas (incluyendo unidades en Mal Estado).
+          </div>
+
+          <div class="finish-barrido-kpi-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px;">
+            <div style="background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Centro Activo:</span>
+              <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary);" id="finishBarridoCentroText">Centro 1300</div>
+            </div>
+            <div style="background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Ítems Barridos:</span>
+              <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);" id="finishBarridoCountedText">0 ítems</div>
+            </div>
+            <div style="background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Conformes / Sin Dif:</span>
+              <div style="font-size: 1.1rem; font-weight: 700; color: #10b981;" id="finishBarridoExactText">0 ítems</div>
+            </div>
+            <div style="background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Unidades Mal Estado (Col P):</span>
+              <div style="font-size: 1.1rem; font-weight: 700; color: #ef4444;" id="finishBarridoDamagedText">0 unid.</div>
+            </div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="finishBarridoNotesInput"><i class="fa-solid fa-comment-dots text-primary"></i> Observaciones / Novedades del Barrido (Opcional):</label>
+            <textarea id="finishBarridoNotesInput" class="form-control" rows="2" placeholder="Ej: Barrido completado en pasillos A y B, repuestos reubicados..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelFinishBarridoModal">Cancelar</button>
+          <button type="button" class="btn btn-success btn-lg" id="btnSubmitFinishBarrido">
+            <i class="fa-solid fa-flag-checkered"></i> CONCLUIR Y GENERAR EXCEL
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: ÉXITO DE FINALIZACIÓN DE BARRIDO & DESCARGA DIRECTA DE EXCEL       -->
+    <!-- ========================================================================= -->
+    <div class="modal-overlay hidden" id="finishBarridoSuccessModal">
+      <div class="modal-card" style="max-width: 540px; text-align: center;">
+        <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+          <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto; color: #10b981; font-size: 2rem;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+        </div>
+        <div class="modal-body" style="padding-top: 10px;">
+          <h3 style="font-size: 1.35rem; margin-bottom: 8px; color: var(--text-primary);">¡Inventario de Barrido Finalizado!</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
+            El barrido se ha registrado y concluido formalmente. Se ha generado tu reporte oficial en formato Excel.
+          </p>
+
+          <div style="background: var(--bg-surface-elevated); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 20px; font-family: monospace; font-size: 0.85rem; color: var(--text-primary); display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fa-solid fa-file-excel text-green"></i>
+            <span id="finishBarridoSuccessFileName">BARRIDO_NIBOL_CENTRO_1300.xlsx</span>
+          </div>
+
+          <div style="background: rgba(15, 118, 110, 0.08); border: 1px dashed rgba(15, 118, 110, 0.4); border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+            <h4 style="font-size: 1rem; color: var(--text-primary); margin-bottom: 6px;">
+              <i class="fa-solid fa-circle-arrow-down text-teal"></i> Descarga de Reporte
+            </h4>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0;">
+              Descarga tu archivo Excel para archivar o enviar a jefatura de almacén.
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+          <div style="display: flex; gap: 10px; width: 100%; flex-wrap: wrap;">
+            <a href="#" id="btnDownloadBarridoExcelDoc" class="btn btn-primary btn-lg" style="flex: 1; min-width: 220px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; background: #0f766e; border-color: #0f766e;">
+              <i class="fa-solid fa-file-arrow-down"></i> Descargar Reporte Excel (.xlsx)
+            </a>
+            <button type="button" id="btnCloseBarridoSuccessAndReturn" class="btn btn-outline" style="flex: 1; min-width: 140px;">
+              <i class="fa-solid fa-arrow-left"></i> Volver a Tareas
+            </button>
+          </div>
         </div>
       </div>
     </div>

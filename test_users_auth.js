@@ -43,7 +43,7 @@ const TEST_USERS = [
   { usuario: 'JORGE', pass: 'BIGOTE', nombreEsperado: 'JORGE RIOS' },
   { usuario: 'ALONSO', pass: 'POTER', nombreEsperado: 'ALONSO RIOS' },
   { usuario: 'GERMAN', pass: 'NOCHI', nombreEsperado: 'GERMAN MENDEZ' },
-  { usuario: 'ADMIN', pass: 'ADMIN123', nombreEsperado: 'SUPERVISOR ALMACÉN' }
+  { usuario: 'ALONSO', pass: 'ADM', nombreEsperado: 'ALONSO' }
 ];
 
 async function runAuthTests() {
@@ -87,7 +87,7 @@ async function runAuthTests() {
 
   // Test 4: Inventory Count with operator JHAMIL CADIMA
   console.log('\n[TEST 4] Registrando conteo en Excel con operador JHAMIL CADIMA...');
-  const invRes = await request('http://localhost:3000/api/inventory');
+  const invRes = await request('http://localhost:3000/api/inventory?userCargo=ENCARGADO&centro=1300');
   const testSku = (invRes.data && invRes.data.items && invRes.data.items.length > 0) ? invRes.data.items[0].sku : 'SKU-1001';
   
   const countRes = await request('http://localhost:3000/api/inventory/count', { method: 'POST' }, {
