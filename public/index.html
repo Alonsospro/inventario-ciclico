@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NIBOL | Sistema Integral de Inventarios</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Chart.js & Html5-QRCode CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <!-- App Stylesheets -->
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow"></div>
+  <div class="ambient-glow-2"></div>
+
+  <div id="app">
+    <!-- Top Navigation Bar -->
+    <header class="navbar" id="main-navbar" style="display: none;">
+      <div class="nav-brand">
+        <i class="fa-solid fa-boxes-stacked" style="color: var(--primary);"></i>
+        <span>NIBOL</span>
+        <span class="brand-badge">INVENTARIOS</span>
+      </div>
+
+      <nav>
+        <ul class="nav-links" id="nav-links">
+          <li><button class="nav-item-btn active" data-view="inventories"><i class="fa-solid fa-list-check"></i> Inventarios</button></li>
+          <li><button class="nav-item-btn" data-view="barrido" style="color: #38bdf8;"><i class="fa-solid fa-barcode"></i> Modo Barrido</button></li>
+          <li class="role-encargado-admin"><button class="nav-item-btn" data-view="assignments"><i class="fa-solid fa-user-tag"></i> Asignaciones</button></li>
+          <li class="role-admin-only"><button class="nav-item-btn" data-view="justifications" style="color: #f59e0b;"><i class="fa-solid fa-clipboard-check"></i> Justificaciones</button></li>
+          <li><button class="nav-item-btn" data-view="history"><i class="fa-solid fa-clock-rotate-left"></i> Historial Drive</button></li>
+          <li class="role-encargado-admin"><button class="nav-item-btn" data-view="dashboard"><i class="fa-solid fa-chart-pie"></i> Métricas & ERU</button></li>
+          <li class="role-admin-only"><button class="nav-item-btn" data-view="users"><i class="fa-solid fa-users-gear"></i> Accesos</button></li>
+        </ul>
+      </nav>
+
+      <div class="nav-user-panel">
+        <button class="btn btn-secondary btn-sm" id="btn-toggle-theme" title="Cambiar tema">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
+        <div class="user-tag" id="user-info-badge">
+          <span class="user-name" id="nav-user-name">Usuario</span>
+          <span class="user-role" id="nav-user-role">ROL - CENTRO</span>
+        </div>
+
+        <button class="btn btn-danger btn-sm" id="btn-logout" title="Cerrar Sesión">
+          <i class="fa-solid fa-right-from-bracket"></i> Salir
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Views Area -->
+    <main class="main-content">
+      
+      <!-- VIEW: LOGIN -->
+      <section id="view-login" class="view-container active">
+        <div style="max-width: 440px; margin: 4rem auto 2rem auto;">
+          <div class="card" style="padding: 2.25rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+              <div style="width: 64px; height: 64px; background: var(--primary-glow); border-radius: var(--radius-lg); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; border: 1px solid var(--primary);">
+                <i class="fa-solid fa-boxes-stacked" style="font-size: 2rem; color: var(--primary);"></i>
+              </div>
+              <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">NIBOL S.A.</h1>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">Control de Inventarios & Barrido</p>
+            </div>
+
+            <form id="form-login">
+              <div class="form-group">
+                <label class="form-label" for="login-username"><i class="fa-solid fa-user"></i> Usuario</label>
+                <input type="text" id="login-username" class="form-input" placeholder="Ingrese su usuario" autocomplete="username" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="login-password"><i class="fa-solid fa-lock"></i> Contraseña o PIN</label>
+                <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
+              </div>
+
+              <div style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-login-submit">
+                  <i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar Sesión
+                </button>
+              </div>
+            </form>
+
+            <div style="margin-top: 1.5rem; text-align: center; font-size: 0.8rem; color: var(--text-dim);">
+              <p>Autenticación segura por roles y centros de operación</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: INVENTORIES LIST -->
+      <section id="view-inventories" class="view-container">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Inventarios Disponibles</h2>
+              <p class="stat-subtext" id="inv-header-subtitle">Listado de inventarios según centro y permisos</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <select id="filter-inv-type" class="form-select" style="width: auto; min-width: 140px;">
+                <option value="TODOS">Todos los tipos</option>
+                <option value="CICLICO">Cíclico</option>
+                <option value="BARRIDO">Barrido</option>
+                <option value="SEMANAL">Semanal</option>
+                <option value="MENSUAL">Mensual</option>
+              </select>
+
+              <select id="filter-inv-center" class="form-select role-admin-only" style="width: auto; min-width: 140px;">
+                <option value="TODOS">Todos los centros</option>
+                <option value="WARNES">Warnes</option>
+                <option value="CENTRAL">Central</option>
+                <option value="SANTA_CRUZ">Santa Cruz</option>
+                <option value="COCHABAMBA">Cochabamba</option>
+                <option value="LA_PAZ">La Paz</option>
+                <option value="MONTERO">Montero</option>
+              </select>
+
+              <button class="btn btn-primary role-encargado-admin" id="btn-open-new-inv-modal">
+                <i class="fa-solid fa-plus"></i> Nuevo Inventario
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="table-inventories">
+              <thead>
+                <tr>
+                  <th>ID / Código</th>
+                  <th>Nombre del Inventario</th>
+                  <th>Tipo</th>
+                  <th>Centro</th>
+                  <th>Estado</th>
+                  <th>Progreso</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-inventories">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: OPERATIVE COUNT (BLIND COUNT) -->
+      <section id="view-count" class="view-container">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <button class="btn btn-secondary btn-sm" id="btn-back-to-invs" style="margin-bottom: 0.5rem;">
+                <i class="fa-solid fa-arrow-left"></i> Volver al listado
+              </button>
+              <h2 class="card-title" id="count-inv-title">Conteo Operativo</h2>
+              <div id="count-blind-banner" class="badge badge-warning" style="margin-top: 0.4rem; display: none;">
+                <i class="fa-solid fa-eye-slash"></i> MODO CONTEO CIEGO ACTIVO (Columnas de sistema ocultas)
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm" id="btn-open-cam-count">
+                <i class="fa-solid fa-camera"></i> Escanear Código
+              </button>
+              <button class="btn btn-primary" id="btn-submit-inv-review">
+                <i class="fa-solid fa-signature"></i> Finalizar Conteo y Firmar
+              </button>
+            </div>
+          </div>
+
+          <!-- Search & Filter Items -->
+          <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;">
+            <input type="text" id="search-count-items" class="form-input" style="flex: 1; min-width: 240px;" placeholder="Buscar por SKU, Código de Barras, Ubicación o Descripción...">
+            <button class="btn btn-secondary" id="btn-add-multiple-location">
+              <i class="fa-solid fa-location-dot"></i> + Nueva Ubicación (Fila Adicional)
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="table-count-items">
+              <thead id="thead-count-items">
+                <!-- Dynamically adjusted headers for blind vs full view -->
+              </thead>
+              <tbody id="tbody-count-items">
+                <!-- Dynamically rendered items -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: DEDICATED BARRIDO SCREEN -->
+      <section id="view-barrido" class="view-container">
+        <div class="card" style="border-top: 4px solid #38bdf8;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title" style="color: #38bdf8;">
+                <i class="fa-solid fa-barcode"></i> Modo Barrido en Pasillo / Racks
+              </h2>
+              <p class="stat-subtext">Lectura continua con cámara/lector láser y registro de ubicaciones</p>
+            </div>
+            <button class="btn btn-warning" id="btn-finish-barrido">
+              <i class="fa-solid fa-flag-checkered"></i> Finalizar Barrido
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" id="barrido-split-grid">
+            <!-- Left Panel: Scanner HUD & Search Input -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div class="scanner-viewport-wrapper" id="barrido-scanner-box">
+                <div id="barrido-reader"></div>
+                <div class="scanner-laser"></div>
+                <div class="scanner-focus-box"></div>
+              </div>
+
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-primary btn-block" id="btn-toggle-barrido-cam">
+                  <i class="fa-solid fa-video"></i> Activar / Pausar Cámara
+                </button>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="input-barrido-manual">
+                  <i class="fa-solid fa-keyboard"></i> Ingreso Manual o Lector Láser (Columna B / SKU)
+                </label>
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="text" id="input-barrido-manual" class="form-input" placeholder="Escanee o escriba código (soporta con/sin prefijo JD_)...">
+                  <button class="btn btn-secondary" id="btn-search-barrido-manual">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Panel: Current Item Details & Quick Count Form -->
+            <div class="card" style="background: var(--bg-glass); border-color: rgba(56, 189, 248, 0.2);">
+              <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; color: #38bdf8;">
+                <i class="fa-solid fa-box-open"></i> Producto Detectado
+              </h3>
+
+              <div id="barrido-empty-state" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-dim);">
+                <i class="fa-solid fa-barcode" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;"></i>
+                <p>Escanee un código de barras o ingréselo manualmente para iniciar el conteo.</p>
+              </div>
+
+              <form id="form-barrido-count" style="display: none;">
+                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; border: 1px solid var(--border-glass);">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--primary);" id="barrido-item-sku">SKU-12345</span>
+                    <span class="badge badge-info" id="barrido-item-abc">ABC: A</span>
+                  </div>
+                  <p style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 0.4rem;" id="barrido-item-desc">Descripción del producto</p>
+                  <p style="font-size: 0.8rem; color: var(--text-dim);">
+                    Ubicación original: <strong id="barrido-item-orig-loc" style="color: var(--text-muted);">-</strong>
+                  </p>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="barrido-input-loc"><i class="fa-solid fa-location-dot"></i> Ubicación donde se cuenta</label>
+                  <input type="text" id="barrido-input-loc" class="form-input" placeholder="Ej: RACK-A1-02" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                  <div class="form-group">
+                    <label class="form-label" for="barrido-input-qty"><i class="fa-solid fa-calculator"></i> Cantidad Física</label>
+                    <input type="number" id="barrido-input-qty" class="form-input" min="0" value="1" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="barrido-input-damaged"><i class="fa-solid fa-triangle-exclamation"></i> Mal Estado (Col P)</label>
+                    <input type="number" id="barrido-input-damaged" class="form-input" min="0" value="0">
+                  </div>
+                </div>
+
+                <!-- Damaged goods photo trigger -->
+                <div id="barrido-photo-box" style="display: none; margin-bottom: 1rem;">
+                  <label class="form-label"><i class="fa-solid fa-camera"></i> Foto de Evidencia de Mal Estado (Columna P)</label>
+                  <div class="photo-upload-zone" id="zone-barrido-photo">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <p style="font-size: 0.85rem; margin-top: 0.3rem;">Tomar o subir foto de la pieza dañada</p>
+                    <input type="file" id="input-barrido-photo-file" accept="image/*" capture="environment" style="display: none;">
+                  </div>
+                  <img id="img-barrido-preview" class="photo-preview-img" style="display: none;" alt="Evidencia">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-save-barrido-item">
+                  <i class="fa-solid fa-check"></i> Registrar Conteo
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: ASSIGNMENTS (ENCARGADO & ADMIN) -->
+      <section id="view-assignments" class="view-container">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i class="fa-solid fa-user-tag" style="color: var(--primary);"></i> Asignación y Reasignación de Tareas</h2>
+              <p class="stat-subtext">Gestión estricta por centro para evitar duplicidad de pendientes</p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 240px; margin-bottom: 0;">
+              <label class="form-label">Seleccionar Inventario Activo</label>
+              <select id="select-assign-inv" class="form-select">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+
+            <div class="form-group" style="flex: 1; min-width: 240px; margin-bottom: 0;">
+              <label class="form-label">Reasignar ítems seleccionados a Auxiliar:</label>
+              <div style="display: flex; gap: 0.5rem;">
+                <select id="select-assign-aux" class="form-select">
+                  <!-- Dynamically populated -->
+                </select>
+                <button class="btn btn-primary" id="btn-execute-reassign">
+                  <i class="fa-solid fa-arrows-rotate"></i> Reasignar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="table-assignments">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"><input type="checkbox" id="chk-select-all-assign"></th>
+                  <th>SKU</th>
+                  <th>Descripción</th>
+                  <th>Ubicación</th>
+                  <th>ABC</th>
+                  <th>Responsable Actual</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-assignments">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: JUSTIFICATIONS (ADMIN ONLY) -->
+      <section id="view-justifications" class="view-container">
+        <div class="card" style="border-top: 4px solid var(--warning);">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title" style="color: var(--warning);">
+                <i class="fa-solid fa-clipboard-check"></i> Panel de Justificaciones y Cierre Final (Admin)
+              </h2>
+              <p class="stat-subtext">Revisión de diferencias, mermas, fotos de mal estado y creación en Google Drive</p>
+            </div>
+          </div>
+
+          <div id="justifications-container">
+            <!-- Dynamically loaded list of inventories with pending differences -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: DRIVE HISTORY -->
+      <section id="view-history" class="view-container">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> Historial de Inventarios en Google Drive</h2>
+              <p class="stat-subtext">Archivos oficiales cerrados con nomenclatura estándar y reportes descargables</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="table-history">
+              <thead>
+                <tr>
+                  <th>Archivo Drive</th>
+                  <th>Ruta Lógica Drive</th>
+                  <th>Tipo</th>
+                  <th>Centro</th>
+                  <th>Cerrado Por</th>
+                  <th>Fecha de Cierre</th>
+                  <th>Ítems</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-history">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: DASHBOARD & ERU METRICS -->
+      <section id="view-dashboard" class="view-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-main);">
+            <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i> Dashboard Ejecutivo & Métricas ERU
+          </h2>
+
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <select id="dash-filter-type" class="form-select" style="width: auto;">
+              <option value="TODOS">Todos los Tipos</option>
+              <option value="CICLICO">Cíclico</option>
+              <option value="BARRIDO">Barrido</option>
+              <option value="SEMANAL">Semanal</option>
+              <option value="MENSUAL">Mensual</option>
+            </select>
+
+            <select id="dash-filter-center" class="form-select role-admin-only" style="width: auto;">
+              <option value="TODOS">Todos los Centros</option>
+              <option value="WARNES">Warnes</option>
+              <option value="CENTRAL">Central</option>
+              <option value="SANTA_CRUZ">Santa Cruz</option>
+              <option value="COCHABAMBA">Cochabamba</option>
+              <option value="LA_PAZ">La Paz</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="dash-stats-grid">
+          <div class="stat-tile">
+            <span class="stat-label">Ítems Auditados</span>
+            <span class="stat-value" id="stat-audited">0</span>
+            <span class="stat-subtext" id="stat-planned">De 0 planificados</span>
+          </div>
+
+          <div class="stat-tile info">
+            <span class="stat-label">Exactitud de Registro (ERU)</span>
+            <span class="stat-value" id="stat-eru" style="color: #38bdf8;">100.0%</span>
+            <span class="stat-subtext">Ubicación y cantidad exacta</span>
+          </div>
+
+          <div class="stat-tile">
+            <span class="stat-label">Exactitud Global</span>
+            <span class="stat-value" id="stat-accuracy" style="color: var(--primary);">100.0%</span>
+            <span class="stat-subtext" id="stat-exact-count">0 ítems sin diferencias</span>
+          </div>
+
+          <div class="stat-tile danger">
+            <span class="stat-label">Costo Absoluto Diferencias</span>
+            <span class="stat-value" id="stat-diff-cost" style="color: var(--danger);">$0.00</span>
+            <span class="stat-subtext" id="stat-damaged-count">0 piezas en mal estado</span>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;" id="dash-charts-grid">
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-chart-column"></i> Rendimiento por Clasificación ABC</h3>
+            <div style="position: relative; height: 280px;">
+              <canvas id="chart-abc"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-building"></i> Comparativa por Centro de Operaciones</h3>
+            <div style="position: relative; height: 280px;">
+              <canvas id="chart-centers"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Trail Table -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <h3 class="card-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-shield-halved"></i> Registro de Auditoría en Tiempo Real (auditService)</h3>
+          <div class="table-responsive" style="max-height: 320px;">
+            <table class="data-table" id="table-audit-logs">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Acción</th>
+                  <th>Usuario</th>
+                  <th>Centro</th>
+                  <th>SKU / Objetivo</th>
+                  <th>Detalles / Razón</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-audit-logs">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: USER MANAGEMENT (SUPERADMIN & ADMIN) -->
+      <section id="view-users" class="view-container">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i class="fa-solid fa-users-gear" style="color: var(--primary);"></i> Administración de Usuarios y Centros</h2>
+              <p class="stat-subtext">Gestión de accesos, roles y contraseñas</p>
+            </div>
+            <button class="btn btn-primary" id="btn-open-create-user-modal">
+              <i class="fa-solid fa-user-plus"></i> Crear Usuario
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="table-users">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Nombre Completo</th>
+                  <th>Rol</th>
+                  <th>Centro Asignado</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-users">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>&copy; 2026 NIBOL S.A. — Sistema Integrado de Inventarios | Todos los derechos reservados.</p>
+    </footer>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Modal: Count Confirmation (Handles 0 count and normal counts) -->
+  <div class="modal-overlay" id="modal-count-confirm">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="card-title"><i class="fa-solid fa-check-to-slot"></i> Registrar Conteo Físico</h3>
+        <button class="close-btn" data-close-modal="modal-count-confirm">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; border: 1px solid var(--border-glass);">
+          <h4 id="modal-count-sku" style="color: var(--primary); font-size: 1.1rem; font-weight: 700;">JD-AH12345</h4>
+          <p id="modal-count-desc" style="font-size: 0.9rem; color: var(--text-main);">Descripción del producto</p>
+          <p id="modal-count-loc" style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.2rem;">Ubicación: RACK-A1-01</p>
+        </div>
+
+        <form id="form-confirm-count">
+          <input type="hidden" id="modal-count-item-id">
+          <input type="hidden" id="modal-count-is-new-loc" value="false">
+
+          <div class="form-group" id="group-new-location-input" style="display: none;">
+            <label class="form-label" for="modal-input-new-loc"><i class="fa-solid fa-location-dot"></i> Nueva Ubicación Detectada (No sobreescribe la original)</label>
+            <input type="text" id="modal-input-new-loc" class="form-input" placeholder="Ej: RACK-B3-04">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-input-qty"><i class="fa-solid fa-calculator"></i> Cantidad Física Encontrada</label>
+            <input type="number" id="modal-input-qty" class="form-input" min="0" placeholder="0" required>
+            <small style="color: var(--text-dim); font-size: 0.75rem;">Se permite confirmar con cantidad 0 si no hay stock físico.</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-input-damaged"><i class="fa-solid fa-triangle-exclamation"></i> Piezas en Mal Estado (Columna P)</label>
+            <input type="number" id="modal-input-damaged" class="form-input" min="0" value="0">
+          </div>
+
+          <div class="modal-footer" style="padding: 1rem 0 0 0; margin-top: 1rem;">
+            <button type="button" class="btn btn-secondary" data-close-modal="modal-count-confirm">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-count-modal"><i class="fa-solid fa-check"></i> Guardar Conteo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Camera Scanner -->
+  <div class="modal-overlay" id="modal-camera-scanner">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="card-title"><i class="fa-solid fa-camera"></i> Escáner de Código de Barras</h3>
+        <button class="close-btn" data-close-modal="modal-camera-scanner">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="scanner-viewport-wrapper">
+          <div id="general-reader"></div>
+          <div class="scanner-laser"></div>
+          <div class="scanner-focus-box"></div>
+        </div>
+        <p style="text-align: center; color: var(--text-dim); font-size: 0.85rem; margin-top: 1rem;">
+          Apunte la cámara al código de barras. La lectura tiene retardo de 1s para evitar lecturas dobles.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-camera-scanner">Cerrar Escáner</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create New Inventory -->
+  <div class="modal-overlay" id="modal-new-inventory">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="card-title"><i class="fa-solid fa-folder-plus"></i> Crear Nuevo Inventario</h3>
+        <button class="close-btn" data-close-modal="modal-new-inventory">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-new-inventory">
+          <div class="form-group">
+            <label class="form-label" for="new-inv-name">Nombre descriptivo</label>
+            <input type="text" id="new-inv-name" class="form-input" placeholder="Ej: Cíclico Repuestos Filtros" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="new-inv-type">Tipo de Inventario</label>
+              <select id="new-inv-type" class="form-select" required>
+                <option value="CICLICO">Cíclico</option>
+                <option value="BARRIDO">Barrido</option>
+                <option value="SEMANAL">Semanal</option>
+                <option value="MENSUAL">Mensual</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="new-inv-center">Centro de Operaciones</label>
+              <select id="new-inv-center" class="form-select" required>
+                <option value="WARNES">Warnes</option>
+                <option value="CENTRAL">Central</option>
+                <option value="SANTA_CRUZ">Santa Cruz</option>
+                <option value="COCHABAMBA">Cochabamba</option>
+                <option value="LA_PAZ">La Paz</option>
+                <option value="MONTERO">Montero</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top: 0.5rem; margin-bottom: 1rem;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-fetch-gas-template">
+              <i class="fa-solid fa-cloud-arrow-down"></i> Cargar productos desde Google Apps Script
+            </button>
+            <span id="gas-fetch-status" style="font-size: 0.8rem; color: var(--text-dim); margin-left: 0.5rem;"></span>
+          </div>
+
+          <div class="modal-footer" style="padding: 1rem 0 0 0;">
+            <button type="button" class="btn btn-secondary" data-close-modal="modal-new-inventory">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Crear Inventario</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Justification Form -->
+  <div class="modal-overlay" id="modal-justification">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="card-title"><i class="fa-solid fa-gavel"></i> Justificar Diferencia / Mal Estado</h3>
+        <button class="close-btn" data-close-modal="modal-justification">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; border: 1px solid var(--border-glass);">
+          <div style="display: flex; justify-content: space-between;">
+            <h4 id="just-modal-sku" style="color: var(--warning); font-size: 1.1rem; font-weight: 700;">JD-AH12345</h4>
+            <span class="badge badge-danger" id="just-modal-diff">Dif: -2</span>
+          </div>
+          <p id="just-modal-desc" style="font-size: 0.9rem; color: var(--text-main);">Descripción</p>
+          <p id="just-modal-cost" style="font-size: 0.8rem; color: var(--danger); margin-top: 0.3rem;">Impacto: -$136.40</p>
+        </div>
+
+        <form id="form-submit-justification">
+          <input type="hidden" id="just-modal-inv-id">
+          <input type="hidden" id="just-modal-sku-input">
+
+          <div class="form-group">
+            <label class="form-label" for="just-select-reason">Tipo de Justificación</label>
+            <select id="just-select-reason" class="form-select" required>
+              <option value="AJUSTE_OPERATIVO">Ajuste por Error de Conteo Anterior</option>
+              <option value="MERMA_ROTURA">Merma / Producto en Mal Estado</option>
+              <option value="TRASPASO_PENDIENTE">Traspaso entre Centros Pendiente</option>
+              <option value="SOBRANTE_SIN_CODIFICAR">Sobrante Físico Sin Codificar</option>
+              <option value="OTRO">Otro Motivo Aprobado</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="just-input-text">Explicación / Detalle de la Justificación</label>
+            <textarea id="just-input-text" class="form-textarea" rows="3" placeholder="Detalle las razones del ajuste y la auditoría..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Foto de Evidencia (Binario)</label>
+            <div class="photo-upload-zone" id="zone-just-photo">
+              <i class="fa-solid fa-camera" style="font-size: 1.5rem; color: var(--primary);"></i>
+              <p style="font-size: 0.85rem; margin-top: 0.3rem;">Subir foto de respaldo</p>
+              <input type="file" id="input-just-photo-file" accept="image/*" style="display: none;">
+            </div>
+            <input type="hidden" id="just-photo-url">
+            <img id="img-just-preview" class="photo-preview-img" style="display: none;" alt="Preview">
+          </div>
+
+          <div class="modal-footer" style="padding: 1rem 0 0 0;">
+            <button type="button" class="btn btn-secondary" data-close-modal="modal-justification">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Justificación</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Delete Inventory with Password/Key Confirmation -->
+  <div class="modal-overlay" id="modal-delete-confirm">
+    <div class="modal-box" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="card-title" style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Confirmar Eliminación</h3>
+        <button class="close-btn" data-close-modal="modal-delete-confirm">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+          Esta acción es destructiva y quedará registrada en la auditoría. Ingrese la clave de administrador para confirmar:
+        </p>
+
+        <form id="form-delete-confirm">
+          <input type="hidden" id="delete-modal-inv-id">
+          <div class="form-group">
+            <label class="form-label" for="delete-modal-key">Clave de Confirmación</label>
+            <input type="password" id="delete-modal-key" class="form-input" placeholder="Clave de seguridad" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="delete-modal-reason">Motivo de eliminación</label>
+            <input type="text" id="delete-modal-reason" class="form-input" placeholder="Ej: Inventario duplicado por error" required>
+          </div>
+
+          <div class="modal-footer" style="padding: 1rem 0 0 0;">
+            <button type="button" class="btn btn-secondary" data-close-modal="modal-delete-confirm">Cancelar</button>
+            <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Eliminar Definitivamente</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create / Edit User -->
+  <div class="modal-overlay" id="modal-user-form">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="card-title"><i class="fa-solid fa-user-plus"></i> Gestión de Usuario</h3>
+        <button class="close-btn" data-close-modal="modal-user-form">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-user-crud">
+          <input type="hidden" id="user-form-id">
+
+          <div class="form-group">
+            <label class="form-label" for="user-form-username">Usuario (Login)</label>
+            <input type="text" id="user-form-username" class="form-input" placeholder="Ej: juan_perez" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="user-form-display">Nombre Completo</label>
+            <input type="text" id="user-form-display" class="form-input" placeholder="Ej: Juan Pérez" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="user-form-pass">Contraseña / PIN</label>
+            <input type="password" id="user-form-pass" class="form-input" placeholder="••••••••">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="user-form-role">Rol</label>
+              <select id="user-form-role" class="form-select" required>
+                <option value="AUXILIAR">Auxiliar</option>
+                <option value="ENCARGADO">Encargado</option>
+                <option value="ADMIN">Administrador</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="user-form-center">Centro</label>
+              <select id="user-form-center" class="form-select" required>
+                <option value="WARNES">Warnes</option>
+                <option value="CENTRAL">Central</option>
+                <option value="SANTA_CRUZ">Santa Cruz</option>
+                <option value="COCHABAMBA">Cochabamba</option>
+                <option value="LA_PAZ">La Paz</option>
+                <option value="MONTERO">Montero</option>
+                <option value="GLOBAL">Global (Todos)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding: 1rem 0 0 0;">
+            <button type="button" class="btn btn-secondary" data-close-modal="modal-user-form">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Usuario</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- App Frontend JavaScript Modules -->
+  <script src="/js/config.js"></script>
+  <script src="/js/components/toastNotification.js"></script>
+  <script src="/js/components/confirmationModal.js"></script>
+  <script src="/js/components/scannerModal.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/views/loginView.js"></script>
+  <script src="/js/views/inventoryView.js"></script>
+  <script src="/js/views/barridoView.js"></script>
+  <script src="/js/views/assignmentsView.js"></script>
+  <script src="/js/views/justificationsView.js"></script>
+  <script src="/js/views/historyView.js"></script>
+  <script src="/js/views/dashboardView.js"></script>
+  <script src="/js/views/userManagementView.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

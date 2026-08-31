@@ -1,0 +1,20 @@
+{
+  "id": "JUST-CICLICO-JD-AH12345-WARNES",
+  "inventoryId": "INV-CICLICO-WARNES-001",
+  "sku": "JD-AH12345",
+  "descripcion": "Filtro de Aceite Motor 6068",
+  "ubicacion": "RACK-A1-01",
+  "stockSistema": 10,
+  "stockFisico": null,
+  "diferencia": 0,
+  "costoDiferencia": 0,
+  "malEstado": 0,
+  "justification": "Diferencia justificada por ajuste de merma",
+  "reasonType": "MERMA_ROTURA",
+  "photoUrl": "/api/photos/sample.jpg",
+  "reviewedBy": "ALONSO",
+  "reviewedAt": "2026-08-31T18:41:35.613Z",
+  "center": "WARNES",
+  "type": "CICLICO",
+  "status": "REVISADO"
+}

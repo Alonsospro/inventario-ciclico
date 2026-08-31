@@ -1,0 +1,79 @@
+[
+  {
+    "id": "USR-SUPERADMIN-ALONSO",
+    "username": "ALONSO",
+    "displayName": "Alonso (Superadmin)",
+    "role": "ADMIN",
+    "center": "GLOBAL",
+    "isSuperadmin": true,
+    "passwordHash": "$2b$10$EWIuNQZkB1ox3zQbhJY4seSuyZzG9mD9q2wX8/I22xzR5GeRSTh1u",
+    "createdAt": "2026-08-31T18:39:08.925Z",
+    "active": true
+  },
+  {
+    "id": "USR-ADMIN-GLOBAL",
+    "username": "admin",
+    "displayName": "Administrador General",
+    "role": "ADMIN",
+    "center": "GLOBAL",
+    "isSuperadmin": false,
+    "passwordHash": "$2b$10$EWIuNQZkB1ox3zQbhJY4sekaxh3i1AQiLfDKZkskb.IZd4hN3oB/K",
+    "createdAt": "2026-08-31T18:39:09.061Z",
+    "active": true
+  },
+  {
+    "id": "USR-ENC-WARNES",
+    "username": "encargado_warnes",
+    "displayName": "Encargado Warnes",
+    "role": "ENCARGADO",
+    "center": "WARNES",
+    "isSuperadmin": false,
+    "passwordHash": "$2b$10$EWIuNQZkB1ox3zQbhJY4seFln0S9XRS6b1/Sp9vEKUtjjpB/F7v3C",
+    "createdAt": "2026-08-31T18:39:09.198Z",
+    "active": true
+  },
+  {
+    "id": "USR-AUX-WARNES-1",
+    "username": "auxiliar_warnes",
+    "displayName": "Carlos Pérez (Auxiliar Warnes)",
+    "role": "AUXILIAR",
+    "center": "WARNES",
+    "isSuperadmin": false,
+    "passwordHash": "$2b$10$EWIuNQZkB1ox3zQbhJY4seJK/NSEvR6db8g23pCxic8WP7yFFAV4i",
+    "createdAt": "2026-08-31T18:39:09.359Z",
+    "active": true
+  },
+  {
+    "id": "USR-AUX-WARNES-2",
+    "username": "auxiliar_warnes2",
+    "displayName": "Jorge Medina (Auxiliar Warnes 2)",
+    "role": "AUXILIAR",
+    "center": "WARNES",
+    "isSuperadmin": false,
+    "passwordHash": "$2b$10$EWIuNQZkB1ox3zQbhJY4seJK/NSEvR6db8g23pCxic8WP7yFFAV4i",
+    "createdAt": "2026-08-31T18:39:09.493Z",
+    "active": true
+  },
+  {
+    "id": "USR-ENC-CENTRAL",
+    "username": "encargado_central",
+    "displayName": "Encargado Central",
+    "role": "ENCARGADO",
+    "center": "CENTRAL",
+    "isSuperadmin": false,
+    "passwordHash": "$2b$10$EWIuNQZkB1ox3zQbhJY4selsdVb2i3WSBL8pfzkqHWm3JslTw3CSO",
+    "createdAt": "2026-08-31T18:39:09.617Z",
+    "active": true
+  },
+  {
+    "id": "USR-AUX-CENTRAL-1",
+    "username": "auxiliar_central",
+    "displayName": "Roberto Siles (Auxiliar Central)",
+    "role": "AUXILIAR",
+    "center": "CENTRAL",
+    "isSuperadmin": false,
+    "passwordHash": "$2b$10$EWIuNQZkB1ox3zQbhJY4seJK/NSEvR6db8g23pCxic8WP7yFFAV4i",
+    "createdAt": "2026-08-31T18:39:09.746Z",
+    "active": true
+  }
+]
