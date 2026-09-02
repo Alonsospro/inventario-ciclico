@@ -1,1 +1,0 @@
-<script class="ds:5" nonce="GXC4uGDvHtmrGwi1674k8g">AF_initDataCallback({key: 'ds:5', hash: '4', data:["youtube",[["https://accounts.youtube.com/accounts/CheckConnection?pmpo\u003dhttps://accounts.google.com\u0026v\u003d1642074486","youtube"]]], sideChannel: {}});</script>
