@@ -11,8 +11,20 @@ class MetricsService {
   }
 
   getAllInventoriesData() {
-    const activeFiles = fs.readdirSync(this.invDir).filter(f => f.endsWith('.json'));
-    const historyFiles = fs.readdirSync(this.historyDir).filter(f => f.endsWith('.json'));
+    let activeFiles = [];
+    let historyFiles = [];
+
+    try {
+      activeFiles = storagePath.listFiles(this.invDir).filter(f => f.endsWith('.json'));
+    } catch (e) {
+      activeFiles = [];
+    }
+
+    try {
+      historyFiles = storagePath.listFiles(this.historyDir).filter(f => f.endsWith('.json'));
+    } catch (e) {
+      historyFiles = [];
+    }
 
     const allInventories = [];
 

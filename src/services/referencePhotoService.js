@@ -18,8 +18,9 @@ class ReferencePhotoService {
     this.ensureLocalDir();
     this.indexLocalFiles();
     
+    const isTesting = process.env.NODE_ENV === 'test' || process.argv.some(arg => typeof arg === 'string' && arg.includes('test'));
     // Initial sync from Google Drive in background only in continuous server environments
-    if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
+    if (!process.env.VERCEL && !isTesting) {
       this.syncDriveFolder().catch(err => {
         console.warn('[referencePhotoService] Initial Drive sync notice:', err.message);
       });

@@ -682,7 +682,7 @@ class InventoryService {
 
   getJustificationsForInventory(inventoryId) {
     try {
-      const files = fs.readdirSync(this.justDir).filter(f => f.endsWith('.json'));
+      const files = storagePath.listFiles(this.justDir).filter(f => f.endsWith('.json'));
       const list = [];
       files.forEach(f => {
         const j = storagePath.readJson(path.join(this.justDir, f), null);
