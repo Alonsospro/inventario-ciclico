@@ -82,12 +82,23 @@ const OFFICIAL_USERS_RAW = [
 class AuthService {
   constructor() {
     this.usersFile = storagePath.getUsersFilePath();
-    this.seedDefaultUsers(false);
+    this.usersCache = null;
+    this.initUsers();
+  }
+
+  initUsers() {
+    const existing = storagePath.readJson(this.usersFile, null);
+    if (Array.isArray(existing) && existing.length >= OFFICIAL_USERS_RAW.length) {
+      this.usersCache = existing;
+      return existing;
+    }
+    return this.seedDefaultUsers(false);
   }
 
   seedDefaultUsers(force = false) {
     let currentUsers = storagePath.readJson(this.usersFile, []);
     if (!force && Array.isArray(currentUsers) && currentUsers.length >= OFFICIAL_USERS_RAW.length) {
+      this.usersCache = currentUsers;
       return currentUsers;
     }
     const salt = bcrypt.genSaltSync(10);
@@ -220,15 +231,26 @@ class AuthService {
       }
     });
 
+    this.usersCache = finalUsers;
     storagePath.writeJson(this.usersFile, finalUsers);
     console.log(`[authService] Seeded ${finalUsers.length} users (${officialSeeded.length} official table users).`);
+    return finalUsers;
   }
 
   getUsersList() {
-    return storagePath.readJson(this.usersFile, []);
+    if (this.usersCache && this.usersCache.length > 0) {
+      return this.usersCache;
+    }
+    const fromDisk = storagePath.readJson(this.usersFile, []);
+    if (Array.isArray(fromDisk) && fromDisk.length > 0) {
+      this.usersCache = fromDisk;
+      return this.usersCache;
+    }
+    return this.seedDefaultUsers(false);
   }
 
   saveUsersList(users) {
+    this.usersCache = users;
     storagePath.writeJson(this.usersFile, users);
   }
 

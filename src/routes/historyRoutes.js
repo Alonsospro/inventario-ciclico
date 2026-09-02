@@ -11,7 +11,7 @@ const { restrictCenter } = require('../middlewares/centerMiddleware');
 router.get('/', authenticate, restrictCenter, (req, res) => {
   try {
     const historyDir = storagePath.getHistoryDirectory();
-    const files = fs.readdirSync(historyDir).filter(f => f.endsWith('.json'));
+    const files = storagePath.listFiles(historyDir).filter(f => f.endsWith('.json'));
     const list = [];
 
     files.forEach(f => {

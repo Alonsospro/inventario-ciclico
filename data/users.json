@@ -9,8 +9,8 @@
     "centerName": "Volvo - Km 14",
     "clave": "IA2351",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeXnrbQtGv3DpTxcd1W8MHo1VCK8hHlBe",
-    "createdAt": "2026-09-02T16:47:38.102Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.BM6snodmjWsDPgpU3Z/O0RjaRb4LMoC",
+    "createdAt": "2026-09-02T18:43:49.648Z",
     "active": true
   },
   {
@@ -23,8 +23,8 @@
     "centerName": "Volvo - Km 14",
     "clave": "IJ6508",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOe3tw8hD5lOPxpHEuezkmyfUKIO/Er8GG",
-    "createdAt": "2026-09-02T16:47:38.296Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg./UQy3Nu4EfWCTULE5HdjJKqDjSZxqne",
+    "createdAt": "2026-09-02T18:43:49.885Z",
     "active": true
   },
   {
@@ -37,8 +37,8 @@
     "centerName": "Volvo - Km 14",
     "clave": "BA0856",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOe7I31sgvR5bahCZ/L3wnhRXZ62zXFVeC",
-    "createdAt": "2026-09-02T16:47:38.475Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.LeKJ/wrEEvzvHzrvKySSCWAoRhkvCJO",
+    "createdAt": "2026-09-02T18:43:50.074Z",
     "active": true
   },
   {
@@ -51,8 +51,8 @@
     "centerName": "Volvo - Km 14",
     "clave": "LT3970",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOezSmEjNxo/Pl3VdipWLgV8FyoRL3VquW",
-    "createdAt": "2026-09-02T16:47:38.688Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.P0ve.4DcHyZraeyaQRIuWwxKTWorzAi",
+    "createdAt": "2026-09-02T18:43:50.278Z",
     "active": true
   },
   {
@@ -65,8 +65,8 @@
     "centerName": "Volvo - Km 14",
     "clave": "BB3078",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeci1qsb7yDWcXwMBqBJf9LuwmB.Zu5vG",
-    "createdAt": "2026-09-02T16:47:38.860Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.KIAV1mSSKMPJXHP5vOgQD7Y31C6A8dS",
+    "createdAt": "2026-09-02T18:43:50.437Z",
     "active": true
   },
   {
@@ -79,8 +79,8 @@
     "centerName": "Volvo - Km 14",
     "clave": "WS8386",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOe.UYu8CYN7yQQmZECoBAQt9mgDqQ5wum",
-    "createdAt": "2026-09-02T16:47:39.015Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.lRAyHCaSE9T9skQaS13y.fr6H8AzNj.",
+    "createdAt": "2026-09-02T18:43:50.604Z",
     "active": true
   },
   {
@@ -93,8 +93,8 @@
     "centerName": "Volvo - Km 14",
     "clave": "GJ5408",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOemCxkahf6HXCzLqon6CyHdZYrqSKdcS.",
-    "createdAt": "2026-09-02T16:47:39.158Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.eimhlZCWbjGbLwqLNAyNrj1sUKwqYyu",
+    "createdAt": "2026-09-02T18:43:50.769Z",
     "active": true
   },
   {
@@ -107,8 +107,8 @@
     "centerName": "Volvo - Km 14",
     "clave": "RA6326",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeGTsaBkZgvUSaixpat8C5nL1qeWp1bgW",
-    "createdAt": "2026-09-02T16:47:39.303Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.tXAR4Rcqf.HUQa/x1pIDn2m5w9iOQ9u",
+    "createdAt": "2026-09-02T18:43:50.955Z",
     "active": true
   },
   {
@@ -121,8 +121,8 @@
     "centerName": "Av. Banzer 3er anillo",
     "clave": "JC0160",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOevMAFc0p7D3M04.XOLuPsw45R9u6XbjG",
-    "createdAt": "2026-09-02T16:47:39.440Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.DcU.YkyNTZ3D/XEle.V/Wqskbpw3PUu",
+    "createdAt": "2026-09-02T18:43:51.095Z",
     "active": true
   },
   {
@@ -135,8 +135,8 @@
     "centerName": "Av. Banzer 3er anillo",
     "clave": "AF3090",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOegk6JwGowe7ebFUm.z20nquyqfh3y3By",
-    "createdAt": "2026-09-02T16:47:39.570Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.JAmWE5svUT.r34nNvG5BoY5grKf4kTy",
+    "createdAt": "2026-09-02T18:43:51.242Z",
     "active": true
   },
   {
@@ -149,8 +149,8 @@
     "centerName": "Foton - Km 10",
     "clave": "GD9500",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeFYGN.QdGQbDSt0j.a9wOUidyP7eytOq",
-    "createdAt": "2026-09-02T16:47:39.702Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.Tioj7baHzl4VT9s1zw5Y9zNdai9nKa6",
+    "createdAt": "2026-09-02T18:43:51.389Z",
     "active": true
   },
   {
@@ -163,8 +163,8 @@
     "centerName": "Foton - Km 10",
     "clave": "IA4389",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeNjJEWbYfU.E/YTyb9FYPSeTk7Gnh7QS",
-    "createdAt": "2026-09-02T16:47:39.835Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.pNm2kyB3MRD4TnT55SxDyxTYw1cqyIa",
+    "createdAt": "2026-09-02T18:43:51.520Z",
     "active": true
   },
   {
@@ -177,8 +177,8 @@
     "centerName": "Foton - Km 10",
     "clave": "MD7146",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOes0sOgCUSI8UiT0qRiMjITVQYYnPS.rO",
-    "createdAt": "2026-09-02T16:47:39.967Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.qhTSniGrxE2Kgzaw.w7kYYPT8nJyx4i",
+    "createdAt": "2026-09-02T18:43:51.673Z",
     "active": true
   },
   {
@@ -191,8 +191,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "JL8764",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeC5NYHTvMsrdSO0SGeK33tUtdO5ZToLK",
-    "createdAt": "2026-09-02T16:47:40.132Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.7T8/0qfzFsrGWxiiChc10q0L68n9bgG",
+    "createdAt": "2026-09-02T18:43:51.814Z",
     "active": true
   },
   {
@@ -205,8 +205,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "JD7094",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeEZngWNKINzNWaMBRi7CMtgYLxDK.uu6",
-    "createdAt": "2026-09-02T16:47:40.280Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg./LT18tKcy.9oMyrqJ/5sxVoU/zOsTL.",
+    "createdAt": "2026-09-02T18:43:51.965Z",
     "active": true
   },
   {
@@ -219,8 +219,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "SR8486",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOephbBOW8G17mAYtq.oND8xrVClYSQf1q",
-    "createdAt": "2026-09-02T16:47:40.408Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.cqB2Q3z/P4bkY779R4Jlp9v.rIrrF5y",
+    "createdAt": "2026-09-02T18:43:52.099Z",
     "active": true
   },
   {
@@ -233,8 +233,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "JR0210",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOet4NSGwbjcY0mBh49Kea/56cZ7B1y0lK",
-    "createdAt": "2026-09-02T16:47:40.559Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.DCBSSEsf3QVcr716Xm9QavqWGca2H7K",
+    "createdAt": "2026-09-02T18:43:52.213Z",
     "active": true
   },
   {
@@ -247,8 +247,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "FP3189",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeRlkHMcf6XW19RnYz3gnGWLs8q9vqtti",
-    "createdAt": "2026-09-02T16:47:40.703Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.4j4omIeq6mTpvqXb4PaAyYGmvCkrfWS",
+    "createdAt": "2026-09-02T18:43:52.329Z",
     "active": true
   },
   {
@@ -261,8 +261,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "EM5962",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOe/ygSiTtBsEORctWPhysr.gXUDh7Ks5u",
-    "createdAt": "2026-09-02T16:47:40.830Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.uu9UumdsSWH0vw1ZKYbWUYyYWje9ruG",
+    "createdAt": "2026-09-02T18:43:52.448Z",
     "active": true
   },
   {
@@ -275,8 +275,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "YC8095",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOe9GASOtDJoidfXRL3fk7vs.7jPv1l6rW",
-    "createdAt": "2026-09-02T16:47:40.960Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.UwgQgRq86ht.bPSW1V00XqqeoBSpv9e",
+    "createdAt": "2026-09-02T18:43:52.554Z",
     "active": true
   },
   {
@@ -289,8 +289,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "GM5157",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeLMu4xC47wgYL.ZIzZbkAzDUHHz5p4/O",
-    "createdAt": "2026-09-02T16:47:41.088Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.Wx4XAeNblVIgIN4cpnywXoY0IcvanDG",
+    "createdAt": "2026-09-02T18:43:52.668Z",
     "active": true
   },
   {
@@ -303,8 +303,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "JM1114",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeSBrHYyIFYITeBVLgfPT7/.xSXBE8oDW",
-    "createdAt": "2026-09-02T16:47:41.223Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.xn42XJ0WELqLp3tujhFOrdwM7.scYSm",
+    "createdAt": "2026-09-02T18:43:52.779Z",
     "active": true
   },
   {
@@ -317,8 +317,8 @@
     "centerName": "John Deere - Km 10",
     "clave": "JM0416",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOe7xQF2BdpvtqxgBwIur0FJusVFe7Fyru",
-    "createdAt": "2026-09-02T16:47:41.349Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.YAFmgG2LrEIkjC9d9OcU/rN0zXcl0FG",
+    "createdAt": "2026-09-02T18:43:52.919Z",
     "active": true
   },
   {
@@ -331,8 +331,8 @@
     "centerName": "Sucursal Montero",
     "clave": "DS4645",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeu5iaXBppyWdpUOME9WCrHws2M2uQlpC",
-    "createdAt": "2026-09-02T16:47:41.466Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.rriSyjeE49zCYC3h50./tw9D8fAExBO",
+    "createdAt": "2026-09-02T18:43:53.053Z",
     "active": true
   },
   {
@@ -345,8 +345,8 @@
     "centerName": "Sucursal Montero",
     "clave": "JD4349",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeh1cJvVDOKyFdkdJnP5itLGze00JtvwS",
-    "createdAt": "2026-09-02T16:47:41.601Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.iDqPknn0AWilZ/s5kuuqh8hD18NXAlO",
+    "createdAt": "2026-09-02T18:43:53.152Z",
     "active": true
   },
   {
@@ -359,8 +359,8 @@
     "centerName": "Sucursal Cuatro Cañadas",
     "clave": "DV3728",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOevLCBzggxMKPkWd1CcqQQBlAgdaVcp5u",
-    "createdAt": "2026-09-02T16:47:41.734Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.HV2B7BjLh53CWjd4AiqttpfZ/sHj8Y6",
+    "createdAt": "2026-09-02T18:43:53.249Z",
     "active": true
   },
   {
@@ -373,8 +373,8 @@
     "centerName": "Sucursal Cuatro Cañadas",
     "clave": "JS7102",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeQvWaf/c/1wG2yzArXsQaHnX/ejY8x1G",
-    "createdAt": "2026-09-02T16:47:41.856Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.ukXH/OpuDqUIJNSNTiDCdU3MKxQJOqC",
+    "createdAt": "2026-09-02T18:43:53.361Z",
     "active": true
   },
   {
@@ -387,8 +387,8 @@
     "centerName": "Av. Grigota 3er anillo",
     "clave": "DP9318",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOekcVtAbGYYiwZSimLbxNUBkEZM8bDDzC",
-    "createdAt": "2026-09-02T16:47:41.959Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg..T2gRj15N9Dm0Op62Z05unlvybrM/Qu",
+    "createdAt": "2026-09-02T18:43:53.497Z",
     "active": true
   },
   {
@@ -401,8 +401,8 @@
     "centerName": "Av. Grigota 3er anillo",
     "clave": "DI4741",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeeV7g1RcAWzcQrB1thG2D.CGTTDHhRjC",
-    "createdAt": "2026-09-02T16:47:42.081Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.6TOaK1HnLNAMcWRrx5IeuNneyNb9V/K",
+    "createdAt": "2026-09-02T18:43:53.634Z",
     "active": true
   },
   {
@@ -415,8 +415,8 @@
     "centerName": "Express San Julián",
     "clave": "EP5811",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeDVoPCAnkb18HVqmYgAM4eJP7jz5ApY6",
-    "createdAt": "2026-09-02T16:47:42.224Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.C1IH/VNIjvhx6NWGQPK6zgpR/2iDTT.",
+    "createdAt": "2026-09-02T18:43:53.756Z",
     "active": true
   },
   {
@@ -429,8 +429,8 @@
     "centerName": "Express San Pedro",
     "clave": "LB4522",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeOgwKEUQAH5/DrZSZNNVsWjc0qlVdtyK",
-    "createdAt": "2026-09-02T16:47:42.345Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.b78VVfkJEPdnP/tFK264uQpseCLWbiW",
+    "createdAt": "2026-09-02T18:43:53.876Z",
     "active": true
   },
   {
@@ -443,8 +443,8 @@
     "centerName": "Sucursal El Alto, La Paz",
     "clave": "HA5303",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeXU7zskL5nzTpNq8hvn9z84Dz.TpMgG6",
-    "createdAt": "2026-09-02T16:47:42.459Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.9Aii71gfmlPhv3u75AMTu3YMcHUDG.q",
+    "createdAt": "2026-09-02T18:43:53.992Z",
     "active": true
   },
   {
@@ -457,8 +457,8 @@
     "centerName": "Sucursal El Alto, La Paz",
     "clave": "WR5483",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeV4JxlSg2rnEB/8jYW3mrwF2yTOMaN4G",
-    "createdAt": "2026-09-02T16:47:42.581Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.0omlnoDbHEjBK6xg85V2A/g7XnL0Eui",
+    "createdAt": "2026-09-02T18:43:54.095Z",
     "active": true
   },
   {
@@ -471,8 +471,8 @@
     "centerName": "Sucursal El Alto, La Paz",
     "clave": "JR7182",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOe74Hzx5BnmlcAHxY/IgM1LVkdasG89.O",
-    "createdAt": "2026-09-02T16:47:42.699Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.EqnoBtUsTK6BVx6y9B2BkS9cupW2MHy",
+    "createdAt": "2026-09-02T18:43:54.205Z",
     "active": true
   },
   {
@@ -485,8 +485,8 @@
     "centerName": "Centro Foton El Alto, La Paz",
     "clave": "MN4410",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOes7dX.kUB3ue/SOtK79Adp8L7GW3VdUa",
-    "createdAt": "2026-09-02T16:47:42.820Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.mDngYV7WHTldqJjYXOHwuxOJ.CX6sme",
+    "createdAt": "2026-09-02T18:43:54.313Z",
     "active": true
   },
   {
@@ -499,8 +499,8 @@
     "centerName": "Centro Foton El Alto, La Paz",
     "clave": "AQ8037",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeX5OBexCQ0VKR2HP3iaqw6evAvRoAZ7G",
-    "createdAt": "2026-09-02T16:47:42.936Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.sU3qmdVXkIEGCQQXWA4DSIHMjZNdsb2",
+    "createdAt": "2026-09-02T18:43:54.422Z",
     "active": true
   },
   {
@@ -513,8 +513,8 @@
     "centerName": "Sucursal Cochabamba",
     "clave": "EB6152",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeoYrRI1E.G6PPIbHxbYnsx9HMiBNvs6u",
-    "createdAt": "2026-09-02T16:47:43.044Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.UwGZ.Q3ORcgKBvrRBHN/SnE9fwalB6S",
+    "createdAt": "2026-09-02T18:43:54.527Z",
     "active": true
   },
   {
@@ -527,8 +527,8 @@
     "centerName": "Sucursal Cochabamba",
     "clave": "JC6954",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOebxNP06jhYc.ysxFVM2QmElsbYWVXFpO",
-    "createdAt": "2026-09-02T16:47:43.147Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg..2LbDtZCNFWLWxAraSfJFeKM0IfCnH2",
+    "createdAt": "2026-09-02T18:43:54.623Z",
     "active": true
   },
   {
@@ -541,8 +541,8 @@
     "centerName": "Sucursal Cochabamba",
     "clave": "DT0876",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeYoUXCAbNQ.hnxZ3GYxa1y6kJcTGlyDq",
-    "createdAt": "2026-09-02T16:47:43.264Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.fKRqGpWr0ShC/lQVeFDkoPpt8NDuNNG",
+    "createdAt": "2026-09-02T18:43:54.717Z",
     "active": true
   },
   {
@@ -555,8 +555,8 @@
     "centerName": "Centro Foton Blanco Galindo",
     "clave": "BP8043",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeVoR9L9TC4TOMzQTKqlqXodzQRYTIvX.",
-    "createdAt": "2026-09-02T16:47:43.383Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.O33aqtfkZjYX/jQDIN0N9npGTMjT/OK",
+    "createdAt": "2026-09-02T18:43:54.811Z",
     "active": true
   },
   {
@@ -569,8 +569,8 @@
     "centerName": "Sucursal Tarija",
     "clave": "JC5181",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOel01aZuFd8vPiN0NiFmPF3SO1bJzoK4u",
-    "createdAt": "2026-09-02T16:47:43.515Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.vP7OPoGK48l7Y01Asx4vcVceR74Nedq",
+    "createdAt": "2026-09-02T18:43:54.908Z",
     "active": true
   },
   {
@@ -583,8 +583,8 @@
     "centerName": "Global",
     "clave": "ABS",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOe1hWxJWyjD.lIci3qzXgnBpNypf.gK9y",
-    "createdAt": "2026-09-02T16:47:43.639Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.ktrlgf7sS/9TMU66W7zzNZc.1gNSbP.",
+    "createdAt": "2026-09-02T18:43:55.022Z",
     "active": true
   },
   {
@@ -597,8 +597,8 @@
     "centerName": "Global",
     "clave": "JCS",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOenoMTxkr8dVKZiRI7rUmq0tF/X94KCNW",
-    "createdAt": "2026-09-02T16:47:43.760Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.JjtlTKz4QmQxqGmKqRMhMxnXkxx7ryu",
+    "createdAt": "2026-09-02T18:43:55.125Z",
     "active": true
   },
   {
@@ -611,8 +611,8 @@
     "centerName": "Global",
     "clave": "ADM",
     "isSuperadmin": true,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeaPhL497hem37bKeq/QB53Jg3mlTJAuS",
-    "createdAt": "2026-09-02T16:47:43.889Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.va8OtEMT4XX0lAfSaXwfYIuveB0iOca",
+    "createdAt": "2026-09-02T18:43:55.232Z",
     "active": true
   },
   {
@@ -625,8 +625,8 @@
     "centerName": "Global",
     "clave": "admin.nibol2026",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOemViOQGPlLkHgRiFTCzC6/QF6fMAcghW",
-    "createdAt": "2026-09-02T16:47:44.064Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.DryarCXhfCHfeyOvpEMCbcjF2qKTZzq",
+    "createdAt": "2026-09-02T18:43:55.349Z",
     "active": true
   },
   {
@@ -639,8 +639,8 @@
     "centerName": "Warnes",
     "clave": "warnes2026",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOekldBkUNRWpW4dylFxPeZYbr3w4qSOra",
-    "createdAt": "2026-09-02T16:47:44.201Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.bK.fCYOUsY08SPX4xR.G/ddsSwxx6jq",
+    "createdAt": "2026-09-02T18:43:55.486Z",
     "active": true
   },
   {
@@ -653,8 +653,8 @@
     "centerName": "Warnes",
     "clave": "auxiliar2026",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOemG5N9rHRDLQDrqr6oqhSZAmXlBR0TJS",
-    "createdAt": "2026-09-02T16:47:44.315Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.bYKDRKolI5bxPajmr.5242Mu2omQzv.",
+    "createdAt": "2026-09-02T18:43:55.665Z",
     "active": true
   },
   {
@@ -667,8 +667,8 @@
     "centerName": "Warnes",
     "clave": "auxiliar2026",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOemG5N9rHRDLQDrqr6oqhSZAmXlBR0TJS",
-    "createdAt": "2026-09-02T16:47:44.413Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.bYKDRKolI5bxPajmr.5242Mu2omQzv.",
+    "createdAt": "2026-09-02T18:43:55.805Z",
     "active": true
   },
   {
@@ -681,8 +681,8 @@
     "centerName": "Central",
     "clave": "central2026",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOeQ0tAoYBDh.S238R40QTmdySQ/6ZgHfu",
-    "createdAt": "2026-09-02T16:47:44.527Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.hB.HI3f.nUq1AR5nPQliIpJYx0jKp8W",
+    "createdAt": "2026-09-02T18:43:55.950Z",
     "active": true
   },
   {
@@ -695,13 +695,13 @@
     "centerName": "Central",
     "clave": "auxiliar2026",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$QqN7nK.qTtmT3ZQ2BpgAOemG5N9rHRDLQDrqr6oqhSZAmXlBR0TJS",
-    "createdAt": "2026-09-02T16:47:44.625Z",
+    "passwordHash": "$2a$10$0kc8FQxk0dmJair0Fo.Sg.bYKDRKolI5bxPajmr.5242Mu2omQzv.",
+    "createdAt": "2026-09-02T18:43:56.087Z",
     "active": true
   },
   {
-    "id": "USR-1120-MTKBXNS8",
-    "username": "test_user_mtkbxns5",
+    "id": "USR-1120-MTKG32TR",
+    "username": "test_user_mtkg32tq",
     "displayName": "Usuario Prueba Creado por Alonso",
     "cargo": "Auxiliar de Almacén",
     "role": "AUXILIAR",
@@ -709,8 +709,8 @@
     "centerName": "Volvo - Km 14",
     "clave": "testpassword123",
     "isSuperadmin": false,
-    "passwordHash": "$2a$10$HDSlJbFwvcC4PjFFVeP9wOaB31ivC/YkkRymxgVnbQciF1VQGf63S",
-    "createdAt": "2026-09-02T16:47:47.772Z",
+    "passwordHash": "$2a$10$zAxfRwSSX99WSpEIe.AF7eEm7TdsRhF/hvFoCMlSeP/1NUai651be",
+    "createdAt": "2026-09-02T18:43:59.004Z",
     "active": true
   }
 ]

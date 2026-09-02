@@ -8,6 +8,7 @@ class DriveService {
   constructor() {
     this.historyDir = storagePath.getHistoryDirectory();
     this.photosDir = storagePath.getPhotosDirectory();
+    this.photoMemoryCache = new Map();
   }
 
   formatInventoryFileName(type, center, date = new Date()) {
@@ -205,29 +206,48 @@ class DriveService {
     const photoId = `PHOTO-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${ext}`;
     const legacyPath = path.join(this.photosDir, photoId);
 
-    // 2. Save in data/photos/
-    fs.writeFileSync(legacyPath, fileBuffer);
+    // Cache photo in memory for instant online retrieval (especially on Vercel)
+    this.photoMemoryCache.set(photoId, {
+      buffer: fileBuffer,
+      mimeType: mimeType || 'image/jpeg',
+      details,
+      savedAt: Date.now()
+    });
+
+    // 2. Save in data/photos/ (if writable)
+    try {
+      if (!fs.existsSync(this.photosDir)) {
+        fs.mkdirSync(this.photosDir, { recursive: true });
+      }
+      fs.writeFileSync(legacyPath, fileBuffer);
+    } catch (e) {
+      // Serverless read-only mode fallback
+    }
 
     // 3. Save in organized structured path: data/photos/{category}/{date}/{centerName}/{sku}.jpg
-    const structuredDir = path.join(this.photosDir, details.category, details.date, details.centerName);
-    if (!fs.existsSync(structuredDir)) {
-      fs.mkdirSync(structuredDir, { recursive: true });
+    try {
+      const structuredDir = path.join(this.photosDir, details.category, details.date, details.centerName);
+      if (!fs.existsSync(structuredDir)) {
+        fs.mkdirSync(structuredDir, { recursive: true });
+      }
+      const structuredPath = path.join(structuredDir, details.fileName);
+      fs.writeFileSync(structuredPath, fileBuffer);
+    } catch (e) {
+      // Serverless read-only mode fallback
     }
-    const structuredPath = path.join(structuredDir, details.fileName);
-    fs.writeFileSync(structuredPath, fileBuffer);
 
     // 4. Save in root nibol structure: nibol/ciclicos/fotos/{category}/{date}/{centerName}/{sku}.jpg
-    const nibolBaseDir = path.resolve(__dirname, '..', '..', 'nibol', 'ciclicos', 'fotos', details.category, details.date, details.centerName);
     try {
+      const nibolBaseDir = path.resolve(__dirname, '..', '..', 'nibol', 'ciclicos', 'fotos', details.category, details.date, details.centerName);
       if (!fs.existsSync(nibolBaseDir)) {
         fs.mkdirSync(nibolBaseDir, { recursive: true });
       }
       fs.writeFileSync(path.join(nibolBaseDir, details.fileName), fileBuffer);
     } catch (e) {
-      console.warn('[driveService] Notice saving to nibol/ root folder:', e.message);
+      // Serverless read-only mode fallback
     }
 
-    // 5. Sync to Google Drive via Google Apps Script
+    // 5. Sync to Google Drive via Google Apps Script (Primary cloud storage)
     try {
       await gasService.syncPhotoToGAS({
         category: details.category,
@@ -260,13 +280,37 @@ class DriveService {
     };
   }
 
+  getPhoto(filename) {
+    const safeName = path.basename(filename);
+    if (this.photoMemoryCache.has(safeName)) {
+      return this.photoMemoryCache.get(safeName);
+    }
+    const fullPath = path.join(this.photosDir, safeName);
+    try {
+      if (fs.existsSync(fullPath)) {
+        const ext = path.extname(safeName).toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (ext === '.png') mimeType = 'image/png';
+        if (ext === '.webp') mimeType = 'image/webp';
+        if (ext === '.gif') mimeType = 'image/gif';
+        return {
+          filePath: fullPath,
+          mimeType
+        };
+      }
+    } catch (e) {}
+    return null;
+  }
+
   getPhotoPath(filename) {
     // Prevent path traversal
     const safeName = path.basename(filename);
     const fullPath = path.join(this.photosDir, safeName);
-    if (fs.existsSync(fullPath)) {
-      return fullPath;
-    }
+    try {
+      if (fs.existsSync(fullPath)) {
+        return fullPath;
+      }
+    } catch (e) {}
     return null;
   }
 }

@@ -135,21 +135,23 @@ router.get('/reference/:sku', async (req, res) => {
 
 // GET /api/photos/:filename (Serve real binary image)
 router.get('/:filename', (req, res) => {
-  const filePath = driveService.getPhotoPath(req.params.filename);
-  if (!filePath) {
+  const photo = driveService.getPhoto(req.params.filename);
+  if (!photo) {
     return res.status(404).json({ success: false, message: 'Imagen no encontrada' });
   }
 
-  const ext = path.extname(filePath).toLowerCase();
-  let contentType = 'image/jpeg';
-  if (ext === '.png') contentType = 'image/png';
-  if (ext === '.webp') contentType = 'image/webp';
-  if (ext === '.gif') contentType = 'image/gif';
-
+  const contentType = photo.mimeType || 'image/jpeg';
   res.setHeader('Content-Type', contentType);
   res.setHeader('Cache-Control', 'public, max-age=86400');
-  const stream = fs.createReadStream(filePath);
-  stream.pipe(res);
+
+  if (photo.buffer) {
+    return res.send(photo.buffer);
+  }
+  if (photo.filePath && fs.existsSync(photo.filePath)) {
+    const stream = fs.createReadStream(photo.filePath);
+    return stream.pipe(res);
+  }
+  res.status(404).json({ success: false, message: 'Imagen no disponible' });
 });
 
 module.exports = router;

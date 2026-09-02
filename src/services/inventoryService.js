@@ -145,7 +145,7 @@ class InventoryService {
 
   getAllInventoryFiles() {
     try {
-      const files = fs.readdirSync(this.invDir);
+      const files = storagePath.listFiles(this.invDir);
       return files.filter(f => f.endsWith('.json'));
     } catch (e) {
       return [];
@@ -827,9 +827,7 @@ class InventoryService {
     }
 
     const filePath = path.join(this.invDir, `${inventoryId}.json`);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+    storagePath.deleteFile(filePath);
 
     auditService.logDeletion({
       inventoryId,

@@ -5,6 +5,9 @@ const config = require('../config');
 class StoragePath {
   constructor() {
     this.baseDir = config.baseDataDir;
+    this.memoryStore = new Map();
+    this.dirListings = new Map();
+    this.isReadOnly = false;
     this.ensureDirs();
   }
 
@@ -22,8 +25,13 @@ class StoragePath {
 
     dirs.forEach(dir => {
       if (dir && typeof dir === 'string' && !dir.startsWith('http://') && !dir.startsWith('https://')) {
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
+        try {
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+          }
+        } catch (err) {
+          // In read-only serverless environments like Vercel, mark as read-only and continue
+          this.isReadOnly = true;
         }
       }
     });
@@ -66,30 +74,92 @@ class StoragePath {
   }
 
   readJson(filePath, defaultValue = null) {
-    try {
-      if (!fs.existsSync(filePath)) {
-        return defaultValue;
-      }
-      const raw = fs.readFileSync(filePath, 'utf8');
-      return JSON.parse(raw);
-    } catch (err) {
-      console.error(`[storagePath] Error reading JSON from ${filePath}:`, err.message);
-      return defaultValue;
+    const normalized = path.normalize(filePath);
+    if (this.memoryStore.has(normalized)) {
+      return JSON.parse(JSON.stringify(this.memoryStore.get(normalized)));
     }
+    try {
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf8');
+        const parsed = JSON.parse(raw);
+        this.memoryStore.set(normalized, parsed);
+        return JSON.parse(JSON.stringify(parsed));
+      }
+    } catch (err) {
+      console.warn(`[storagePath] Note reading JSON from ${filePath}:`, err.message);
+    }
+    return defaultValue;
   }
 
   writeJson(filePath, data) {
-    try {
-      const dir = path.dirname(filePath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-      return true;
-    } catch (err) {
-      console.error(`[storagePath] Error writing JSON to ${filePath}:`, err.message);
-      throw err;
+    const normalized = path.normalize(filePath);
+    const cloned = JSON.parse(JSON.stringify(data));
+    this.memoryStore.set(normalized, cloned);
+
+    const dir = path.dirname(normalized);
+    const fileName = path.basename(normalized);
+    if (!this.dirListings.has(dir)) {
+      this.dirListings.set(dir, new Set());
     }
+    this.dirListings.get(dir).add(fileName);
+
+    if (!this.isReadOnly) {
+      try {
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(filePath, JSON.stringify(cloned, null, 2), 'utf8');
+      } catch (err) {
+        if (err.code === 'EROFS' || err.code === 'EACCES' || (err.message && err.message.includes('read-only'))) {
+          this.isReadOnly = true;
+        } else {
+          console.warn(`[storagePath] Notice persisting ${filePath}:`, err.message);
+        }
+      }
+    }
+    return true;
+  }
+
+  listFiles(dirPath) {
+    const normalized = path.normalize(dirPath);
+    const set = new Set();
+
+    try {
+      if (fs.existsSync(normalized)) {
+        const diskFiles = fs.readdirSync(normalized);
+        diskFiles.forEach(f => set.add(f));
+      }
+    } catch (e) {}
+
+    if (this.dirListings.has(normalized)) {
+      this.dirListings.get(normalized).forEach(f => set.add(f));
+    }
+
+    for (const key of this.memoryStore.keys()) {
+      if (path.dirname(key) === normalized) {
+        set.add(path.basename(key));
+      }
+    }
+
+    return Array.from(set);
+  }
+
+  deleteFile(filePath) {
+    const normalized = path.normalize(filePath);
+    this.memoryStore.delete(normalized);
+
+    const dir = path.dirname(normalized);
+    const fileName = path.basename(normalized);
+    if (this.dirListings.has(dir)) {
+      this.dirListings.get(dir).delete(fileName);
+    }
+
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (e) {}
+    return true;
   }
 }
 

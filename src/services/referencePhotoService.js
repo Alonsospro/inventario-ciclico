@@ -18,17 +18,19 @@ class ReferencePhotoService {
     this.ensureLocalDir();
     this.indexLocalFiles();
     
-    // Initial sync from Google Drive in background
-    this.syncDriveFolder().catch(err => {
-      console.warn('[referencePhotoService] Initial Drive sync notice:', err.message);
-    });
-
-    // Background recurring sync every 10 minutes (600,000 ms)
-    setInterval(() => {
+    // Initial sync from Google Drive in background only in continuous server environments
+    if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
       this.syncDriveFolder().catch(err => {
-        console.warn('[referencePhotoService] Background Drive sync notice:', err.message);
+        console.warn('[referencePhotoService] Initial Drive sync notice:', err.message);
       });
-    }, 10 * 60 * 1000).unref();
+
+      // Background recurring sync every 10 minutes (600,000 ms)
+      setInterval(() => {
+        this.syncDriveFolder().catch(err => {
+          console.warn('[referencePhotoService] Background Drive sync notice:', err.message);
+        });
+      }, 10 * 60 * 1000).unref();
+    }
   }
 
   ensureLocalDir() {
@@ -37,7 +39,7 @@ class ReferencePhotoService {
         fs.mkdirSync(this.localDir, { recursive: true });
       }
     } catch (e) {
-      console.warn('[referencePhotoService] Warning creating localDir:', e.message);
+      // Graceful in read-only environments
     }
   }
 
@@ -53,6 +55,9 @@ class ReferencePhotoService {
   indexLocalFiles() {
     try {
       this.ensureLocalDir();
+      if (!fs.existsSync(this.localDir)) {
+        return;
+      }
       const files = fs.readdirSync(this.localDir);
       this.localIndex.clear();
 
