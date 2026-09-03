@@ -6,7 +6,9 @@ class StoragePath {
   constructor() {
     this.baseDir = config.baseDataDir;
     this.memoryStore = new Map();
+    this.cacheTimestamps = new Map(); // Track when each entry was cached
     this.dirListings = new Map();
+    this.CACHE_TTL_MS = 30 * 1000; // 30 seconds TTL for cached entries
     this.ensureDirs();
   }
 
@@ -44,6 +46,11 @@ class StoragePath {
         }
       }
     });
+
+    // Warn about ephemeral storage in serverless environments
+    if (process.env.VERCEL) {
+      console.warn('⚠️  [storagePath] VERCEL detectado: el almacenamiento en disco es EFÍMERO. Los datos (inventarios, fotos, historial) se perderán entre deploys. Considere usar un VPS para producción.');
+    }
   }
 
   getDataDirectory() {
@@ -85,13 +92,21 @@ class StoragePath {
   readJson(filePath, defaultValue = null) {
     const key = this.normalizeKey(filePath);
     if (this.memoryStore.has(key)) {
-      return JSON.parse(JSON.stringify(this.memoryStore.get(key)));
+      // Check TTL: if entry is older than CACHE_TTL_MS, invalidate and re-read from disk
+      const cachedAt = this.cacheTimestamps.get(key) || 0;
+      if (Date.now() - cachedAt < this.CACHE_TTL_MS) {
+        return JSON.parse(JSON.stringify(this.memoryStore.get(key)));
+      }
+      // TTL expired, remove stale entry
+      this.memoryStore.delete(key);
+      this.cacheTimestamps.delete(key);
     }
     try {
       if (fs.existsSync(filePath)) {
         const raw = fs.readFileSync(filePath, 'utf8');
         const parsed = JSON.parse(raw);
         this.memoryStore.set(key, parsed);
+        this.cacheTimestamps.set(key, Date.now());
         return JSON.parse(JSON.stringify(parsed));
       }
     } catch (err) {
@@ -104,6 +119,7 @@ class StoragePath {
     const key = this.normalizeKey(filePath);
     const cloned = JSON.parse(JSON.stringify(data));
     this.memoryStore.set(key, cloned);
+    this.cacheTimestamps.set(key, Date.now());
 
     const dir = path.dirname(filePath);
     const fileName = path.basename(filePath);
@@ -159,6 +175,7 @@ class StoragePath {
   deleteFile(filePath) {
     const key = this.normalizeKey(filePath);
     this.memoryStore.delete(key);
+    this.cacheTimestamps.delete(key);
 
     const dir = path.dirname(filePath);
     const fileName = path.basename(filePath);

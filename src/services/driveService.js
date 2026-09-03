@@ -9,6 +9,41 @@ class DriveService {
     this.historyDir = storagePath.getHistoryDirectory();
     this.photosDir = storagePath.getPhotosDirectory();
     this.photoMemoryCache = new Map();
+    this.MAX_CACHE_ENTRIES = 50;
+    this.MAX_CACHE_BYTES = 100 * 1024 * 1024; // 100MB
+  }
+
+  /**
+   * Evict oldest entries when cache exceeds limits (LRU by savedAt).
+   */
+  pruneCache() {
+    // Check entry count
+    if (this.photoMemoryCache.size <= this.MAX_CACHE_ENTRIES) {
+      // Also check total bytes
+      let totalBytes = 0;
+      for (const entry of this.photoMemoryCache.values()) {
+        totalBytes += (entry.buffer ? entry.buffer.length : 0);
+      }
+      if (totalBytes <= this.MAX_CACHE_BYTES) return;
+    }
+
+    // Sort entries by savedAt ascending (oldest first)
+    const entries = Array.from(this.photoMemoryCache.entries())
+      .sort((a, b) => (a[1].savedAt || 0) - (b[1].savedAt || 0));
+
+    let totalBytes = 0;
+    for (const entry of this.photoMemoryCache.values()) {
+      totalBytes += (entry.buffer ? entry.buffer.length : 0);
+    }
+
+    // Remove oldest entries until within limits
+    for (const [key, entry] of entries) {
+      if (this.photoMemoryCache.size <= this.MAX_CACHE_ENTRIES && totalBytes <= this.MAX_CACHE_BYTES) {
+        break;
+      }
+      totalBytes -= (entry.buffer ? entry.buffer.length : 0);
+      this.photoMemoryCache.delete(key);
+    }
   }
 
   formatInventoryFileName(type, center, date = new Date()) {
@@ -92,6 +127,37 @@ class DriveService {
     };
   }
 
+  getPhotoAsDataUri(identifier) {
+    if (!identifier) return null;
+    const str = String(identifier).trim();
+    if (str.startsWith('data:image')) return str;
+    const safeName = path.basename(str);
+
+    // 1. Check memory cache
+    if (this.photoMemoryCache.has(safeName)) {
+      const entry = this.photoMemoryCache.get(safeName);
+      if (entry && entry.buffer) {
+        return `data:${entry.mimeType || 'image/jpeg'};base64,${entry.buffer.toString('base64')}`;
+      }
+    }
+
+    // 2. Check disk storage
+    const fullPath = path.join(this.photosDir, safeName);
+    try {
+      if (fs.existsSync(fullPath)) {
+        const buf = fs.readFileSync(fullPath);
+        const ext = path.extname(safeName).toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (ext === '.png') mimeType = 'image/png';
+        if (ext === '.webp') mimeType = 'image/webp';
+        if (ext === '.gif') mimeType = 'image/gif';
+        return `data:${mimeType};base64,${buf.toString('base64')}`;
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
   async createFinalDriveFile({ inventory, justifications, user, reviewNotes }) {
     const { id, type, center, items } = inventory;
     const fileName = this.formatInventoryFileName(type, center, new Date());
@@ -127,33 +193,61 @@ class DriveService {
         Responsable: item.Responsable,
         Estado: 'Revisado',
         Mal_estado: item.Mal_estado || 0,
-        Comentario: item.Comentario || ''
+        Comentario: item.Comentario || '',
+        photoBase64: this.getPhotoAsDataUri(item.foto_mal_estado) || ''
       })),
-      justifications: justifications || []
+      justifications: (justifications || []).map(j => ({
+        sku: j.sku || j.SKU || '',
+        justification: j.justification || '',
+        reasonType: j.reasonType || '',
+        photoBase64: this.getPhotoAsDataUri(j.photoUrl) || ''
+      }))
     };
+
+    // Call GAS Webhook and capture real Drive URL if returned
+    let realDriveUrl = null;
+    let spreadsheetUrl = null;
+    try {
+      const gasResult = await gasService.syncFinalInventoryToGAS(type, {
+        fileId,
+        fileName: `${fileName}.xlsx`,
+        folderPath,
+        driveRecord,
+        reviewNotes: reviewNotes || 'Revisión finalizada'
+      });
+      // Extract real Drive URLs from GAS response
+      if (gasResult) {
+        if (gasResult.spreadsheetUrl && typeof gasResult.spreadsheetUrl === 'string') {
+          spreadsheetUrl = gasResult.spreadsheetUrl;
+        }
+        const candidateUrl = gasResult.driveUrl || gasResult.url || gasResult.folderUrl || gasResult.spreadsheetUrl || null;
+        if (candidateUrl && typeof candidateUrl === 'string' && candidateUrl.includes('google.com')) {
+          realDriveUrl = candidateUrl;
+        }
+      }
+    } catch (err) {
+      console.warn('[driveService] GAS remote sync fallback:', err.message);
+    }
+
+    // Fallback: use the configured Drive reference folder from .env
+    const fallbackDriveUrl = config.driveReferenceFolderUrl || null;
+    const driveUrl = realDriveUrl || fallbackDriveUrl;
+
+    // Save real Drive URLs in history record
+    driveRecord.driveUrl = driveUrl;
+    driveRecord.spreadsheetUrl = spreadsheetUrl;
 
     // Save final file record to history directory
     const historyFilePath = path.join(this.historyDir, `${fileId}.json`);
     storagePath.writeJson(historyFilePath, driveRecord);
-
-    // Call GAS Webhook
-    try {
-      await gasService.syncFinalInventoryToGAS(type, {
-        fileId,
-        fileName: `${fileName}.xlsx`,
-        folderPath,
-        driveRecord
-      });
-    } catch (err) {
-      console.warn('[driveService] GAS remote sync fallback:', err.message);
-    }
 
     return {
       success: true,
       fileId,
       fileName: `${fileName}.xlsx`,
       folderPath,
-      driveUrl: `https://drive.google.com/drive/folders/nibol-${center.toLowerCase()}-${type.toLowerCase()}`,
+      driveUrl,
+      spreadsheetUrl,
       historyFilePath
     };
   }
@@ -213,6 +307,7 @@ class DriveService {
       details,
       savedAt: Date.now()
     });
+    this.pruneCache();
 
     // 2. Save in data/photos/ (if writable)
     try {

@@ -58,12 +58,12 @@ class GasService {
       let productsList = [];
       if (Array.isArray(parsed)) {
         productsList = parsed;
+      } else if (parsed && Array.isArray(parsed.rows)) {
+        productsList = parsed.rows;
       } else if (parsed && Array.isArray(parsed.data)) {
         productsList = parsed.data;
       } else if (parsed && Array.isArray(parsed.products)) {
         productsList = parsed.products;
-      } else if (parsed && parsed.status === 'success' && Array.isArray(parsed.rows)) {
-        productsList = parsed.rows;
       }
 
       return this.mapRawRowsToColumns(productsList);
@@ -156,23 +156,183 @@ class GasService {
     ]);
   }
 
-  async syncFinalInventoryToGAS(type, payload) {
+  /**
+   * Action: getReferencePhoto
+   * Queries reference photo for a SKU directly via Google Drive searchFiles in Apps Script.
+   */
+  async getReferencePhotoFromGAS(sku, type = 'CICLICO') {
+    if (!sku) return { found: false };
+    const cleanSku = String(sku).trim();
     const url = this.getUrlForType(type);
+    const targetUrl = new URL(url);
+    targetUrl.searchParams.set('action', 'getReferencePhoto');
+    targetUrl.searchParams.set('sku', cleanSku);
+
+    try {
+      const response = await fetch(targetUrl.toString(), {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!response.ok) return { found: false };
+      const parsed = await response.json();
+      return parsed && parsed.found ? parsed : { found: false, sku: cleanSku };
+    } catch (err) {
+      console.warn(`[gasService] Notice querying reference photo for ${cleanSku} from GAS:`, err.message);
+      return { found: false, sku: cleanSku };
+    }
+  }
+
+  /**
+   * Action: queryItem
+   * Queries a specific item in the center's Google Sheet by SKU, Barcode, and optional location.
+   */
+  async queryItemFromGAS(type, { center = '1120', sku, barcode, location = '' }) {
+    const cleanCenter = config.getCenterCode ? config.getCenterCode(center) : center;
+    const url = this.getUrlForType(type);
+    const targetUrl = new URL(url);
+    targetUrl.searchParams.set('action', 'queryItem');
+    targetUrl.searchParams.set('center', cleanCenter);
+    targetUrl.searchParams.set('sku', String(sku || '').trim());
+    targetUrl.searchParams.set('barcode', String(barcode || '').trim());
+    if (location) targetUrl.searchParams.set('location', String(location).trim());
+
+    try {
+      const response = await fetch(targetUrl.toString(), {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!response.ok) return { success: false, found: false };
+      return await response.json();
+    } catch (err) {
+      console.warn('[gasService] Notice querying item from GAS:', err.message);
+      return { success: false, found: false };
+    }
+  }
+
+  /**
+   * Action: upsertCount
+   * Real-time update of columns J to Q in the center sheet with optional damaged photo upload.
+   */
+  async upsertCountToGAS(type, payload) {
+    const cleanType = (type || payload.type || 'CICLICO').toUpperCase();
+    const url = this.getUrlForType(cleanType);
+    const cleanCenter = config.getCenterCode ? config.getCenterCode(payload.center || payload.centro || '1120') : '1120';
+
+    const postBody = {
+      action: 'upsertCount',
+      center: cleanCenter,
+      type: cleanType,
+      sku: String(payload.sku || payload.SKU || '').trim(),
+      barcode: String(payload.barcode || payload.codigoBarras || payload.Codigo_Barras || '').trim(),
+      location: String(payload.location || payload.ubicacion || payload.Ubicacion || '').trim(),
+      isNewLocation: !!payload.isNewLocation,
+      stockFisico: payload.stockFisico !== undefined ? payload.stockFisico : payload.Stock_Fisico,
+      malEstado: payload.malEstado !== undefined ? payload.malEstado : (payload.Mal_estado || 0),
+      comentario: payload.comentario !== undefined ? payload.comentario : (payload.Comentario || ''),
+      fechaUltimoConteo: payload.fechaUltimoConteo || payload.Fecha_Ultimo_Conteo || new Date().toISOString().split('T')[0],
+      responsable: payload.responsable || payload.Responsable || payload.username || '',
+      estado: payload.estado || payload.Estado || '',
+      photoBase64: payload.photoBase64 || payload.photoUrl || payload.fotoUrl || ''
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postBody)
+      });
+
+      const resText = await response.text();
+      try {
+        return JSON.parse(resText);
+      } catch (e) {
+        return { success: true, action: 'upsertCount', raw: resText };
+      }
+    } catch (err) {
+      console.warn('[gasService] Notice in upsertCountToGAS:', err.message);
+      return { success: false, message: err.message };
+    }
+  }
+
+  /**
+   * Action: batchUpsertCounts
+   * Batch update of columns J to Q for multiple items.
+   */
+  async batchUpsertCountsToGAS(type, payload) {
+    const cleanType = (type || payload.type || 'CICLICO').toUpperCase();
+    const url = this.getUrlForType(cleanType);
+    const cleanCenter = config.getCenterCode ? config.getCenterCode(payload.center || '1120') : '1120';
+
+    const postBody = {
+      action: 'batchUpsertCounts',
+      center: cleanCenter,
+      type: cleanType,
+      updates: payload.updates || []
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postBody)
+      });
+
+      const resText = await response.text();
+      try {
+        return JSON.parse(resText);
+      } catch (e) {
+        return { success: true, action: 'batchUpsertCounts', raw: resText };
+      }
+    } catch (err) {
+      console.warn('[gasService] Notice in batchUpsertCountsToGAS:', err.message);
+      return { success: false, message: err.message };
+    }
+  }
+
+  /**
+   * Action: createFinalFile
+   * Creates snapshot spreadsheet in snapshotFolderPath, syncs columns J to Q,
+   * saves damaged photos and saves justification photos with "Just-" prefix.
+   */
+  async syncFinalInventoryToGAS(type, payload) {
+    const cleanType = (type || payload.type || 'CICLICO').toUpperCase();
+    const url = this.getUrlForType(cleanType);
     const cleanCenter = config.getCenterCode ? config.getCenterCode(payload.center || '1120') : (payload.center || '1120');
-    
-    // Build rows from items if present
+
+    // Build items formatted with 17 standard columns
     const rawItems = payload.items || (payload.driveRecord && payload.driveRecord.items) || [];
     const rows = this.formatItemsTo17Columns(rawItems);
 
+    // Build driveRecord structure expected by Apps Script createFinalFile_
+    const incomingDriveRecord = payload.driveRecord || {};
+    const driveRecord = {
+      type: cleanType,
+      center: cleanCenter,
+      reviewNotes: payload.reviewNotes || incomingDriveRecord.reviewNotes || '',
+      items: incomingDriveRecord.items || rawItems.map(it => ({
+        SKU: it.SKU || it.sku || '',
+        Codigo_Barras: it.Codigo_Barras || it.codigoBarras || it.barcode || '',
+        Ubicacion: it.Ubicacion || it.ubicacion || '',
+        Stock_Fisico: it.Stock_Fisico !== undefined ? it.Stock_Fisico : it.stockFisico,
+        Mal_estado: it.Mal_estado !== undefined ? it.Mal_estado : (it.malEstado || 0),
+        Comentario: it.Comentario !== undefined ? it.Comentario : (it.comentario || ''),
+        Fecha_Ultimo_Conteo: it.Fecha_Ultimo_Conteo || it.fechaUltimoConteo || '',
+        Responsable: it.Responsable || it.responsable || '',
+        Estado: it.Estado || it.estado || '',
+        photoBase64: it.photoBase64 || it.photoUrl || it.foto_mal_estado || ''
+      })),
+      justifications: incomingDriveRecord.justifications || payload.justifications || []
+    };
+
     const postBody = {
       action: 'createFinalFile',
-      type: (type || 'CICLICO').toUpperCase(),
+      type: cleanType,
       center: cleanCenter,
-      fileName: payload.fileName || `${type}-${cleanCenter}-${new Date().toISOString().split('T')[0]}.gsheet`,
-      folderPath: payload.folderPath || `Nibol/${type}/${cleanCenter}`,
-      items: rawItems,
-      rows: rows,
-      ...payload
+      reviewNotes: payload.reviewNotes || driveRecord.reviewNotes || '',
+      driveRecord: driveRecord,
+      rows: rows
     };
 
     try {
@@ -188,7 +348,16 @@ class GasService {
 
       const resText = await response.text();
       try {
-        return JSON.parse(resText);
+        const parsed = JSON.parse(resText);
+        return {
+          success: true,
+          ...parsed,
+          // Extract primary Drive URLs returned by the Apps Script
+          driveUrl: parsed.driveUrl || parsed.spreadsheetUrl || null,
+          spreadsheetUrl: parsed.spreadsheetUrl || null,
+          fileId: parsed.fileId || null,
+          fileName: parsed.fileName || null
+        };
       } catch (e) {
         return { success: true, message: 'Enviado a Google Apps Script', raw: resText };
       }
@@ -199,45 +368,18 @@ class GasService {
   }
 
   async syncPhotoToGAS({ category, date, center, sku, fileName, folderPath, fileBuffer, mimeType, inventoryId }) {
-    const url = this.getUrlForType('CICLICO');
-    const base64Data = fileBuffer ? fileBuffer.toString('base64') : '';
-
-    const postBody = {
-      action: 'savePhoto',
-      type: 'CICLICO',
-      category: category || 'malestado',
-      date: date || new Date().toISOString().split('T')[0],
-      center: center || '1120',
-      sku: sku || 'SKU',
-      fileName: fileName || `${sku}.jpg`,
-      folderPath: folderPath || `nibol/ciclicos/fotos/${category}/${date}/${center}`,
-      mimeType: mimeType || 'image/jpeg',
-      base64Data: base64Data,
-      fileSize: fileBuffer ? fileBuffer.length : 0,
-      inventoryId: inventoryId || null
-    };
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(postBody)
+    // If malestado photo, sync via upsertCount payload with photoBase64
+    const base64Data = fileBuffer ? `data:${mimeType || 'image/jpeg'};base64,${fileBuffer.toString('base64')}` : '';
+    if (category === 'malestado') {
+      return this.upsertCountToGAS('CICLICO', {
+        center,
+        sku,
+        barcode: sku,
+        malEstado: 1,
+        photoBase64: base64Data
       });
-
-      if (!response.ok) {
-        console.warn(`[gasService] GAS photo upload responded with status ${response.status}`);
-      }
-
-      const resText = await response.text();
-      try {
-        return JSON.parse(resText);
-      } catch (e) {
-        return { success: true, message: 'Foto enviada a Google Apps Script', raw: resText };
-      }
-    } catch (err) {
-      console.warn('[gasService] Warning submitting photo to GAS (saved locally in Drive structure):', err.message);
-      return { success: true, fallback: true, message: 'Guardado localmente en estructura de Drive: ' + err.message };
     }
+    return { success: true, message: 'Foto guardada para inclusión en cierre final' };
   }
 }
 

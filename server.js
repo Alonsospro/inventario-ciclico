@@ -26,11 +26,14 @@ app.use('/api/photos', require('./src/routes/photoRoutes'));
 
 // Health check route
 app.get('/api/health', (req, res) => {
+  const isVercel = !!process.env.VERCEL;
   res.json({
     status: 'online',
     appName: 'NIBOL Inventarios Cíclicos, Barrido, Semanales y Mensuales',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    storage: isVercel ? 'ephemeral' : 'persistent',
+    warning: isVercel ? 'Entorno Vercel detectado: los datos almacenados en disco (inventarios, fotos, historial) son efímeros y se perderán entre deploys. Se recomienda usar un servidor persistente (VPS) para producción.' : null
   });
 });
 

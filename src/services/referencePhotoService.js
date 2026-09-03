@@ -248,7 +248,26 @@ class ReferencePhotoService {
       if (driveRecord) break;
     }
 
-    // If not found and haven't synced recently (>30s), trigger quick sync
+    // 2.1. Query Google Apps Script WebApp action=getReferencePhoto directly
+    if (!driveRecord) {
+      try {
+        const gasService = require('./gasService');
+        for (const cand of candidates) {
+          const gasRes = await gasService.getReferencePhotoFromGAS(cand);
+          if (gasRes && gasRes.found && gasRes.fileId) {
+            this.registerDriveFile(gasRes.fileId, gasRes.fileName || `${cand}.jpg`);
+            const normCand = this.normalizeKey(cand);
+            const exactCand = cand.toLowerCase();
+            driveRecord = this.driveIndex.get(exactCand) || this.driveIndex.get(normCand);
+            if (driveRecord) break;
+          }
+        }
+      } catch (gasErr) {
+        // Fallback gracefully
+      }
+    }
+
+    // If still not found and haven't synced recently (>30s), trigger quick sync
     if (!driveRecord && (Date.now() - this.lastSyncTime > 30 * 1000)) {
       await this.syncDriveFolder();
       for (const cand of candidates) {

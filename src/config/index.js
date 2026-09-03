@@ -19,15 +19,12 @@ const config = {
   baseDataDir: path.join(__dirname, '..', '..', 'data'),
   referencePhotosDir: process.env.REFERENCE_PHOTOS_DIR || path.join(__dirname, '..', '..', 'data', 'fotosreferencias'),
 
-  // Google Drive Reference Photos Folder
+  // Google Drive Folders Configuration (from Apps Script CFG)
   driveReferenceFolderUrl: process.env.DRIVE_REFERENCE_FOLDER_URL || 'https://drive.google.com/drive/folders/1dp0MUZ4HcCSpDejpF5JknWN_09ZCshU6?usp=drive_link',
-  driveReferenceFolderId: (() => {
-    if (process.env.DRIVE_REFERENCE_FOLDER_ID) return process.env.DRIVE_REFERENCE_FOLDER_ID.trim();
-    const urlToCheck = process.env.DRIVE_REFERENCE_FOLDER_URL || process.env.REFERENCE_PHOTOS_DIR || '';
-    const match = urlToCheck.match(/\/folders\/([a-zA-Z0-9_-]+)/) || urlToCheck.match(/id=([a-zA-Z0-9_-]+)/);
-    if (match) return match[1];
-    return '1dp0MUZ4HcCSpDejpF5JknWN_09ZCshU6';
-  })(),
+  driveReferenceFolderId: process.env.DRIVE_REFERENCE_FOLDER_ID || '1dp0MUZ4HcCSpDejpF5JknWN_09ZCshU6',
+  driveDamagedFolderId: process.env.DRIVE_DAMAGED_FOLDER_ID || '1q0rRvFpiFXDlXuX97odyz-bVcGZIxwEm',
+  driveJustifFolderId: process.env.DRIVE_JUSTIF_FOLDER_ID || '1tBlqX8MXyfD6SjQ6aLoViCDqYd_8MK54',
+  snapshotFolderPath: process.env.SNAPSHOT_FOLDER_PATH || 'Nibol/Ciclicosn',
 
   // Drive logical folders naming convention
   drive: {
@@ -36,7 +33,11 @@ const config = {
     barridoFolder: 'NIBOL/BARRIDO',
     mensualesFolder: 'NIBOL/MENSUALES',
     semanalesFolder: 'NIBOL/SEMANALES',
-    justificationsPhotosFolder: 'NIBOL/FOTOS/JUSTIFICACIONES'
+    justificationsPhotosFolder: 'NIBOL/FOTOS/JUSTIFICACIONES',
+    referenceFolderId: '1dp0MUZ4HcCSpDejpF5JknWN_09ZCshU6',
+    damagedFolderId: '1q0rRvFpiFXDlXuX97odyz-bVcGZIxwEm',
+    justifFolderId: '1tBlqX8MXyfD6SjQ6aLoViCDqYd_8MK54',
+    snapshotFolderPath: 'Nibol/Ciclicosn'
   },
 
   // Column contract definition (Cols A to Q)

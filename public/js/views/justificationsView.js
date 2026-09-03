@@ -8,6 +8,9 @@ window.JustificationsView = {
   },
 
   setupListeners() {
+    // Center filter for justifications
+    document.getElementById('filter-just-center')?.addEventListener('change', () => this.loadJustifications());
+
     // Justification photo upload
     const photoZone = document.getElementById('zone-just-photo');
     const photoInput = document.getElementById('input-just-photo-file');
@@ -81,7 +84,10 @@ window.JustificationsView = {
     container.innerHTML = '<div style="text-align:center; padding: 3rem;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tareas de justificación pendientes...</div>';
 
     try {
-      const res = await window.API.getJustifications();
+      const centerSelect = document.getElementById('filter-just-center');
+      const selectedCenter = centerSelect ? centerSelect.value : 'TODOS';
+      const center = (selectedCenter && selectedCenter !== 'TODOS') ? selectedCenter : undefined;
+      const res = await window.API.getJustifications(center);
       this.tasks = res.tasks || [];
 
       if (this.tasks.length === 0) {

@@ -427,12 +427,31 @@
       <!-- VIEW: JUSTIFICATIONS (ADMIN ONLY) -->
       <section id="view-justifications" class="view-container">
         <div class="card" style="border-top: 4px solid var(--warning);">
-          <div class="card-header">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
               <h2 class="card-title" style="color: var(--warning);">
                 <i class="fa-solid fa-clipboard-check"></i> Panel de Justificaciones y Cierre Final (Admin)
               </h2>
               <p class="stat-subtext">Revisión de diferencias, mermas, fotos de mal estado y creación en Google Drive</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <select id="filter-just-center" class="form-select" style="width: auto; min-width: 180px;">
+                <option value="TODOS">Todos los centros</option>
+                <option value="1120">1120 - Volvo - Km 14</option>
+                <option value="1160">1160 - Av. Banzer 3er anillo</option>
+                <option value="1180">1180 - Foton - Km 10</option>
+                <option value="1300">1300 - John Deere - Km 10</option>
+                <option value="1310">1310 - Sucursal Montero</option>
+                <option value="1340">1340 - Sucursal Cuatro Cañadas</option>
+                <option value="1700">1700 - Av. Grigota 3er anillo</option>
+                <option value="1800">1800 - Express San Julián</option>
+                <option value="1820">1820 - Express San Pedro</option>
+                <option value="2100">2100 - Sucursal El Alto, La Paz</option>
+                <option value="2150">2150 - Centro Foton El Alto, La Paz</option>
+                <option value="3100">3100 - Sucursal Cochabamba</option>
+                <option value="3200">3200 - Centro Foton Blanco Galindo</option>
+                <option value="5100">5100 - Sucursal Tarija</option>
+              </select>
             </div>
           </div>
 

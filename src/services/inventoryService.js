@@ -762,7 +762,7 @@ class InventoryService {
     inv.closedBy = user.username;
     inv.driveFileId = driveResult.fileId;
     inv.driveFileName = driveResult.fileName;
-    inv.driveUrl = driveResult.driveUrl;
+    inv.driveUrl = driveResult.driveUrl || null; // Only real Drive URLs, null if GAS didn't provide one
 
     this.saveInventory(inv);
 

@@ -33,7 +33,7 @@ router.get('/', authenticate, restrictCenter, (req, res) => {
         closedAt: record.closedAt,
         totalItems: record.totalItems,
         justificationsCount: record.justificationsCount,
-        driveUrl: `https://drive.google.com/drive/folders/nibol-${record.center.toLowerCase()}-${record.type.toLowerCase()}`
+        driveUrl: record.driveUrl || process.env.DRIVE_REFERENCE_FOLDER_URL || null
       });
     });
 

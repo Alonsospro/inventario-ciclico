@@ -38,9 +38,11 @@ window.HistoryView = {
                 <a href="/api/history/${item.fileId}/download" class="btn btn-primary btn-sm" download title="Descargar Reporte">
                   <i class="fa-solid fa-download"></i> CSV
                 </a>
+                ${item.driveUrl ? `
                 <a href="${item.driveUrl}" target="_blank" class="btn btn-secondary btn-sm" title="Abrir carpeta Google Drive">
                   <i class="fa-brands fa-google-drive"></i> Drive
                 </a>
+                ` : ''}
                 ${window.Auth.hasRole(['ADMIN']) ? `
                   <button class="btn btn-warning btn-sm" onclick="window.HistoryView.reopen('${item.inventoryId}')" title="Reabrir inventario para ajustes">
                     <i class="fa-solid fa-arrow-rotate-left"></i> Reabrir
