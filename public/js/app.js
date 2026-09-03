@@ -35,6 +35,9 @@ window.Router = {
     if (targetElement) {
       targetElement.classList.add('active');
       this.currentView = viewName;
+      try {
+        localStorage.setItem('nibol_active_view', viewName);
+      } catch (e) {}
     }
 
     // Update active nav button
@@ -119,14 +122,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Logout button
   document.getElementById('btn-logout')?.addEventListener('click', () => {
+    try {
+      localStorage.removeItem('nibol_active_view');
+      localStorage.removeItem('nibol_active_inv_id');
+    } catch (e) {}
     window.Auth.logout(true);
   });
 
-  // Check Active Session on Page Refresh
+  // Check Active Session on Page Refresh and restore view/session
   window.Auth.init();
   const hasSession = await window.Auth.checkSession();
   if (hasSession) {
-    window.Router.navigate('inventories');
+    const savedView = localStorage.getItem('nibol_active_view') || 'inventories';
+    const activeInvId = localStorage.getItem('nibol_active_inv_id');
+    if (savedView === 'count' && activeInvId) {
+      window.InventoryView.openInventory(activeInvId);
+    } else {
+      window.Router.navigate(savedView);
+    }
   } else {
     window.Router.navigate('login');
   }

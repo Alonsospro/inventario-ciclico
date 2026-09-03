@@ -92,6 +92,13 @@ window.API = {
     return this.request(`/inventories/${id}`);
   },
 
+  syncInventories(inventories) {
+    return this.request('/inventories/sync', {
+      method: 'POST',
+      body: JSON.stringify({ inventories })
+    });
+  },
+
   createInventory(payload) {
     return this.request('/inventories', {
       method: 'POST',

@@ -15,6 +15,10 @@ window.InventoryView = {
     // Back to list button
     document.getElementById('btn-back-to-invs')?.addEventListener('click', () => {
       this.currentInventory = null;
+      try {
+        localStorage.removeItem('nibol_active_inv_id');
+        localStorage.setItem('nibol_active_view', 'inventories');
+      } catch (e) {}
       document.getElementById('view-count').classList.remove('active');
       document.getElementById('view-inventories').classList.add('active');
       this.loadInventories();
@@ -291,7 +295,25 @@ window.InventoryView = {
 
     try {
       const res = await window.API.getInventories({ type, center });
-      const list = res.inventories || [];
+      let list = res.inventories || [];
+
+      const cacheKey = 'nibol_cached_inventories';
+      if (list.length > 0) {
+        try { localStorage.setItem(cacheKey, JSON.stringify(list)); } catch (e) {}
+      } else {
+        // In serverless cold start, recover from client local cache if server is empty
+        try {
+          const cachedRaw = localStorage.getItem(cacheKey);
+          if (cachedRaw) {
+            const cachedList = JSON.parse(cachedRaw);
+            if (Array.isArray(cachedList) && cachedList.length > 0) {
+              list = cachedList;
+              // Rehydrate server in background
+              window.API.syncInventories(cachedList).catch(() => {});
+            }
+          }
+        } catch (e) {}
+      }
 
       if (list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-dim);">No se encontraron inventarios disponibles.</td></tr>';
@@ -336,14 +358,58 @@ window.InventoryView = {
         `;
       }).join('');
     } catch (err) {
+      // Offline / Serverless recovery on error
+      try {
+        const cachedRaw = localStorage.getItem('nibol_cached_inventories');
+        if (cachedRaw) {
+          const list = JSON.parse(cachedRaw);
+          if (Array.isArray(list) && list.length > 0) {
+            tbody.innerHTML = list.map(inv => `
+              <tr>
+                <td><strong style="color: var(--primary); font-family: var(--font-mono);">${inv.id}</strong></td>
+                <td><strong>${inv.name}</strong></td>
+                <td><span class="badge badge-neutral">${inv.type}</span></td>
+                <td><span class="badge badge-neutral">${inv.center}</span></td>
+                <td><span class="badge badge-info">${inv.status}</span></td>
+                <td><span style="font-size: 0.75rem;">${inv.countedItems || 0}/${inv.totalItems || 0}</span></td>
+                <td>
+                  <button class="btn btn-primary btn-sm" onclick="window.InventoryView.openInventory('${inv.id}')">
+                    <i class="fa-solid fa-play"></i> Abrir
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+            return;
+          }
+        }
+      } catch (e) {}
       tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--danger);">Error: ${err.message}</td></tr>`;
     }
   },
 
   async openInventory(id) {
     try {
-      const res = await window.API.getInventoryById(id);
-      this.currentInventory = res.inventory;
+      try {
+        localStorage.setItem('nibol_active_inv_id', id);
+        localStorage.setItem('nibol_active_view', 'count');
+      } catch (e) {}
+
+      let inv = null;
+      try {
+        const res = await window.API.getInventoryById(id);
+        inv = res.inventory;
+        try { localStorage.setItem(`nibol_inv_detail_${id}`, JSON.stringify(inv)); } catch (e) {}
+      } catch (netErr) {
+        const cachedRaw = localStorage.getItem(`nibol_inv_detail_${id}`);
+        if (cachedRaw) {
+          inv = JSON.parse(cachedRaw);
+          window.Toast.info('Mostrando datos del inventario guardados localmente');
+        } else {
+          throw netErr;
+        }
+      }
+
+      this.currentInventory = inv;
 
       document.getElementById('view-inventories').classList.remove('active');
       document.getElementById('view-count').classList.add('active');
@@ -360,10 +426,17 @@ window.InventoryView = {
       window.Toast.danger(err.message || 'No se pudo abrir el inventario');
     }
   },
+
   async reloadCurrentInventory() {
     if (!this.currentInventory) return;
-    const res = await window.API.getInventoryById(this.currentInventory.id);
-    this.currentInventory = res.inventory;
+    const id = this.currentInventory.id;
+    try {
+      const res = await window.API.getInventoryById(id);
+      this.currentInventory = res.inventory;
+      try { localStorage.setItem(`nibol_inv_detail_${id}`, JSON.stringify(res.inventory)); } catch (e) {}
+    } catch (e) {
+      // Keep memory copy
+    }
     this.renderCountTable();
   },
 

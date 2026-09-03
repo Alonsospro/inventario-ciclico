@@ -184,6 +184,37 @@ class GasService {
   }
 
   /**
+   * Action: getHistory
+   * Fetches finalized inventory history directly from Google Drive and Google Sheets (Metricas) via GAS.
+   */
+  async getHistoryFromGAS(type = 'CICLICO', center = null) {
+    const url = this.getUrlForType(type);
+    const targetUrl = new URL(url);
+    targetUrl.searchParams.set('action', 'getHistory');
+    if (center && center !== 'TODOS' && center !== 'GLOBAL') {
+      const cleanCenter = config.getCenterCode ? config.getCenterCode(center) : center;
+      targetUrl.searchParams.set('center', cleanCenter);
+    }
+
+    try {
+      const response = await fetch(targetUrl.toString(), {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!response.ok) return [];
+      const parsed = await response.json();
+      if (parsed && Array.isArray(parsed.history)) {
+        return parsed.history;
+      }
+      return [];
+    } catch (err) {
+      console.warn('[gasService] Notice querying history from GAS Google Drive:', err.message);
+      return [];
+    }
+  }
+
+  /**
    * Action: queryItem
    * Queries a specific item in the center's Google Sheet by SKU, Barcode, and optional location.
    */

@@ -4,7 +4,13 @@ const config = require('../config');
 
 class StoragePath {
   constructor() {
-    this.baseDir = config.baseDataDir;
+    this.initialDataDir = config.baseDataDir;
+    // On Vercel serverless, /var/task is read-only. Use writable /tmp directory
+    if (process.env.VERCEL) {
+      this.baseDir = path.join('/tmp', 'nibol_data');
+    } else {
+      this.baseDir = config.baseDataDir;
+    }
     this.memoryStore = new Map();
     this.cacheTimestamps = new Map(); // Track when each entry was cached
     this.dirListings = new Map();
@@ -42,14 +48,22 @@ class StoragePath {
             fs.mkdirSync(dir, { recursive: true });
           }
         } catch (err) {
-          // In read-only cloud environments, directory creation fails gracefully
+          // Graceful handling
         }
       }
     });
 
-    // Warn about ephemeral storage in serverless environments
-    if (process.env.VERCEL) {
-      console.warn('⚠️  [storagePath] VERCEL detectado: el almacenamiento en disco es EFÍMERO. Los datos (inventarios, fotos, historial) se perderán entre deploys. Considere usar un VPS para producción.');
+    // On Vercel, copy packaged initial users and seed files from read-only package to /tmp
+    if (process.env.VERCEL && this.initialDataDir && fs.existsSync(this.initialDataDir)) {
+      try {
+        const usersSrc = path.join(this.initialDataDir, 'users.json');
+        const usersDest = path.join(this.baseDir, 'users.json');
+        if (fs.existsSync(usersSrc) && !fs.existsSync(usersDest)) {
+          fs.copyFileSync(usersSrc, usersDest);
+        }
+      } catch (e) {
+        console.warn('[storagePath] Seed copy notice:', e.message);
+      }
     }
   }
 
@@ -86,7 +100,13 @@ class StoragePath {
   }
 
   getUsersFilePath() {
-    return path.join(this.baseDir, 'users.json');
+    const tmpPath = path.join(this.baseDir, 'users.json');
+    if (fs.existsSync(tmpPath)) return tmpPath;
+    if (this.initialDataDir) {
+      const initPath = path.join(this.initialDataDir, 'users.json');
+      if (fs.existsSync(initPath)) return initPath;
+    }
+    return tmpPath;
   }
 
   readJson(filePath, defaultValue = null) {
@@ -108,6 +128,18 @@ class StoragePath {
         this.memoryStore.set(key, parsed);
         this.cacheTimestamps.set(key, Date.now());
         return JSON.parse(JSON.stringify(parsed));
+      }
+      // Fallback check in initialDataDir if running in Vercel
+      if (this.initialDataDir && filePath.startsWith(this.baseDir)) {
+        const relative = path.relative(this.baseDir, filePath);
+        const fallbackPath = path.join(this.initialDataDir, relative);
+        if (fs.existsSync(fallbackPath)) {
+          const raw = fs.readFileSync(fallbackPath, 'utf8');
+          const parsed = JSON.parse(raw);
+          this.memoryStore.set(key, parsed);
+          this.cacheTimestamps.set(key, Date.now());
+          return JSON.parse(JSON.stringify(parsed));
+        }
       }
     } catch (err) {
       console.warn(`[storagePath] Note reading JSON from ${filePath}:`, err.message);

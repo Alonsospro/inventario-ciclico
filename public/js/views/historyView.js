@@ -12,7 +12,20 @@ window.HistoryView = {
 
     try {
       const res = await window.API.getHistory();
-      const list = res.history || [];
+      let list = res.history || [];
+
+      const cacheKey = 'nibol_cached_history';
+      if (list.length > 0) {
+        try { localStorage.setItem(cacheKey, JSON.stringify(list)); } catch (e) {}
+      } else {
+        try {
+          const cached = localStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) list = parsed;
+          }
+        } catch (e) {}
+      }
 
       if (list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 2rem; color: var(--text-dim);">No hay inventarios finalizados en el historial aún.</td></tr>';

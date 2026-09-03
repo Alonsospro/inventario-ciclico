@@ -88,19 +88,16 @@ class AuthService {
 
   initUsers() {
     const existing = storagePath.readJson(this.usersFile, null);
-    if (Array.isArray(existing) && existing.length >= OFFICIAL_USERS_RAW.length) {
+    const hasWarnes = Array.isArray(existing) && existing.some(u => u.username === 'encargado_warnes');
+    if (Array.isArray(existing) && existing.length >= OFFICIAL_USERS_RAW.length && hasWarnes) {
       this.usersCache = existing;
       return existing;
     }
-    return this.seedDefaultUsers(false);
+    return this.seedDefaultUsers(true);
   }
 
   seedDefaultUsers(force = false) {
     let currentUsers = storagePath.readJson(this.usersFile, []);
-    if (!force && Array.isArray(currentUsers) && currentUsers.length >= OFFICIAL_USERS_RAW.length) {
-      this.usersCache = currentUsers;
-      return currentUsers;
-    }
     const salt = bcrypt.genSaltSync(10);
 
     const userMap = new Map();

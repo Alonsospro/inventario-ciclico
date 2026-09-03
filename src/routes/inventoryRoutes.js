@@ -185,4 +185,27 @@ router.delete('/:id', authenticate, requireRole(['ADMIN', 'ENCARGADO']), (req, r
   }
 });
 
+// POST /api/inventories/sync (Rehydrate inventories from client cache in serverless environments)
+router.post('/sync', authenticate, (req, res) => {
+  try {
+    const { inventories } = req.body;
+    if (Array.isArray(inventories) && inventories.length > 0) {
+      let synced = 0;
+      inventories.forEach(inv => {
+        if (inv && inv.id) {
+          const existing = inventoryService.getInventoryRaw(inv.id);
+          if (!existing) {
+            inventoryService.saveInventory(inv);
+            synced++;
+          }
+        }
+      });
+      return res.json({ success: true, synced, total: inventories.length });
+    }
+    res.json({ success: true, synced: 0 });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
