@@ -112,11 +112,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Navigation Links click events
   document.querySelectorAll('.nav-item-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       const view = btn.getAttribute('data-view');
-      if (view) {
-        window.Router.navigate(view);
+      if (!view) return;
+
+      if (view === 'barrido' && window.Router.currentView !== 'barrido') {
+        const confirmed = await window.ModalHelper.confirm({
+          title: 'Iniciar Modo Barrido',
+          message: '¿Desea iniciar el Modo Barrido? Se abrirá la interfaz de escaneo continuo en pasillos y racks.',
+          icon: 'fa-solid fa-barcode',
+          confirmText: 'Iniciar Barrido',
+          cancelText: 'Cancelar',
+          confirmBtnClass: 'btn-primary'
+        });
+        if (confirmed) {
+          window.Router.navigate('barrido');
+        }
+        return;
       }
+
+      window.Router.navigate(view);
     });
   });
 
