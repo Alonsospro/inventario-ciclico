@@ -256,6 +256,7 @@ class GasService {
       center: cleanCenter,
       type: cleanType,
       sku: String(payload.sku || payload.SKU || '').trim(),
+      descripcion: String(payload.descripcion || payload.Descripcion || '').trim(),
       barcode: String(payload.barcode || payload.codigoBarras || payload.Codigo_Barras || '').trim(),
       location: String(payload.location || payload.ubicacion || payload.Ubicacion || '').trim(),
       isNewLocation: !!payload.isNewLocation,
