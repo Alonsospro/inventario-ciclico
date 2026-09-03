@@ -3,6 +3,14 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const storagePath = require('./storagePath');
 
+// Pre-load bundled users so NFT bundles users.json and cold-start uses it instantly
+let bundledUsers = null;
+try {
+  bundledUsers = require('../../data/users.json');
+} catch (e) {
+  bundledUsers = null;
+}
+
 const OFFICIAL_USERS_RAW = [
   // Centro: Volvo - Km 14 (1120)
   { center: '1120', centerName: 'Volvo - Km 14', name: 'Isaias Burgos Arandia', cargo: 'Encargado de Almacén', role: 'ENCARGADO', clave: 'IA2351', usuario: 'Isaias' },
@@ -92,6 +100,14 @@ class AuthService {
     if (Array.isArray(existing) && existing.length >= OFFICIAL_USERS_RAW.length && hasWarnes) {
       this.usersCache = existing;
       return existing;
+    }
+    // In serverless or on first run, use pre-bundled pre-hashed users instantly
+    if (Array.isArray(bundledUsers) && bundledUsers.length >= OFFICIAL_USERS_RAW.length) {
+      this.usersCache = bundledUsers;
+      try {
+        storagePath.writeJson(this.usersFile, bundledUsers);
+      } catch (e) {}
+      return bundledUsers;
     }
     return this.seedDefaultUsers(true);
   }
