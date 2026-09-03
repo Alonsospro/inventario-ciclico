@@ -42,7 +42,8 @@ router.post('/count', authenticate, restrictCenter, async (req, res) => {
       reason,
       center,
       photoUrl,
-      comentario
+      comentario,
+      descripcion
     } = req.body;
 
     const requestedCenter = center || (req.user.center !== 'GLOBAL' ? req.user.center : '1120');
@@ -53,6 +54,7 @@ router.post('/count', authenticate, restrictCenter, async (req, res) => {
       inventoryId: targetInvId,
       itemId,
       sku,
+      descripcion,
       stockFisico,
       malEstado: malEstado || 0,
       location,
