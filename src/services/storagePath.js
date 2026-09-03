@@ -76,6 +76,9 @@ class StoragePath {
   }
 
   getReferencePhotosDirectory() {
+    if (process.env.VERCEL) {
+      return path.join(this.baseDir, 'fotosreferencias');
+    }
     const configured = config.referencePhotosDir;
     if (configured && typeof configured === 'string' && !configured.startsWith('http://') && !configured.startsWith('https://')) {
       return configured;
