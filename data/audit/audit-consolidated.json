@@ -814,5 +814,71 @@
     "user": "Alonso",
     "center": "1300",
     "reason": "BOOR"
+  },
+  {
+    "id": "LOG-1788461829363-zthxe",
+    "timestamp": "2026-09-03T18:57:09.363Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-1120",
+    "user": "Isaias",
+    "center": "1120",
+    "reason": "Prueba de eliminación por encargado"
+  },
+  {
+    "id": "LOG-1788461829389-umd0m",
+    "timestamp": "2026-09-03T18:57:09.389Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-1300",
+    "user": "ALONSO",
+    "center": "1300",
+    "reason": "Eliminación por Administrador con minúsculas"
+  },
+  {
+    "id": "LOG-1788461829401-wk1ky",
+    "timestamp": "2026-09-03T18:57:09.401Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-KEY",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788461829409-1bi09",
+    "timestamp": "2026-09-03T18:57:09.409Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-AUX",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788461829655-4d1d4",
+    "timestamp": "2026-09-03T18:57:09.655Z",
+    "action": "JUSTIFICATION_SUBMITTED",
+    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
+    "sku": "JD-AH12345",
+    "justification": "Diferencia justificada por ajuste de merma",
+    "photoUrl": "/api/photos/sample.jpg",
+    "user": "ALONSO",
+    "center": "WARNES",
+    "diffQty": -2
+  },
+  {
+    "id": "LOG-1788461841329-5gfgs",
+    "timestamp": "2026-09-03T18:57:21.329Z",
+    "action": "INVENTORY_REVIEW_FINISHED",
+    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-03.xlsx",
+    "user": "ALONSO",
+    "center": "WARNES",
+    "targetId": "INV-TEST-DRIVE-WARNES-001"
+  },
+  {
+    "id": "LOG-1788461850013-kdube",
+    "timestamp": "2026-09-03T18:57:30.013Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
+    "user": "ALONSO",
+    "center": "WARNES",
+    "reason": "Eliminación autorizada con clave"
   }
 ]

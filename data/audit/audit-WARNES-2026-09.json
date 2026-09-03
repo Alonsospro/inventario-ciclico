@@ -196,5 +196,74 @@
     "user": "ALONSO",
     "center": "WARNES",
     "reason": "Eliminación autorizada con clave"
+  },
+  {
+    "id": "LOG-1788461829365-jn16u",
+    "timestamp": "2026-09-03T18:57:09.365Z",
+    "action": "COUNT_REGISTERED",
+    "inventoryId": "INV-ZERO-TEST",
+    "sku": "JD-Z001",
+    "previousQty": null,
+    "newQty": 0,
+    "isReEdit": false,
+    "user": "auxiliar_warnes",
+    "center": "WARNES",
+    "location": "RACK-Z1",
+    "malEstado": 0,
+    "reason": "Confirmación sin stock en estante"
+  },
+  {
+    "id": "LOG-1788461829390-8907t",
+    "timestamp": "2026-09-03T18:57:09.390Z",
+    "action": "COUNT_REGISTERED",
+    "inventoryId": "INV-TEST-BARRIDO-001",
+    "sku": "JD-AH12345",
+    "previousQty": null,
+    "newQty": 5,
+    "isReEdit": false,
+    "user": "auxiliar_warnes",
+    "center": "WARNES",
+    "location": "RACK-A1-01",
+    "malEstado": 2,
+    "reason": "Conteo físico confirmado"
+  },
+  {
+    "id": "LOG-1788461829409-9yf80",
+    "timestamp": "2026-09-03T18:57:09.409Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-BARRIDO-001",
+    "user": "admin",
+    "center": "WARNES",
+    "reason": "Eliminación autorizada con clave"
+  },
+  {
+    "id": "LOG-1788461829655-4d1d4",
+    "timestamp": "2026-09-03T18:57:09.655Z",
+    "action": "JUSTIFICATION_SUBMITTED",
+    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
+    "sku": "JD-AH12345",
+    "justification": "Diferencia justificada por ajuste de merma",
+    "photoUrl": "/api/photos/sample.jpg",
+    "user": "ALONSO",
+    "center": "WARNES",
+    "diffQty": -2
+  },
+  {
+    "id": "LOG-1788461841329-5gfgs",
+    "timestamp": "2026-09-03T18:57:21.329Z",
+    "action": "INVENTORY_REVIEW_FINISHED",
+    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-03.xlsx",
+    "user": "ALONSO",
+    "center": "WARNES",
+    "targetId": "INV-TEST-DRIVE-WARNES-001"
+  },
+  {
+    "id": "LOG-1788461850013-kdube",
+    "timestamp": "2026-09-03T18:57:30.013Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
+    "user": "ALONSO",
+    "center": "WARNES",
+    "reason": "Eliminación autorizada con clave"
   }
 ]

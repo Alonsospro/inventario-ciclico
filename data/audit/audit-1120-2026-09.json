@@ -94,5 +94,53 @@
     "center": "1120",
     "affectedCount": 1,
     "reason": "Asignación de turno operativo"
+  },
+  {
+    "id": "LOG-1788461829363-zthxe",
+    "timestamp": "2026-09-03T18:57:09.363Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-1120",
+    "user": "Isaias",
+    "center": "1120",
+    "reason": "Prueba de eliminación por encargado"
+  },
+  {
+    "id": "LOG-1788461829401-wk1ky",
+    "timestamp": "2026-09-03T18:57:09.401Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-KEY",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788461829409-1bi09",
+    "timestamp": "2026-09-03T18:57:09.409Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-AUX",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788461840295-zg4x6",
+    "timestamp": "2026-09-03T18:57:20.295Z",
+    "action": "INVENTORY_CREATED",
+    "details": "Inventario Inventario Test 1120 creado por Alonso creado con 1 ítems",
+    "user": "Alonso",
+    "center": "1120",
+    "targetId": "INV-CICLICO-1120-MTLW03VP"
+  },
+  {
+    "id": "LOG-1788461840319-hh8do",
+    "timestamp": "2026-09-03T18:57:20.320Z",
+    "action": "ITEMS_REASSIGNED",
+    "inventoryId": "INV-CICLICO-1120-MTLW03VP",
+    "fromUser": "Varios",
+    "toUser": "Bladimir",
+    "user": "Isaias",
+    "center": "1120",
+    "affectedCount": 1,
+    "reason": "Asignación de turno operativo"
   }
 ]

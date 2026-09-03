@@ -580,5 +580,23 @@
     "user": "Alonso",
     "center": "1300",
     "reason": "BOOR"
+  },
+  {
+    "id": "LOG-1788461829389-umd0m",
+    "timestamp": "2026-09-03T18:57:09.389Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-1300",
+    "user": "ALONSO",
+    "center": "1300",
+    "reason": "Eliminación por Administrador con minúsculas"
+  },
+  {
+    "id": "LOG-1788461840303-2lu7m",
+    "timestamp": "2026-09-03T18:57:20.303Z",
+    "action": "INVENTORY_CREATED",
+    "details": "Inventario Inventario Test 1300 creado por Juan Carlos creado con 1 ítems",
+    "user": "Jcarlos",
+    "center": "1300",
+    "targetId": "INV-CICLICO-1300-MTLW03VY"
   }
 ]
