@@ -404,19 +404,29 @@ class GasService {
   }
 
   async syncPhotoToGAS({ category, date, center, sku, fileName, folderPath, fileBuffer, mimeType, inventoryId }) {
-    // If malestado photo, sync via upsertCount payload with photoBase64
     const base64Data = fileBuffer ? `data:${mimeType || 'image/jpeg'};base64,${fileBuffer.toString('base64')}` : '';
-    if (category === 'malestado') {
-      return this.upsertCountToGAS('CICLICO', {
-        center,
-        sku,
-        barcode: sku,
-        malEstado: 1,
-        photoBase64: base64Data
+    const cleanCenter = config.getCenterCode ? config.getCenterCode(center) : (center || '1120');
+    const url = this.getUrlForType('CICLICO');
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        redirect: 'follow', // IMPORTANTE para Apps Script
+        body: JSON.stringify({
+          action: 'uploadPhoto',
+          category: category || 'malestado',
+          center: cleanCenter,
+          sku: sku || 'SKU',
+          type: 'CICLICO',
+          photoBase64: base64Data
+        })
       });
+      return await response.json();
+    } catch (err) {
+      console.warn('[gasService] syncPhotoToGAS warning:', err.message);
+      return { success: false, error: err.message };
     }
-    return { success: true, message: 'Foto guardada para inclusión en cierre final' };
   }
-}
 
 module.exports = new GasService();
