@@ -1,83 +1,98 @@
 [
   {
-    "id": "LOG-1788369579249-821k3",
-    "timestamp": "2026-09-02T17:19:39.253Z",
+    "id": "LOG-1788452329410-okitr",
+    "timestamp": "2026-09-03T16:18:49.410Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-1120",
+    "user": "Isaias",
+    "center": "1120",
+    "reason": "Prueba de eliminación por encargado"
+  },
+  {
+    "id": "LOG-1788452329450-otx3t",
+    "timestamp": "2026-09-03T16:18:49.450Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-KEY",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788452329460-c8s4y",
+    "timestamp": "2026-09-03T16:18:49.460Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-AUX",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788452341299-fi5tm",
+    "timestamp": "2026-09-03T16:19:01.299Z",
     "action": "INVENTORY_CREATED",
-    "details": "Inventario CICLICO PRIMERA SEMAN SEPTIEMBRE creado con 3 ítems",
+    "details": "Inventario Inventario Test 1120 creado por Alonso creado con 1 ítems",
     "user": "Alonso",
     "center": "1120",
-    "targetId": "INV-CICLICO-1120-MTKD2MSP"
+    "targetId": "INV-CICLICO-1120-MTLQCIEQ"
   },
   {
-    "id": "LOG-1788369621431-wusu0",
-    "timestamp": "2026-09-02T17:20:21.431Z",
+    "id": "LOG-1788452341326-zih5v",
+    "timestamp": "2026-09-03T16:19:01.326Z",
     "action": "ITEMS_REASSIGNED",
-    "inventoryId": "INV-CICLICO-1120-MTKD2MSP",
+    "inventoryId": "INV-CICLICO-1120-MTLQCIEQ",
     "fromUser": "Varios",
-    "toUser": "Wenderson",
+    "toUser": "Bladimir",
+    "user": "Isaias",
+    "center": "1120",
+    "affectedCount": 1,
+    "reason": "Asignación de turno operativo"
+  },
+  {
+    "id": "LOG-1788452474044-a89zi",
+    "timestamp": "2026-09-03T16:21:14.045Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-1120",
+    "user": "Isaias",
+    "center": "1120",
+    "reason": "Prueba de eliminación por encargado"
+  },
+  {
+    "id": "LOG-1788452474075-28qrn",
+    "timestamp": "2026-09-03T16:21:14.075Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-KEY",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788452474082-zkm10",
+    "timestamp": "2026-09-03T16:21:14.082Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-AUX",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788452483124-nmvgk",
+    "timestamp": "2026-09-03T16:21:23.124Z",
+    "action": "INVENTORY_CREATED",
+    "details": "Inventario Inventario Test 1120 creado por Alonso creado con 1 ítems",
     "user": "Alonso",
     "center": "1120",
-    "affectedCount": 3,
-    "reason": "Reasignación de carga operativa"
+    "targetId": "INV-CICLICO-1120-MTLQFJUB"
   },
   {
-    "id": "LOG-1788369674033-ypja3",
-    "timestamp": "2026-09-02T17:21:14.033Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-CICLICO-1120-MTKD2MSP",
-    "sku": "JD_15952",
-    "previousQty": null,
-    "newQty": 3,
-    "isReEdit": false,
-    "user": "Wenderson",
+    "id": "LOG-1788452483143-la9ng",
+    "timestamp": "2026-09-03T16:21:23.143Z",
+    "action": "ITEMS_REASSIGNED",
+    "inventoryId": "INV-CICLICO-1120-MTLQFJUB",
+    "fromUser": "Varios",
+    "toUser": "Bladimir",
+    "user": "Isaias",
     "center": "1120",
-    "location": "A102006B8A",
-    "malEstado": 1,
-    "reason": "Conteo físico confirmado"
-  },
-  {
-    "id": "LOG-1788369686900-ajfh5",
-    "timestamp": "2026-09-02T17:21:26.900Z",
-    "action": "COUNT_MODIFIED",
-    "inventoryId": "INV-CICLICO-1120-MTKD2MSP",
-    "sku": "JD_15952",
-    "previousQty": 3,
-    "newQty": null,
-    "isReEdit": true,
-    "user": "Wenderson",
-    "center": "1120",
-    "location": "A102006B8C",
-    "malEstado": 0,
-    "reason": "Nueva ubicación detectada"
-  },
-  {
-    "id": "LOG-1788369697888-tzgwz",
-    "timestamp": "2026-09-02T17:21:37.888Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-CICLICO-1120-MTKD2MSP",
-    "sku": "JD_15953",
-    "previousQty": null,
-    "newQty": 1,
-    "isReEdit": false,
-    "user": "Wenderson",
-    "center": "1120",
-    "location": "A102006B8A",
-    "malEstado": 0,
-    "reason": "Conteo físico confirmado"
-  },
-  {
-    "id": "LOG-1788369700740-dq1wr",
-    "timestamp": "2026-09-02T17:21:40.740Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-CICLICO-1120-MTKD2MSP",
-    "sku": "JD_15954",
-    "previousQty": null,
-    "newQty": 0,
-    "isReEdit": false,
-    "user": "Wenderson",
-    "center": "1120",
-    "location": "A102006B8A",
-    "malEstado": 0,
-    "reason": "Conteo físico confirmado"
+    "affectedCount": 1,
+    "reason": "Asignación de turno operativo"
   }
 ]

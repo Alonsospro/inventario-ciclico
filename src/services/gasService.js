@@ -294,7 +294,8 @@ class GasService {
   async batchUpsertCountsToGAS(type, payload) {
     const cleanType = (type || payload.type || 'CICLICO').toUpperCase();
     const url = this.getUrlForType(cleanType);
-    const cleanCenter = config.getCenterCode ? config.getCenterCode(payload.center || '1120') : '1120';
+    const rawCenter = payload.center || payload.centro || '1120';
+    const cleanCenter = config.getCenterCode ? config.getCenterCode(rawCenter) : rawCenter;
 
     const postBody = {
       action: 'batchUpsertCounts',
@@ -330,7 +331,8 @@ class GasService {
   async syncFinalInventoryToGAS(type, payload) {
     const cleanType = (type || payload.type || 'CICLICO').toUpperCase();
     const url = this.getUrlForType(cleanType);
-    const cleanCenter = config.getCenterCode ? config.getCenterCode(payload.center || '1120') : (payload.center || '1120');
+    const rawCenter = payload.center || payload.centro || (payload.driveRecord && (payload.driveRecord.center || payload.driveRecord.centro)) || '1120';
+    const cleanCenter = config.getCenterCode ? config.getCenterCode(rawCenter) : rawCenter;
 
     // Build items formatted with 17 standard columns
     const rawItems = payload.items || (payload.driveRecord && payload.driveRecord.items) || [];
@@ -339,6 +341,7 @@ class GasService {
     // Build driveRecord structure expected by Apps Script createFinalFile_
     const incomingDriveRecord = payload.driveRecord || {};
     const driveRecord = {
+      ...incomingDriveRecord,
       type: cleanType,
       center: cleanCenter,
       reviewNotes: payload.reviewNotes || incomingDriveRecord.reviewNotes || '',
@@ -361,7 +364,9 @@ class GasService {
       action: 'createFinalFile',
       type: cleanType,
       center: cleanCenter,
+      centro: cleanCenter,
       reviewNotes: payload.reviewNotes || driveRecord.reviewNotes || '',
+      snapshotFolderId: config.driveSnapshotsFolderId,
       driveRecord: driveRecord,
       rows: rows
     };
@@ -384,17 +389,17 @@ class GasService {
           success: true,
           ...parsed,
           // Extract primary Drive URLs returned by the Apps Script
-          driveUrl: parsed.driveUrl || parsed.spreadsheetUrl || null,
+          driveUrl: parsed.driveUrl || parsed.spreadsheetUrl || config.driveSnapshotsFolderUrl || null,
           spreadsheetUrl: parsed.spreadsheetUrl || null,
           fileId: parsed.fileId || null,
           fileName: parsed.fileName || null
         };
       } catch (e) {
-        return { success: true, message: 'Enviado a Google Apps Script', raw: resText };
+        return { success: true, message: 'Enviado a Google Apps Script', raw: resText, driveUrl: config.driveSnapshotsFolderUrl };
       }
     } catch (err) {
       console.warn('[gasService] Warning submitting final file to GAS:', err.message);
-      return { success: true, fallback: true, message: 'Guardado localmente en Drive Store: ' + err.message };
+      return { success: true, fallback: true, message: 'Guardado localmente en Drive Store: ' + err.message, driveUrl: config.driveSnapshotsFolderUrl };
     }
   }
 

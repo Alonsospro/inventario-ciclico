@@ -19,14 +19,31 @@ const config = {
   baseDataDir: path.join(__dirname, '..', '..', 'data'),
   referencePhotosDir: process.env.REFERENCE_PHOTOS_DIR || path.join(__dirname, '..', '..', 'data', 'fotosreferencias'),
 
-  // Google Drive Folders Configuration (from Apps Script CFG)
+  // Google Drive Folders Configuration (Official NIBOL Drive Structure)
+  driveMainFolderUrl: process.env.DRIVE_MAIN_FOLDER_URL || 'https://drive.google.com/drive/folders/1TLSgggQF3yjePujdNQPAYDjnOS_14HS7?usp=sharing',
+  driveMainFolderId: process.env.DRIVE_MAIN_FOLDER_ID || '1TLSgggQF3yjePujdNQPAYDjnOS_14HS7',
+
+  driveLogoFolderUrl: process.env.DRIVE_LOGO_FOLDER_URL || 'https://drive.google.com/drive/folders/1ZECgK7i8DAqXH0K3quRqaIlcnbpF7nSe?usp=sharing',
+  driveLogoFolderId: process.env.DRIVE_LOGO_FOLDER_ID || '1ZECgK7i8DAqXH0K3quRqaIlcnbpF7nSe',
+
+  driveSnapshotsFolderUrl: process.env.DRIVE_SNAPSHOTS_FOLDER_URL || 'https://drive.google.com/drive/folders/1oLK2TWyhG4Pekqd2E6z_DbgQ_mcgdau7?usp=sharing',
+  driveSnapshotsFolderId: process.env.DRIVE_SNAPSHOTS_FOLDER_ID || '1oLK2TWyhG4Pekqd2E6z_DbgQ_mcgdau7',
+
+  driveBaseFilesFolderUrl: process.env.DRIVE_BASE_FILES_FOLDER_URL || 'https://drive.google.com/drive/folders/1eYg5xYTpWVhgBk_vLDJH3_ZxAMxGc-wY?usp=sharing',
+  driveBaseFilesFolderId: process.env.DRIVE_BASE_FILES_FOLDER_ID || '1eYg5xYTpWVhgBk_vLDJH3_ZxAMxGc-wY',
+
+  driveDamagedFolderUrl: process.env.DRIVE_DAMAGED_FOLDER_URL || 'https://drive.google.com/drive/folders/1q0rRvFpiFXDlXuX97odyz-bVcGZIxwEm?usp=sharing',
+  driveDamagedFolderId: process.env.DRIVE_DAMAGED_FOLDER_ID || '1q0rRvFpiFXDlXuX97odyz-bVcGZIxwEm',
+
+  driveJustifFolderUrl: process.env.DRIVE_JUSTIF_FOLDER_URL || 'https://drive.google.com/drive/folders/1tBlqX8MXyfD6SjQ6aLoViCDqYd_8MK54?usp=sharing',
+  driveJustifFolderId: process.env.DRIVE_JUSTIF_FOLDER_ID || '1tBlqX8MXyfD6SjQ6aLoViCDqYd_8MK54',
+
   driveReferenceFolderUrl: process.env.DRIVE_REFERENCE_FOLDER_URL || 'https://drive.google.com/drive/folders/1dp0MUZ4HcCSpDejpF5JknWN_09ZCshU6?usp=drive_link',
   driveReferenceFolderId: process.env.DRIVE_REFERENCE_FOLDER_ID || '1dp0MUZ4HcCSpDejpF5JknWN_09ZCshU6',
-  driveDamagedFolderId: process.env.DRIVE_DAMAGED_FOLDER_ID || '1q0rRvFpiFXDlXuX97odyz-bVcGZIxwEm',
-  driveJustifFolderId: process.env.DRIVE_JUSTIF_FOLDER_ID || '1tBlqX8MXyfD6SjQ6aLoViCDqYd_8MK54',
+
   snapshotFolderPath: process.env.SNAPSHOT_FOLDER_PATH || 'Nibol/Ciclicosn',
 
-  // Drive logical folders naming convention
+  // Drive logical folders naming convention & IDs
   drive: {
     baseFolder: 'NIBOL',
     ciclicosFolder: 'NIBOL/CICLICOS',
@@ -34,10 +51,13 @@ const config = {
     mensualesFolder: 'NIBOL/MENSUALES',
     semanalesFolder: 'NIBOL/SEMANALES',
     justificationsPhotosFolder: 'NIBOL/FOTOS/JUSTIFICACIONES',
-    referenceFolderId: '1dp0MUZ4HcCSpDejpF5JknWN_09ZCshU6',
+    mainFolderId: '1TLSgggQF3yjePujdNQPAYDjnOS_14HS7',
+    logoFolderId: '1ZECgK7i8DAqXH0K3quRqaIlcnbpF7nSe',
+    snapshotsFolderId: '1oLK2TWyhG4Pekqd2E6z_DbgQ_mcgdau7',
+    baseFilesFolderId: '1eYg5xYTpWVhgBk_vLDJH3_ZxAMxGc-wY',
     damagedFolderId: '1q0rRvFpiFXDlXuX97odyz-bVcGZIxwEm',
     justifFolderId: '1tBlqX8MXyfD6SjQ6aLoViCDqYd_8MK54',
-    snapshotFolderPath: 'Nibol/Ciclicosn'
+    referenceFolderId: '1dp0MUZ4HcCSpDejpF5JknWN_09ZCshU6'
   },
 
   // Column contract definition (Cols A to Q)
@@ -138,10 +158,12 @@ const config = {
 
   getCenterCode(val) {
     if (!val) return '1120';
-    const found = this.findCenter(val);
-    if (found) return found.code;
     const clean = String(val).trim();
     if (/^\d{4}$/.test(clean)) return clean;
+    const match = clean.match(/\b(\d{4})\b/);
+    if (match) return match[1];
+    const found = this.findCenter(val);
+    if (found) return found.code;
     if (clean.toUpperCase() === 'WARNES') return '1120';
     if (clean.toUpperCase() === 'GLOBAL') return '1120';
     return clean;

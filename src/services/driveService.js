@@ -48,7 +48,12 @@ class DriveService {
 
   formatInventoryFileName(type, center, date = new Date()) {
     const cleanType = (type || 'CICLICO').toUpperCase().replace(/[^A-Z0-9]/g, '');
-    const cleanCenter = (center || 'WARNES').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    let target = String(center || 'WARNES').trim();
+    if (target.toUpperCase() !== 'WARNES') {
+      const code = config.getCenterCode ? config.getCenterCode(target) : target;
+      if (code) target = code;
+    }
+    const cleanCenter = target.toUpperCase().replace(/[^A-Z0-9]/g, '');
     let dateStr = '';
     if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
       dateStr = date;
@@ -208,10 +213,13 @@ class DriveService {
     let realDriveUrl = null;
     let spreadsheetUrl = null;
     try {
+      const cleanCenter = config.getCenterCode ? config.getCenterCode(center) : center;
       const gasResult = await gasService.syncFinalInventoryToGAS(type, {
         fileId,
         fileName: `${fileName}.xlsx`,
         folderPath,
+        center: cleanCenter,
+        items,
         driveRecord,
         reviewNotes: reviewNotes || 'Revisión finalizada'
       });
@@ -229,8 +237,8 @@ class DriveService {
       console.warn('[driveService] GAS remote sync fallback:', err.message);
     }
 
-    // Fallback: use the configured Drive reference folder from .env
-    const fallbackDriveUrl = config.driveReferenceFolderUrl || null;
+    // Fallback: use the configured Drive snapshots folder
+    const fallbackDriveUrl = config.driveSnapshotsFolderUrl || config.driveReferenceFolderUrl || null;
     const driveUrl = realDriveUrl || fallbackDriveUrl;
 
     // Save real Drive URLs in history record

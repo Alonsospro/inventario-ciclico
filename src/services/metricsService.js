@@ -26,11 +26,13 @@ class MetricsService {
       historyFiles = [];
     }
 
+    const seenIds = new Set();
     const allInventories = [];
 
     activeFiles.forEach(f => {
       const inv = storagePath.readJson(path.join(this.invDir, f), null);
       if (inv && Array.isArray(inv.items)) {
+        seenIds.add(inv.id);
         allInventories.push({ ...inv, isHistory: false });
       }
     });
@@ -38,16 +40,20 @@ class MetricsService {
     historyFiles.forEach(f => {
       const hist = storagePath.readJson(path.join(this.historyDir, f), null);
       if (hist && Array.isArray(hist.items)) {
-        allInventories.push({
-          id: hist.inventoryId || hist.fileId,
-          name: hist.fileName,
-          type: hist.type,
-          center: hist.center,
-          status: 'REVISADO',
-          createdAt: hist.closedAt,
-          items: hist.items,
-          isHistory: true
-        });
+        const id = hist.inventoryId || hist.fileId;
+        if (!seenIds.has(id)) {
+          seenIds.add(id);
+          allInventories.push({
+            id,
+            name: hist.fileName,
+            type: hist.type,
+            center: hist.center,
+            status: 'REVISADO',
+            createdAt: hist.closedAt,
+            items: hist.items,
+            isHistory: true
+          });
+        }
       }
     });
 
