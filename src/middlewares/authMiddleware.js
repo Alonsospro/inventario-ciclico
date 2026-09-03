@@ -52,7 +52,57 @@ function requireRole(allowedRoles = []) {
   };
 }
 
+function isAlonso(user) {
+  if (!user) return false;
+  if (user.isSuperadmin) return true;
+  const u = String(user.username || '').toLowerCase().trim();
+  const d = String(user.displayName || '').toLowerCase().trim();
+  return u === 'alonso' || d.includes('alonso rios') || user.clave === 'ADM';
+}
+
+function canCreateInventory(user) {
+  if (!user) return false;
+  if (isAlonso(user)) return true;
+  const u = String(user.username || '').toLowerCase().trim();
+  const d = String(user.displayName || '').toLowerCase().trim();
+  return u === 'jcarlos' || u === 'juancarlos' || u === 'juan carlos' || u === 'juan_carlos' || u === 'juan.carlos' || d.includes('juan carlos') || user.clave === 'JCS';
+}
+
+function requireAlonso(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'No autenticado.' });
+  }
+
+  if (isAlonso(req.user)) {
+    return next();
+  }
+
+  return res.status(403).json({
+    success: false,
+    message: 'Acceso denegado: Solo el superadministrador Alonso tiene permisos para gestionar y crear usuarios.'
+  });
+}
+
+function requireInventoryCreator(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'No autenticado.' });
+  }
+
+  if (canCreateInventory(req.user)) {
+    return next();
+  }
+
+  return res.status(403).json({
+    success: false,
+    message: 'Acceso denegado: Solo Juan Carlos y Alonso están autorizados para crear nuevos inventarios.'
+  });
+}
+
 module.exports = {
   authenticate,
-  requireRole
+  requireRole,
+  requireAlonso,
+  requireInventoryCreator,
+  isAlonso,
+  canCreateInventory
 };

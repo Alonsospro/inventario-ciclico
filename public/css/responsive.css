@@ -1,5 +1,26 @@
-/* Responsive & Mobile Touch Optimizations */
+/* ==========================================================================
+   NIBOL INVENTARIOS - RESPONSIVE & MOBILE DESIGN SYSTEM
+   Adaptive layout for smartphones, tablets, handheld barcode terminals, and desktops
+   ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   Global Layout & Viewport Safeguards
+   -------------------------------------------------------------------------- */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+  -webkit-text-size-adjust: 100%;
+}
+
+#app {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Medium Screens / Tablets (<= 1024px)
+   -------------------------------------------------------------------------- */
 @media (max-width: 1024px) {
   .main-content {
     padding: 1rem;
@@ -9,59 +30,499 @@
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  #barrido-split-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
 }
 
+/* --------------------------------------------------------------------------
+   Small Screens / Mobile Devices (<= 768px)
+   -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
+  /* 1. Header & Navigation */
   .navbar {
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.85rem;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
+  .nav-brand {
+    font-size: 1.05rem;
+    gap: 0.5rem;
+  }
+
+  .brand-logo-img {
+    height: 26px;
+    max-width: 100px;
+  }
+
+  .brand-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.45rem;
+  }
+
+  .nav-user-panel {
+    gap: 0.4rem;
+  }
+
+  .user-tag {
+    font-size: 0.72rem;
+  }
+
+  .user-name {
+    max-width: 90px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-role {
+    font-size: 0.65rem;
+  }
+
+  /* Horizontal Pill Navigation Bar */
   .nav-links {
     order: 3;
     width: 100%;
     overflow-x: auto;
-    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0.25rem 0 0.4rem 0;
+    gap: 0.35rem;
     justify-content: flex-start;
   }
 
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
   .nav-item-btn {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
     white-space: nowrap;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .nav-item-btn.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+  }
+
+  /* 2. Main Content & Cards */
+  .main-content {
+    padding: 0.75rem 0.5rem;
+    gap: 0.85rem;
+  }
+
+  .card {
+    padding: 0.85rem;
+    border-radius: var(--radius-md);
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .card-header > div:last-child {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .card-header .form-select,
+  .card-header .btn {
+    width: 100% !important;
+    min-width: 100% !important;
   }
 
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
-  .card {
-    padding: 1rem;
-    border-radius: var(--radius-md);
-  }
-
-  .modal-box {
-    margin: 0.5rem;
-    max-height: 95vh;
+  /* Touch input sizing (Prevents auto-zoom in iOS Safari) */
+  .form-input, .form-select, .form-textarea {
+    font-size: 16px !important;
+    min-height: 44px;
   }
 
   .btn {
-    min-height: 48px; /* High touch target for mobile thumb */
-    font-size: 0.95rem;
+    min-height: 44px;
+    font-size: 0.92rem;
   }
 
-  .form-input, .form-select, .form-textarea {
-    font-size: 16px; /* Prevents auto-zoom in iOS Safari */
-    min-height: 48px;
+  /* 3. Responsive Inventories List Table -> Mobile Cards */
+  #view-inventories .table-responsive {
+    border: none;
+    background: transparent;
+    overflow-x: visible;
   }
 
-  .scanner-viewport-wrapper {
+  #table-inventories,
+  #table-inventories thead,
+  #table-inventories tbody,
+  #table-inventories th,
+  #table-inventories td,
+  #table-inventories tr {
+    display: block;
+    width: 100%;
+  }
+
+  #table-inventories thead {
+    display: none;
+  }
+
+  #table-inventories tbody tr {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.85rem;
+    padding: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  #table-inventories tbody td {
+    padding: 0.25rem 0;
+    border: none;
+    text-align: left;
+  }
+
+  #table-inventories tbody td:nth-child(1) {
+    font-size: 0.82rem;
+    color: var(--primary);
+    margin-bottom: 0.15rem;
+  }
+
+  #table-inventories tbody td:nth-child(2) {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.4rem;
+  }
+
+  #table-inventories tbody td:nth-child(3),
+  #table-inventories tbody td:nth-child(4),
+  #table-inventories tbody td:nth-child(5) {
+    display: inline-block;
+    margin-right: 0.35rem;
+    margin-bottom: 0.45rem;
+    width: auto;
+  }
+
+  #table-inventories tbody td:nth-child(6) {
+    margin: 0.35rem 0 0.65rem 0;
+  }
+
+  #table-inventories tbody td:nth-child(7) {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 0.65rem;
+  }
+
+  #table-inventories tbody td:nth-child(7) > div {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  #table-inventories tbody td:nth-child(7) .btn-primary {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* 4. Responsive Operative Counting Screen (Cíclicos, Semanales, Mensuales) */
+  #view-count .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  #view-count .card-header > div:last-child {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.45rem;
+  }
+
+  #view-count .card-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  #view-count .card-header #btn-back-to-invs {
+    width: auto !important;
+    display: inline-flex;
+    margin-bottom: 0.35rem;
+  }
+
+  /* Search & Multiple location button */
+  #view-count .card > div:nth-child(2) {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+
+  #view-count #search-count-items {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  #view-count #btn-add-multiple-location {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  /* Count Table -> Adaptive Mobile Cards */
+  #view-count .table-responsive {
+    border: none;
+    background: transparent;
+    overflow-x: visible;
+  }
+
+  #table-count-items,
+  #table-count-items thead,
+  #table-count-items tbody,
+  #table-count-items th,
+  #table-count-items td,
+  #table-count-items tr {
+    display: block;
+    width: 100%;
+  }
+
+  #table-count-items thead {
+    display: none;
+  }
+
+  #table-count-items tbody tr {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.95rem;
+    padding: 0.85rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    position: relative;
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  #table-count-items tbody tr.counted-row {
+    border-left: 5px solid var(--success) !important;
+    background: rgba(16, 185, 129, 0.04);
+  }
+
+  #table-count-items tbody td {
+    padding: 0.25rem 0;
+    border: none;
+    text-align: left !important;
+  }
+
+  /* SKU & Code Header */
+  #table-count-items tbody td:nth-child(1) {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-bottom: 0.15rem;
+  }
+
+  #table-count-items tbody td:nth-child(1) > div:first-child strong {
+    font-size: 1.12rem !important;
+    color: #38bdf8 !important;
+  }
+
+  /* Description */
+  #table-count-items tbody td:nth-child(2) {
+    font-size: 0.92rem;
+    color: #f1f5f9;
+    font-weight: 500;
+    line-height: 1.35;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Location & ABC badges */
+  #table-count-items tbody td:nth-child(3),
+  #table-count-items tbody td:nth-child(4) {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0.4rem;
+    margin-bottom: 0.5rem;
+    width: auto;
+  }
+
+  /* Inline location input box */
+  #table-count-items tbody td:nth-child(3) > div {
+    width: 100%;
+  }
+
+  /* Quantity, Damaged & Count Button Controls Bar */
+  #table-count-items tbody td:nth-child(5),
+  #table-count-items tbody td:nth-child(6),
+  #table-count-items tbody td:nth-child(7) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  #table-count-items tbody td:nth-child(5) {
+    width: 32%;
+    margin-right: 2%;
+  }
+
+  #table-count-items tbody td:nth-child(6) {
+    width: 28%;
+    margin-right: 2%;
+  }
+
+  #table-count-items tbody td:nth-child(7) {
+    width: 36%;
+  }
+
+  #table-count-items tbody td:nth-child(5)::before {
+    content: "CANTIDAD";
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 0.2rem;
+  }
+
+  #table-count-items tbody td:nth-child(6)::before {
+    content: "AVERÍA (P)";
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--danger);
+    margin-bottom: 0.2rem;
+  }
+
+  #table-count-items tbody td:nth-child(7)::before {
+    content: "CONFIRMAR";
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.2rem;
+  }
+
+  #table-count-items tbody td:nth-child(5) .input-inline-count,
+  #table-count-items tbody td:nth-child(6) .input-inline-damaged {
+    width: 100% !important;
+    height: 44px;
+    font-size: 1.15rem !important;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  #table-count-items tbody td:nth-child(7) > div {
+    width: 100%;
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  #table-count-items tbody td:nth-child(7) .btn {
+    height: 44px;
+    min-height: 44px;
+    padding: 0 0.5rem;
+    font-size: 0.85rem;
+    justify-content: center;
+  }
+
+  #table-count-items tbody td:nth-child(7) .btn:last-child {
+    flex: 1;
+  }
+
+  /* 5. Modo Barrido Screen */
+  #view-barrido .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  #view-barrido .card-header > div:last-child {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  #view-barrido .card-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  #barrido-scanner-box {
     height: 240px;
+  }
+
+  /* 6. Modals on Mobile */
+  .modal-box {
+    margin: 0.5rem;
+    max-width: calc(100vw - 1rem);
+    width: calc(100vw - 1rem);
+    max-height: 94vh;
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
-/* Accessibility and Touch state feedback */
+/* --------------------------------------------------------------------------
+   Extra Small Devices / Narrow Handhelds (<= 480px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .card {
+    padding: 0.75rem 0.65rem;
+  }
+
+  /* Count item input row full breakdown for ultra-narrow phones */
+  #table-count-items tbody td:nth-child(5) {
+    width: 48%;
+    margin-right: 4%;
+    margin-bottom: 0.5rem;
+  }
+
+  #table-count-items tbody td:nth-child(6) {
+    width: 48%;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  #table-count-items tbody td:nth-child(7) {
+    width: 100%;
+    display: block;
+    margin-top: 0.25rem;
+  }
+
+  #table-count-items tbody td:nth-child(7) .btn {
+    height: 46px;
+    font-size: 0.95rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility & Touch Optimization (Pointers with no hover)
+   -------------------------------------------------------------------------- */
 @media (hover: none) and (pointer: coarse) {
   .btn:active {
     transform: scale(0.97);
@@ -71,14 +532,23 @@
     background: var(--bg-card-hover);
   }
 
-  .data-table td {
-    padding: 0.75rem 0.5rem;
+  .form-input:focus,
+  .form-select:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
   }
 }
 
-/* Print Styles */
+/* --------------------------------------------------------------------------
+   Print Styles
+   -------------------------------------------------------------------------- */
 @media print {
-  .navbar, .ambient-glow, .ambient-glow-2, .btn, .nav-links, #toast-container {
+  .navbar,
+  .ambient-glow,
+  .ambient-glow-2,
+  .btn,
+  .nav-links,
+  #toast-container,
+  .modal-overlay {
     display: none !important;
   }
 
@@ -93,7 +563,8 @@
     background: transparent;
   }
 
-  .data-table th, .data-table td {
+  .data-table th,
+  .data-table td {
     border-color: #ddd;
     color: black;
   }

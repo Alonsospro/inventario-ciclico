@@ -11,7 +11,29 @@ test('Justification & Drive File Creation Contract', async (t) => {
     isSuperadmin: true
   };
 
-  const invId = 'INV-CICLICO-WARNES-001';
+  const invId = 'INV-TEST-DRIVE-WARNES-001';
+
+  // Setup test inventory
+  inventoryService.saveInventory({
+    id: invId,
+    name: 'Inventario Test Drive Warnes',
+    type: 'CICLICO',
+    center: 'WARNES',
+    status: 'EN_PROGRESO',
+    items: [
+      {
+        id: 'ITEM-D-01',
+        SKU: 'JD-AH12345',
+        Descripcion: 'Filtro de Aceite Motor',
+        Ubicacion: 'RACK-A1-01',
+        Stock_Sistema: 10,
+        Stock_Fisico: 8,
+        Diferencia: -2,
+        Costo_Unitario: 45.5,
+        Responsable: 'auxiliar_warnes'
+      }
+    ]
+  });
 
   await t.test('Drive file name formatting matches contract: {tipo}-{centro}-{fecha}', () => {
     const fileName = driveService.formatInventoryFileName('CICLICO', 'WARNES', '2026-08-31');
@@ -49,5 +71,28 @@ test('Justification & Drive File Creation Contract', async (t) => {
     assert.strictEqual(res.inventory.status, 'REVISADO');
     assert.ok(res.drive.fileName.startsWith('CICLICO-WARNES-'));
     assert.ok(res.drive.fileId);
+  });
+
+  await t.test('createFinalDriveFile preserves center 1300 and does NOT fallback to 1120', async () => {
+    const inv1300 = {
+      id: 'INV-TEST-1300-001',
+      type: 'CICLICO',
+      center: '1300',
+      items: [{ SKU: 'SKU-1', Codigo_Barras: 'BAR-1', Descripcion: 'Item 1', Stock_Sistema: 5, Stock_Fisico: 5 }]
+    };
+    const driveRes = await driveService.createFinalDriveFile({
+      inventory: inv1300,
+      justifications: [],
+      user: adminUser,
+      reviewNotes: 'Test 1300'
+    });
+    assert.ok(driveRes.fileName.startsWith('CICLICO-1300-'), `FileName should start with CICLICO-1300-, got: ${driveRes.fileName}`);
+  });
+
+  // Teardown
+  inventoryService.deleteInventory({
+    inventoryId: invId,
+    user: adminUser,
+    deleteKey: 'ADM26'
   });
 });

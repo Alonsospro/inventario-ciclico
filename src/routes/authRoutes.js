@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authService = require('../services/authService');
-const { authenticate, requireRole } = require('../middlewares/authMiddleware');
+const { authenticate, requireRole, requireAlonso } = require('../middlewares/authMiddleware');
 
 // POST /api/auth/login
 router.post('/login', (req, res) => {
@@ -31,6 +31,16 @@ router.get('/me', authenticate, (req, res) => {
   res.json({ success: true, user });
 });
 
+// GET /api/auth/centers (List all 15 operational centers)
+router.get('/centers', (req, res) => {
+  try {
+    const centers = authService.getCentersList();
+    res.json({ success: true, centers });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // GET /api/auth/users (Admin / Encargado)
 router.get('/users', authenticate, (req, res) => {
   try {
@@ -41,8 +51,8 @@ router.get('/users', authenticate, (req, res) => {
   }
 });
 
-// POST /api/auth/users (Create user)
-router.post('/users', authenticate, requireRole(['ADMIN', 'ENCARGADO']), (req, res) => {
+// POST /api/auth/users (Create user - Superadmin Alonso Only)
+router.post('/users', authenticate, requireAlonso, (req, res) => {
   try {
     const newUser = authService.createUser(req.body, req.user);
     res.status(201).json({ success: true, user: newUser });
@@ -51,8 +61,8 @@ router.post('/users', authenticate, requireRole(['ADMIN', 'ENCARGADO']), (req, r
   }
 });
 
-// PUT /api/auth/users/:id (Update user)
-router.put('/users/:id', authenticate, requireRole(['ADMIN', 'ENCARGADO']), (req, res) => {
+// PUT /api/auth/users/:id (Update user - Superadmin Alonso Only)
+router.put('/users/:id', authenticate, requireAlonso, (req, res) => {
   try {
     const updated = authService.updateUser(req.params.id, req.body, req.user);
     res.json({ success: true, user: updated });
@@ -61,8 +71,8 @@ router.put('/users/:id', authenticate, requireRole(['ADMIN', 'ENCARGADO']), (req
   }
 });
 
-// DELETE /api/auth/users/:id (Superadmin / Admin)
-router.delete('/users/:id', authenticate, requireRole(['ADMIN']), (req, res) => {
+// DELETE /api/auth/users/:id (Superadmin Alonso Only)
+router.delete('/users/:id', authenticate, requireAlonso, (req, res) => {
   try {
     const result = authService.deleteUser(req.params.id, req.user);
     res.json(result);

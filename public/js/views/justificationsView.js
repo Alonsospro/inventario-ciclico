@@ -8,6 +8,9 @@ window.JustificationsView = {
   },
 
   setupListeners() {
+    // Center filter for justifications
+    document.getElementById('filter-just-center')?.addEventListener('change', () => this.loadJustifications());
+
     // Justification photo upload
     const photoZone = document.getElementById('zone-just-photo');
     const photoInput = document.getElementById('input-just-photo-file');
@@ -19,15 +22,28 @@ window.JustificationsView = {
       const file = e.target.files[0];
       if (!file) return;
 
+      const inventoryId = document.getElementById('just-modal-inv-id')?.value;
+      const sku = document.getElementById('just-modal-sku-input')?.value;
+      const task = this.tasks?.find(t => t.inventoryId === inventoryId);
+      const center = task ? task.center : (window.Auth.currentUser?.center || '1120');
+      const dateStr = new Date().toISOString().split('T')[0];
+
       try {
-        window.Toast.info('Subiendo imagen binaria de justificación...');
-        const res = await window.API.uploadPhoto(file);
+        window.Toast.info('Subiendo imagen de justificación a Google Drive...');
+        const res = await window.API.uploadPhoto(file, {
+          category: 'justificaciones',
+          photoType: 'justificaciones',
+          sku: sku || '',
+          center: center,
+          date: dateStr,
+          inventoryId: inventoryId || ''
+        });
         if (res.photo && res.photo.url) {
           this.uploadedPhotoUrl = res.photo.url;
           document.getElementById('just-photo-url').value = res.photo.url;
           previewImg.src = res.photo.url;
           previewImg.style.display = 'block';
-          window.Toast.success('Foto adjuntada correctamente.');
+          window.Toast.success('Foto de justificación lista para guardar en Google Drive');
         }
       } catch (err) {
         window.Toast.danger(err.message || 'Error al subir foto de respaldo');
@@ -68,7 +84,10 @@ window.JustificationsView = {
     container.innerHTML = '<div style="text-align:center; padding: 3rem;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tareas de justificación pendientes...</div>';
 
     try {
-      const res = await window.API.getJustifications();
+      const centerSelect = document.getElementById('filter-just-center');
+      const selectedCenter = centerSelect ? centerSelect.value : 'TODOS';
+      const center = (selectedCenter && selectedCenter !== 'TODOS') ? selectedCenter : undefined;
+      const res = await window.API.getJustifications(center);
       this.tasks = res.tasks || [];
 
       if (this.tasks.length === 0) {

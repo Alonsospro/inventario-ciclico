@@ -75,6 +75,51 @@ body {
   text-decoration: none;
 }
 
+.brand-logo-img {
+  height: 32px;
+  width: auto;
+  max-width: 130px;
+  object-fit: contain;
+  display: block;
+  transition: filter var(--transition-fast), transform var(--transition-fast);
+}
+
+.brand-logo-img:hover {
+  transform: scale(1.03);
+}
+
+.login-brand-logo-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 0.75rem;
+  transition: all var(--transition-normal);
+}
+
+.login-brand-logo {
+  height: 48px;
+  width: auto;
+  max-width: 200px;
+  object-fit: contain;
+  display: block;
+  transition: filter var(--transition-fast);
+}
+
+[data-theme="dark"] .brand-logo-img,
+[data-theme="dark"] .login-brand-logo {
+  filter: brightness(0) invert(1);
+}
+
+[data-theme="light"] .brand-logo-img,
+[data-theme="light"] .login-brand-logo {
+  filter: brightness(0) invert(0);
+}
+
 .brand-badge {
   background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
   color: white;

@@ -13,6 +13,25 @@ window.UserManagementView = {
       document.getElementById('user-form-id').value = '';
       document.getElementById('user-form-username').disabled = false;
       document.getElementById('user-form-pass').required = true;
+
+      const isEncargado = window.Auth.currentUser?.role === 'ENCARGADO';
+      const roleSelect = document.getElementById('user-form-role');
+      const centerSelect = document.getElementById('user-form-center');
+
+      if (isEncargado) {
+        if (roleSelect) {
+          roleSelect.value = 'AUXILIAR';
+          roleSelect.disabled = true;
+        }
+        if (centerSelect) {
+          centerSelect.value = window.Auth.currentUser.center;
+          centerSelect.disabled = true;
+        }
+      } else {
+        if (roleSelect) roleSelect.disabled = false;
+        if (centerSelect) centerSelect.disabled = false;
+      }
+
       window.ModalHelper.open('modal-user-form');
     });
 
@@ -23,8 +42,9 @@ window.UserManagementView = {
       const username = document.getElementById('user-form-username').value.trim();
       const displayName = document.getElementById('user-form-display').value.trim();
       const password = document.getElementById('user-form-pass').value;
-      const role = document.getElementById('user-form-role').value;
-      const center = document.getElementById('user-form-center').value;
+      const isEncargado = window.Auth.currentUser?.role === 'ENCARGADO';
+      const role = isEncargado ? 'AUXILIAR' : document.getElementById('user-form-role').value;
+      const center = isEncargado ? window.Auth.currentUser.center : document.getElementById('user-form-center').value;
 
       try {
         if (id) {
@@ -57,13 +77,14 @@ window.UserManagementView = {
 
       tbody.innerHTML = this.users.map(u => {
         const isProtected = u.username.toUpperCase() === 'ALONSO' || u.isSuperadmin;
+        const centerDesc = u.centerName && u.centerName !== u.center ? `${u.center} - ${u.centerName}` : u.center;
 
         return `
           <tr>
             <td><strong style="color: var(--primary);">${u.username}</strong> ${isProtected ? '<span class="badge badge-warning">Superadmin</span>' : ''}</td>
             <td>${u.displayName || u.username}</td>
-            <td><span class="badge badge-neutral">${u.role}</span></td>
-            <td><span class="badge badge-info">${u.center}</span></td>
+            <td><span class="badge badge-neutral">${u.cargo || u.role}</span></td>
+            <td><span class="badge badge-info">${centerDesc}</span></td>
             <td><span class="badge ${u.active !== false ? 'badge-success' : 'badge-danger'}">${u.active !== false ? 'Activo' : 'Inactivo'}</span></td>
             <td>
               <div style="display: flex; gap: 0.4rem;">
@@ -89,14 +110,25 @@ window.UserManagementView = {
     const user = this.users.find(u => u.id === userId);
     if (!user) return;
 
+    const isEncargado = window.Auth.currentUser?.role === 'ENCARGADO';
+    const roleSelect = document.getElementById('user-form-role');
+    const centerSelect = document.getElementById('user-form-center');
+
     document.getElementById('user-form-id').value = user.id;
     document.getElementById('user-form-username').value = user.username;
     document.getElementById('user-form-username').disabled = true;
     document.getElementById('user-form-display').value = user.displayName || user.username;
     document.getElementById('user-form-pass').value = '';
     document.getElementById('user-form-pass').required = false;
-    document.getElementById('user-form-role').value = user.role;
-    document.getElementById('user-form-center').value = user.center;
+    
+    if (roleSelect) {
+      roleSelect.value = user.role;
+      roleSelect.disabled = isEncargado;
+    }
+    if (centerSelect) {
+      centerSelect.value = user.center;
+      centerSelect.disabled = isEncargado;
+    }
 
     window.ModalHelper.open('modal-user-form');
   },

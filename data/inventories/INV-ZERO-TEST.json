@@ -18,10 +18,11 @@
       "Diferencia": -5,
       "Costo_Unitario": 20,
       "Responsable": "auxiliar_warnes",
-      "Mal_estado": 0,
       "Costo_Diferencia": -100,
-      "Fecha_Ultimo_Conteo": "2026-08-31T18:41:35.584Z",
-      "Estado": "Contado"
+      "Fecha_Ultimo_Conteo": "2026-09-03T20:22:38.783Z",
+      "Estado": "Contado",
+      "Mal_estado": 0,
+      "locked": true
     }
   ]
 }

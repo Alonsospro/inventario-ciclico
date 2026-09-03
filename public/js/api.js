@@ -54,6 +54,10 @@ window.API = {
     return this.request('/auth/me');
   },
 
+  getCenters() {
+    return this.request('/auth/centers');
+  },
+
   getUsers() {
     return this.request('/auth/users');
   },
@@ -88,6 +92,13 @@ window.API = {
     return this.request(`/inventories/${id}`);
   },
 
+  syncInventories(inventories) {
+    return this.request('/inventories/sync', {
+      method: 'POST',
+      body: JSON.stringify({ inventories })
+    });
+  },
+
   createInventory(payload) {
     return this.request('/inventories', {
       method: 'POST',
@@ -104,6 +115,13 @@ window.API = {
 
   registerCount(inventoryId, payload) {
     return this.request(`/inventories/${inventoryId}/count`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  requestUnlockItem(inventoryId, itemId, payload = {}) {
+    return this.request(`/inventories/${inventoryId}/items/${itemId}/request-unlock`, {
       method: 'POST',
       body: JSON.stringify(payload)
     });
@@ -134,6 +152,12 @@ window.API = {
     return this.request(`/inventories/${inventoryId}`, {
       method: 'DELETE',
       body: JSON.stringify(payload)
+    });
+  },
+
+  deleteItem(inventoryId, itemId) {
+    return this.request(`/inventories/${inventoryId}/items/${itemId}`, {
+      method: 'DELETE'
     });
   },
 
@@ -199,9 +223,17 @@ window.API = {
   },
 
   // Photo upload
-  async uploadPhoto(file) {
+  async uploadPhoto(file, metadata = {}) {
     const formData = new FormData();
     formData.append('photo', file);
+    if (metadata.category) formData.append('category', metadata.category);
+    if (metadata.photoType) formData.append('photoType', metadata.photoType);
+    if (metadata.sku) formData.append('sku', metadata.sku);
+    if (metadata.center) formData.append('center', metadata.center);
+    if (metadata.date) formData.append('date', metadata.date);
+    if (metadata.inventoryId) formData.append('inventoryId', metadata.inventoryId);
+    if (metadata.itemId) formData.append('itemId', metadata.itemId);
+
     return this.request('/photos/upload', {
       method: 'POST',
       body: formData

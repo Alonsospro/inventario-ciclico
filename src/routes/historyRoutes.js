@@ -3,22 +3,64 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const storagePath = require('../services/storagePath');
+const config = require('../config');
+const gasService = require('../services/gasService');
 const { authenticate } = require('../middlewares/authMiddleware');
 const { restrictCenter } = require('../middlewares/centerMiddleware');
 
-// GET /api/history (List finalized inventories)
-router.get('/', authenticate, restrictCenter, (req, res) => {
+// GET /api/history (List finalized inventories directly from Google Drive / Sheets)
+router.get('/', authenticate, restrictCenter, async (req, res) => {
   try {
     const historyDir = storagePath.getHistoryDirectory();
-    const files = fs.readdirSync(historyDir).filter(f => f.endsWith('.json'));
+    const files = storagePath.listFiles(historyDir).filter(f => f.endsWith('.json'));
     const list = [];
+    const seenKeys = new Set();
 
+    // 1. Query live history directly from Google Drive and Google Sheets via GAS
+    try {
+      const userCenter = (req.user.role === 'ADMIN' || req.user.isSuperadmin) ? null : req.user.center;
+      const gasHistory = await gasService.getHistoryFromGAS('CICLICO', userCenter);
+      if (Array.isArray(gasHistory) && gasHistory.length > 0) {
+        gasHistory.forEach(item => {
+          if (!item) return;
+          if (req.user.role !== 'ADMIN' && !req.user.isSuperadmin) {
+            if (item.center && !config.isSameCenter(item.center, req.user.center)) return;
+          }
+
+          const dedupeKey = (item.fileId || item.fileName || '').toLowerCase();
+          if (dedupeKey) seenKeys.add(dedupeKey);
+
+          list.push({
+            fileId: item.fileId || `DRIVE-${Date.now()}`,
+            fileName: item.fileName,
+            logicalPath: item.logicalPath || `Nibol/Ciclicosn/${item.fileName}`,
+            inventoryId: item.inventoryId || item.fileId,
+            type: item.type || 'CICLICO',
+            center: item.center || '1120',
+            closedBy: item.closedBy || 'Admin / GAS',
+            closedAt: item.closedAt || new Date().toISOString(),
+            totalItems: Number(item.totalItems || item.processed || 0),
+            justificationsCount: Number(item.justificationsCount || item.savedJustificationPhotos || 0),
+            driveUrl: item.driveUrl || item.spreadsheetUrl || process.env.DRIVE_REFERENCE_FOLDER_URL || null,
+            spreadsheetUrl: item.spreadsheetUrl || item.driveUrl || null,
+            source: 'GOOGLE_DRIVE'
+          });
+        });
+      }
+    } catch (gasErr) {
+      console.warn('[historyRoutes] Warning fetching from Google Drive:', gasErr.message);
+    }
+
+    // 2. Fallback to local files if not already populated from Drive
     files.forEach(f => {
       const record = storagePath.readJson(path.join(historyDir, f), null);
       if (!record) return;
 
+      const dedupeKey = (record.fileId || record.fileName || '').toLowerCase();
+      if (seenKeys.has(dedupeKey)) return;
+
       if (req.user.role !== 'ADMIN' && !req.user.isSuperadmin) {
-        if (record.center !== req.user.center) return;
+        if (!config.isSameCenter(record.center, req.user.center)) return;
       }
 
       list.push({
@@ -32,7 +74,9 @@ router.get('/', authenticate, restrictCenter, (req, res) => {
         closedAt: record.closedAt,
         totalItems: record.totalItems,
         justificationsCount: record.justificationsCount,
-        driveUrl: `https://drive.google.com/drive/folders/nibol-${record.center.toLowerCase()}-${record.type.toLowerCase()}`
+        driveUrl: record.driveUrl || record.spreadsheetUrl || process.env.DRIVE_REFERENCE_FOLDER_URL || null,
+        spreadsheetUrl: record.spreadsheetUrl || record.driveUrl || null,
+        source: 'LOCAL'
       });
     });
 
@@ -56,7 +100,7 @@ router.get('/:fileId', authenticate, (req, res) => {
       return res.status(404).json({ success: false, message: 'Registro histórico no encontrado' });
     }
 
-    if (req.user.role !== 'ADMIN' && !req.user.isSuperadmin && record.center !== req.user.center) {
+    if (req.user.role !== 'ADMIN' && !req.user.isSuperadmin && !config.isSameCenter(record.center, req.user.center)) {
       return res.status(403).json({ success: false, message: 'Acceso denegado a registros de otro centro' });
     }
 

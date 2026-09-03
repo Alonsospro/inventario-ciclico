@@ -63,4 +63,44 @@ test('Multi-Location Logic & Row Appending Contract', async (t) => {
     assert.strictEqual(rawAfter.items[1].Ubicacion, 'RACK-Z9-99');
     assert.strictEqual(rawAfter.items[1].Stock_Fisico, 3);
   });
+
+  await t.test('Creating new location without immediate count must remain Pendiente and unlocked', () => {
+    const result = inventoryService.updateCount({
+      inventoryId: invId,
+      itemId: initialItem.id,
+      sku: initialItem.SKU,
+      stockFisico: null,
+      malEstado: 0,
+      location: 'RACK-W1-10',
+      isNewLocation: true,
+      user,
+      locked: false
+    });
+
+    assert.ok(result.success);
+    assert.strictEqual(result.item.Stock_Fisico, null);
+    assert.strictEqual(result.item.Estado, 'Pendiente');
+    assert.strictEqual(result.item.locked, false);
+
+    const raw = inventoryService.getInventoryRaw(invId);
+    assert.strictEqual(raw.items.length, 3);
+  });
+
+  await t.test('Deleting additional location must remove it cleanly from inventory items', () => {
+    const rawBefore = inventoryService.getInventoryRaw(invId);
+    const itemToDelete = rawBefore.items.find(it => it.Ubicacion === 'RACK-W1-10');
+    assert.ok(itemToDelete);
+
+    const delRes = inventoryService.deleteItem({
+      inventoryId: invId,
+      itemId: itemToDelete.id,
+      user
+    });
+
+    assert.ok(delRes.success);
+
+    const rawAfter = inventoryService.getInventoryRaw(invId);
+    assert.strictEqual(rawAfter.items.length, 2);
+    assert.strictEqual(rawAfter.items.some(it => it.id === itemToDelete.id), false);
+  });
 });

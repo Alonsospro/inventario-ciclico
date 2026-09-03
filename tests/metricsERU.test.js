@@ -27,4 +27,29 @@ test('Dashboard Metrics & ERU Calculation Tests', async (t) => {
     assert.strictEqual(metricsBarrido.filters.type, 'BARRIDO');
     assert.ok(metricsBarrido.summary.totalInventories >= 0);
   });
+
+  await t.test('Period presets and individual inventory filtering work correctly', () => {
+    const metricsMonth = metricsService.getDashboardMetrics({
+      type: 'TODOS',
+      center: 'TODOS',
+      period: 'ESTE_MES'
+    });
+
+    assert.ok(Array.isArray(metricsMonth.availableInventories), 'availableInventories must be an array');
+    assert.strictEqual(metricsMonth.filters.period, 'ESTE_MES');
+
+    if (metricsMonth.availableInventories.length > 0) {
+      const targetInvId = metricsMonth.availableInventories[0].id;
+      const metricsSingle = metricsService.getDashboardMetrics({
+        type: 'TODOS',
+        center: 'TODOS',
+        inventoryId: targetInvId
+      });
+
+      assert.strictEqual(metricsSingle.summary.totalInventories, 1, 'Single inventory must yield totalInventories = 1');
+      assert.ok(metricsSingle.selectedInventory, 'selectedInventory must be returned');
+      assert.strictEqual(metricsSingle.selectedInventory.id, targetInvId);
+      assert.strictEqual(metricsSingle.isSingleInventory, true);
+    }
+  });
 });

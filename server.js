@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const config = require('./src/config');
 const storagePath = require('./src/services/storagePath');
 
@@ -26,18 +27,25 @@ app.use('/api/photos', require('./src/routes/photoRoutes'));
 
 // Health check route
 app.get('/api/health', (req, res) => {
+  const isVercel = !!process.env.VERCEL;
   res.json({
     status: 'online',
     appName: 'NIBOL Inventarios Cíclicos, Barrido, Semanales y Mensuales',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    storage: isVercel ? 'ephemeral' : 'persistent',
+    warning: isVercel ? 'Entorno Vercel detectado: los datos almacenados en disco (inventarios, fotos, historial) son efímeros y se perderán entre deploys. Se recomienda usar un servidor persistente (VPS) para producción.' : null
   });
 });
 
 // Single Page Application (SPA) fallback
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api')) {
-    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const indexPath = path.join(__dirname, 'public', 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+    return res.status(200).send('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/index.html"></head><body>NIBOL Inventarios API Online</body></html>');
   }
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ success: false, message: `Endpoint no encontrado: ${req.method} ${req.path}` });

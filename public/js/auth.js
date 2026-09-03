@@ -66,25 +66,71 @@ window.Auth = {
     const nav = document.getElementById('main-navbar');
     nav.style.display = 'flex';
 
+    const centerLabel = this.currentUser.centerName
+      ? `${this.currentUser.center} - ${this.currentUser.centerName}`
+      : this.currentUser.center;
+    const roleLabel = this.currentUser.cargo || this.currentUser.role;
+
     document.getElementById('nav-user-name').textContent = this.currentUser.displayName || this.currentUser.username;
-    document.getElementById('nav-user-role').textContent = `${this.currentUser.role} • ${this.currentUser.center}`;
+    document.getElementById('nav-user-role').textContent = `${roleLabel} • ${centerLabel}`;
 
     const role = this.currentUser.role;
     const isSuperadmin = !!this.currentUser.isSuperadmin;
+    const isAlonso = this.isAlonso();
+    const canCreateInv = this.canCreateInventory();
+    const isAdmin = role === 'ADMIN' || isSuperadmin;
 
     // Toggle role-specific navigation buttons
     document.querySelectorAll('.role-admin-only').forEach(el => {
-      el.style.display = (role === 'ADMIN' || isSuperadmin) ? '' : 'none';
+      el.style.display = isAdmin ? '' : 'none';
     });
 
     document.querySelectorAll('.role-encargado-admin').forEach(el => {
-      el.style.display = (role === 'ADMIN' || role === 'ENCARGADO' || isSuperadmin) ? '' : 'none';
+      el.style.display = (isAdmin || role === 'ENCARGADO') ? '' : 'none';
     });
+
+    document.querySelectorAll('.role-superadmin-alonso-only').forEach(el => {
+      el.style.display = isAlonso ? '' : 'none';
+    });
+
+    document.querySelectorAll('.role-inventory-creator-only').forEach(el => {
+      el.style.display = canCreateInv ? '' : 'none';
+    });
+
+    // For Auxiliares and Encargados, lock / constrain center dropdowns to their own center
+    if (!isAdmin) {
+      const userCenter = this.currentUser.center;
+      const centerDropdowns = ['filter-inv-center', 'filter-dash-center', 'filter-just-center', 'filter-assign-center', 'barrido-center-select'];
+      centerDropdowns.forEach(id => {
+        const select = document.getElementById(id);
+        if (select) {
+          select.value = userCenter;
+          select.disabled = true;
+          select.title = `Bloqueado a su centro asignado (${userCenter})`;
+        }
+      });
+    }
   },
 
   hasRole(allowedRoles = []) {
     if (!this.currentUser) return false;
     if (this.currentUser.isSuperadmin || this.currentUser.role === 'ADMIN') return true;
     return allowedRoles.includes(this.currentUser.role);
+  },
+
+  isAlonso() {
+    if (!this.currentUser) return false;
+    if (this.currentUser.isSuperadmin) return true;
+    const u = String(this.currentUser.username || '').toLowerCase().trim();
+    const d = String(this.currentUser.displayName || '').toLowerCase().trim();
+    return u === 'alonso' || d.includes('alonso rios') || this.currentUser.clave === 'ADM';
+  },
+
+  canCreateInventory() {
+    if (!this.currentUser) return false;
+    if (this.isAlonso()) return true;
+    const u = String(this.currentUser.username || '').toLowerCase().trim();
+    const d = String(this.currentUser.displayName || '').toLowerCase().trim();
+    return u === 'jcarlos' || u === 'juancarlos' || u === 'juan carlos' || u === 'juan_carlos' || u === 'juan.carlos' || d.includes('juan carlos') || this.currentUser.clave === 'JCS';
   }
 };

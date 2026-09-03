@@ -15,7 +15,27 @@ test('Reassignments and Center Restraints', async (t) => {
     center: 'WARNES'
   };
 
-  const invId = 'INV-BARRIDO-WARNES-001';
+  const invId = 'INV-TEST-REASSIGN-001';
+
+  // Setup test inventory
+  inventoryService.saveInventory({
+    id: invId,
+    name: 'Inventario Test Reasignaciones',
+    type: 'BARRIDO',
+    center: 'WARNES',
+    status: 'EN_PROGRESO',
+    assignedAuxiliars: ['auxiliar_warnes'],
+    items: [
+      {
+        id: 'ITEM-R-01',
+        SKU: 'JD-AH12345',
+        Descripcion: 'Filtro Aceite',
+        Ubicacion: 'RACK-A1',
+        Stock_Sistema: 10,
+        Responsable: 'auxiliar_warnes'
+      }
+    ]
+  });
 
   await t.test('Encargado can reassign items without duplicating pending records', () => {
     const raw = inventoryService.getInventoryRaw(invId);
@@ -48,5 +68,12 @@ test('Reassignments and Center Restraints', async (t) => {
         reason: 'Intento no permitido'
       });
     }, /no tienen permisos/);
+  });
+
+  // Teardown
+  inventoryService.deleteInventory({
+    inventoryId: invId,
+    user: { username: 'admin', role: 'ADMIN', isSuperadmin: true },
+    deleteKey: 'ADM26'
   });
 });

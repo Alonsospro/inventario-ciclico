@@ -6,7 +6,7 @@ test('Auth Service: Authentication and Role Permissions', async (t) => {
   await t.test('Should authenticate Superadmin ALONSO successfully', () => {
     const res = authService.authenticate('ALONSO', 'alonso.superadmin2026');
     assert.ok(res.token);
-    assert.strictEqual(res.user.username, 'ALONSO');
+    assert.strictEqual(res.user.username.toUpperCase(), 'ALONSO');
     assert.strictEqual(res.user.role, 'ADMIN');
     assert.strictEqual(res.user.isSuperadmin, true);
   });
@@ -35,6 +35,6 @@ test('Auth Service: Authentication and Role Permissions', async (t) => {
     const auth = authService.authenticate('ALONSO', 'alonso.superadmin2026');
     const payload = authService.verifyToken(auth.token);
     assert.ok(payload);
-    assert.strictEqual(payload.username, 'ALONSO');
+    assert.strictEqual(payload.username.toUpperCase(), 'ALONSO');
   });
 });

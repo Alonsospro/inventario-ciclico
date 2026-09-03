@@ -44,17 +44,33 @@ class AuditService {
   }
 
   logCount({ inventoryId, sku, previousQty, newQty, user, center, reason, location, malEstado }) {
+    const isReEdit = previousQty !== null && previousQty !== undefined;
     return this.appendLog({
-      action: 'COUNT_REGISTERED',
+      action: isReEdit ? 'COUNT_MODIFIED' : 'COUNT_REGISTERED',
       inventoryId,
       sku,
-      previousQty: previousQty !== undefined ? previousQty : null,
+      previousQty: isReEdit ? previousQty : null,
       newQty,
+      isReEdit,
       user: user || 'anonymous',
       center: center || 'GLOBAL',
       location: location || '',
       malEstado: malEstado || 0,
-      reason: reason || 'Conteo operativo'
+      reason: reason || (isReEdit ? 'Modificación de conteo ya realizado' : 'Conteo físico inicial')
+    });
+  }
+
+  logUnlockRequest({ inventoryId, itemId, sku, user, center, location, previousQty, reason }) {
+    return this.appendLog({
+      action: 'COUNT_UNLOCK_REQUESTED',
+      inventoryId,
+      itemId,
+      sku,
+      previousQty: previousQty !== undefined ? previousQty : null,
+      user: user || 'anonymous',
+      center: center || 'GLOBAL',
+      location: location || '',
+      reason: reason || 'Solicitud de desbloqueo y modificación de conteo'
     });
   }
 

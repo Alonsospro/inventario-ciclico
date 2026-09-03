@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 const inventoryService = require('../services/inventoryService');
 const gasService = require('../services/gasService');
-const { authenticate, requireRole } = require('../middlewares/authMiddleware');
+const { authenticate, requireRole, requireInventoryCreator } = require('../middlewares/authMiddleware');
 const { restrictCenter } = require('../middlewares/centerMiddleware');
 
 // GET /api/inventories (List)
 router.get('/', authenticate, restrictCenter, (req, res) => {
   try {
     const { center, type } = req.query;
-    const targetCenter = req.user.role === 'ADMIN' ? center : req.user.center;
+    const targetCenter = (req.user.role === 'ADMIN' || req.user.isSuperadmin) ? center : req.user.center;
     const list = inventoryService.getInventories(req.user, targetCenter, type);
     res.json({ success: true, inventories: list });
   } catch (err) {
@@ -27,12 +27,12 @@ router.get('/:id', authenticate, (req, res) => {
   }
 });
 
-// POST /api/inventories (Create new)
-router.post('/', authenticate, requireRole(['ADMIN', 'ENCARGADO']), restrictCenter, (req, res) => {
+// POST /api/inventories (Create new - Juan Carlos & Alonso Only)
+router.post('/', authenticate, requireInventoryCreator, restrictCenter, async (req, res) => {
   try {
     const { type, center, name, items } = req.body;
-    const targetCenter = req.user.role === 'ADMIN' ? (center || 'WARNES') : req.user.center;
-    const newInv = inventoryService.createInventory({
+    const targetCenter = (req.user.role === 'ADMIN' || req.user.isSuperadmin) ? (center || '1120') : req.user.center;
+    const newInv = await inventoryService.createInventory({
       type,
       center: targetCenter,
       name,
@@ -45,11 +45,11 @@ router.post('/', authenticate, requireRole(['ADMIN', 'ENCARGADO']), restrictCent
   }
 });
 
-// POST /api/inventories/fetch-from-gas (Fetch remote template items from Google Apps Script)
-router.post('/fetch-from-gas', authenticate, requireRole(['ADMIN', 'ENCARGADO']), async (req, res) => {
+// POST /api/inventories/fetch-from-gas (Fetch remote template items from Google Apps Script - Juan Carlos & Alonso Only)
+router.post('/fetch-from-gas', authenticate, requireInventoryCreator, async (req, res) => {
   try {
     const { type, center } = req.body;
-    const targetCenter = req.user.role === 'ADMIN' ? (center || 'WARNES') : req.user.center;
+    const targetCenter = (req.user.role === 'ADMIN' || req.user.isSuperadmin) ? (center || '1120') : req.user.center;
     const products = await gasService.fetchProductsFromScript(type, targetCenter);
     res.json({
       success: true,
@@ -70,7 +70,7 @@ router.post('/fetch-from-gas', authenticate, requireRole(['ADMIN', 'ENCARGADO'])
 // POST /api/inventories/:id/count (Register physical count)
 router.post('/:id/count', authenticate, (req, res) => {
   try {
-    const { itemId, sku, stockFisico, malEstado, location, isNewLocation, reason } = req.body;
+    const { itemId, sku, stockFisico, malEstado, location, isNewLocation, reason, photoUrl, locked } = req.body;
 
     const result = inventoryService.updateCount({
       inventoryId: req.params.id,
@@ -81,9 +81,41 @@ router.post('/:id/count', authenticate, (req, res) => {
       location,
       isNewLocation,
       user: req.user,
-      reason
+      reason,
+      photoUrl,
+      locked
     });
 
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/inventories/:id/items/:itemId/request-unlock (Unlock item for modification)
+router.post('/:id/items/:itemId/request-unlock', authenticate, restrictCenter, (req, res) => {
+  try {
+    const { reason } = req.body;
+    const result = inventoryService.requestUnlockItem({
+      inventoryId: req.params.id,
+      itemId: req.params.itemId,
+      user: req.user,
+      reason: reason || 'Modificación de conteo solicitada por el usuario'
+    });
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// DELETE /api/inventories/:id/items/:itemId (Delete additional location or item)
+router.delete('/:id/items/:itemId', authenticate, (req, res) => {
+  try {
+    const result = inventoryService.deleteItem({
+      inventoryId: req.params.id,
+      itemId: req.params.itemId,
+      user: req.user
+    });
     res.json(result);
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -137,8 +169,8 @@ router.post('/:id/reopen', authenticate, requireRole(['ADMIN']), (req, res) => {
   }
 });
 
-// DELETE /api/inventories/:id (Delete inventory with confirmation key - Admin only)
-router.delete('/:id', authenticate, requireRole(['ADMIN']), (req, res) => {
+// DELETE /api/inventories/:id (Delete inventory with confirmation key - Admin & Encargado)
+router.delete('/:id', authenticate, requireRole(['ADMIN', 'ENCARGADO']), (req, res) => {
   try {
     const { deleteKey, reason } = req.body;
     const result = inventoryService.deleteInventory({
@@ -150,6 +182,29 @@ router.delete('/:id', authenticate, requireRole(['ADMIN']), (req, res) => {
     res.json(result);
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/inventories/sync (Rehydrate inventories from client cache in serverless environments)
+router.post('/sync', authenticate, (req, res) => {
+  try {
+    const { inventories } = req.body;
+    if (Array.isArray(inventories) && inventories.length > 0) {
+      let synced = 0;
+      inventories.forEach(inv => {
+        if (inv && inv.id) {
+          const existing = inventoryService.getInventoryRaw(inv.id);
+          if (!existing) {
+            inventoryService.saveInventory(inv);
+            synced++;
+          }
+        }
+      });
+      return res.json({ success: true, synced, total: inventories.length });
+    }
+    res.json({ success: true, synced: 0 });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 

@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const app = require('../server');
 const authService = require('../src/services/authService');
+const inventoryService = require('../src/services/inventoryService');
 
 // Helper to make fast internal HTTP calls to the express app without starting external network server
 test('E2E HTTP API Endpoint Tests', async (t) => {
@@ -9,6 +10,7 @@ test('E2E HTTP API Endpoint Tests', async (t) => {
   let baseUrl;
   let adminToken;
   let auxiliarToken;
+  const testInvId = 'INV-E2E-TEST-001';
 
   await t.test('Setup test HTTP server', async () => {
     await new Promise((resolve) => {
@@ -24,6 +26,28 @@ test('E2E HTTP API Endpoint Tests', async (t) => {
 
     const auxAuth = authService.authenticate('auxiliar_warnes', 'auxiliar2026');
     auxiliarToken = auxAuth.token;
+
+    // Seed test inventory fixture
+    inventoryService.saveInventory({
+      id: testInvId,
+      name: 'Inventario Test E2E',
+      type: 'CICLICO',
+      center: 'WARNES',
+      status: 'EN_PROGRESO',
+      items: [
+        {
+          id: 'ITEM-E2E-01',
+          SKU: 'JD-AH12345',
+          Codigo_Barras: '78912345601',
+          Descripcion: 'Filtro de Aceite Motor 6068',
+          Ubicacion: 'RACK-A1-01',
+          Stock_Sistema: 10,
+          Stock_Fisico: null,
+          Costo_Unitario: 45.5,
+          Responsable: 'auxiliar_warnes'
+        }
+      ]
+    });
   });
 
   await t.test('GET /api/health returns 200 OK', async () => {
@@ -92,6 +116,15 @@ test('E2E HTTP API Endpoint Tests', async (t) => {
   });
 
   await t.test('Teardown test HTTP server', async () => {
+    // Clean up test fixture
+    try {
+      inventoryService.deleteInventory({
+        inventoryId: testInvId,
+        user: { username: 'admin', role: 'ADMIN', isSuperadmin: true },
+        deleteKey: 'ADM26'
+      });
+    } catch (e) {}
+
     if (server) {
       await new Promise((resolve) => server.close(resolve));
     }

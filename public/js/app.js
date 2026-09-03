@@ -15,8 +15,8 @@ window.Router = {
       return;
     }
 
-    if (viewName === 'users' && !window.Auth.hasRole(['ADMIN'])) {
-      window.Toast.warning('Acceso exclusivo para administradores');
+    if (viewName === 'users' && !window.Auth.isAlonso()) {
+      window.Toast.warning('Acceso exclusivo para el superadministrador Alonso');
       return;
     }
 
@@ -35,6 +35,9 @@ window.Router = {
     if (targetElement) {
       targetElement.classList.add('active');
       this.currentView = viewName;
+      try {
+        localStorage.setItem('nibol_active_view', viewName);
+      } catch (e) {}
     }
 
     // Update active nav button
@@ -109,24 +112,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Navigation Links click events
   document.querySelectorAll('.nav-item-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       const view = btn.getAttribute('data-view');
-      if (view) {
-        window.Router.navigate(view);
+      if (!view) return;
+
+      if (view === 'barrido' && window.Router.currentView !== 'barrido') {
+        const confirmed = await window.ModalHelper.confirm({
+          title: 'Iniciar Modo Barrido',
+          message: '¿Desea iniciar el Modo Barrido? Se abrirá la interfaz de escaneo continuo en pasillos y racks.',
+          icon: 'fa-solid fa-barcode',
+          confirmText: 'Iniciar Barrido',
+          cancelText: 'Cancelar',
+          confirmBtnClass: 'btn-primary'
+        });
+        if (confirmed) {
+          window.Router.navigate('barrido');
+        }
+        return;
       }
+
+      window.Router.navigate(view);
     });
   });
 
   // Logout button
   document.getElementById('btn-logout')?.addEventListener('click', () => {
+    try {
+      localStorage.removeItem('nibol_active_view');
+      localStorage.removeItem('nibol_active_inv_id');
+    } catch (e) {}
     window.Auth.logout(true);
   });
 
-  // Check Active Session on Page Refresh
+  // Check Active Session on Page Refresh and restore view/session
   window.Auth.init();
   const hasSession = await window.Auth.checkSession();
   if (hasSession) {
-    window.Router.navigate('inventories');
+    const savedView = localStorage.getItem('nibol_active_view') || 'inventories';
+    const activeInvId = localStorage.getItem('nibol_active_inv_id');
+    if (savedView === 'count' && activeInvId) {
+      window.InventoryView.openInventory(activeInvId);
+    } else {
+      window.Router.navigate(savedView);
+    }
   } else {
     window.Router.navigate('login');
   }
