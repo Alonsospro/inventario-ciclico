@@ -190,11 +190,16 @@ window.BarridoView = {
         const isNewLoc = isNewLocFlag || isDifferentLoc;
         const center = this.getSelectedCenter();
         const comment = document.getElementById('barrido-input-comment')?.value.trim() || '';
+        const descInput = document.getElementById('barrido-input-desc');
+        const customDesc = descInput ? descInput.value.trim() : '';
+        const itemDesc = (item.Descripcion && !item.Descripcion.startsWith('Ítem Descubierto')) ? item.Descripcion : '';
+        const finalDesc = customDesc || itemDesc || item.Descripcion || '';
 
         await window.API.registerBarridoCount({
           inventoryId: this.currentScannedProduct.inventoryId || null,
           itemId: item.id || null,
           sku: item.SKU,
+          descripcion: finalDesc,
           stockFisico: qty,
           malEstado: damaged,
           location: loc,
@@ -366,7 +371,27 @@ window.BarridoView = {
     document.getElementById('barrido-item-abc').textContent = `ABC: ${item.Clasificacion_ABC || 'C'}`;
 
     // 4. Descripción del Producto
-    document.getElementById('barrido-item-desc').textContent = item.Descripcion || 'Sin descripción disponible';
+    const isNewDiscovery = (!data.found || data.source === 'NEW_DISCOVERY');
+    const descText = document.getElementById('barrido-item-desc');
+    const descContainer = document.getElementById('barrido-desc-input-container');
+    const descInput = document.getElementById('barrido-input-desc');
+
+    if (isNewDiscovery) {
+      if (descText) descText.style.display = 'none';
+      if (descContainer) descContainer.style.display = 'block';
+      if (descInput) {
+        const rawDesc = item.Descripcion || '';
+        descInput.value = rawDesc.startsWith('Ítem Descubierto') ? '' : rawDesc;
+        setTimeout(() => descInput.focus(), 150);
+      }
+    } else {
+      if (descContainer) descContainer.style.display = 'none';
+      if (descText) {
+        descText.style.display = 'block';
+        descText.textContent = item.Descripcion || 'Sin descripción disponible';
+      }
+      if (descInput) descInput.value = item.Descripcion || '';
+    }
 
     // 5. Ubicación Original
     const origLoc = item.UbicacionOriginal || item.Ubicacion || 'No asignada';
@@ -389,7 +414,7 @@ window.BarridoView = {
     if (previewImg) previewImg.style.display = 'none';
 
     const qtyInput = document.getElementById('barrido-input-qty');
-    if (qtyInput) {
+    if (qtyInput && !isNewDiscovery) {
       qtyInput.focus();
       qtyInput.select();
     }
@@ -408,6 +433,16 @@ window.BarridoView = {
 
     const sourceBadge = document.getElementById('barrido-source-badge');
     if (sourceBadge) sourceBadge.style.display = 'none';
+
+    const descContainer = document.getElementById('barrido-desc-input-container');
+    if (descContainer) descContainer.style.display = 'none';
+    const descInput = document.getElementById('barrido-input-desc');
+    if (descInput) descInput.value = '';
+    const descText = document.getElementById('barrido-item-desc');
+    if (descText) {
+      descText.style.display = 'block';
+      descText.textContent = 'Descripción del producto';
+    }
 
     const manualInput = document.getElementById('input-barrido-manual');
     if (manualInput) manualInput.value = '';
