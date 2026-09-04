@@ -48,9 +48,9 @@ test('Reference Photos Lookup By SKU Filename', async (t) => {
     assert.ok(res.headers.get('content-type').includes('svg'));
   });
 
-  await t.test('Teardown test server and cleanup file', async () => {
+  t.after(async () => {
     if (fs.existsSync(testSkuFile)) {
-      fs.unlinkSync(testSkuFile);
+      try { fs.unlinkSync(testSkuFile); } catch (e) {}
     }
     if (server) {
       await new Promise((resolve) => server.close(resolve));

@@ -1,7 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const authService = require('../src/services/authService');
 const inventoryService = require('../src/services/inventoryService');
+const storagePath = require('../src/services/storagePath');
 const config = require('../src/config');
 
 test('Official Centers and Users Roster Verification', async (t) => {
@@ -115,6 +117,9 @@ test('Strict Center Access and RBAC Rules Contract', async (t) => {
 
   // 1. Inventory creation tests (Only Juan Carlos and Alonso)
   let inv1120 = null;
+  let inv1300 = null;
+  let createdUserId = null;
+
   await t.test('Alonso and Juan Carlos CAN create inventories', async () => {
     inv1120 = await inventoryService.createInventory({
       type: 'CICLICO',
@@ -128,7 +133,7 @@ test('Strict Center Access and RBAC Rules Contract', async (t) => {
     assert.ok(inv1120.id);
     assert.strictEqual(inv1120.center, '1120');
 
-    const inv1300 = await inventoryService.createInventory({
+    inv1300 = await inventoryService.createInventory({
       type: 'CICLICO',
       center: '1300',
       name: 'Inventario Test 1300 creado por Juan Carlos',
@@ -219,6 +224,7 @@ test('Strict Center Access and RBAC Rules Contract', async (t) => {
       role: 'AUXILIAR',
       center: '1120'
     }, alonso);
+    createdUserId = created.id;
     assert.ok(created.id);
     assert.strictEqual(created.username, uniqueUser);
   });
@@ -255,6 +261,24 @@ test('Strict Center Access and RBAC Rules Contract', async (t) => {
     list1120.forEach(u => {
       assert.ok(config.isSameCenter(u.center, '1120'), `User ${u.username} center ${u.center} must be 1120`);
     });
+  });
+
+  t.after(() => {
+    if (inv1120 && inv1120.id) {
+      try {
+        storagePath.deleteFile(path.join(storagePath.getInventoriesDirectory(), `${inv1120.id}.json`));
+      } catch (e) {}
+    }
+    if (inv1300 && inv1300.id) {
+      try {
+        storagePath.deleteFile(path.join(storagePath.getInventoriesDirectory(), `${inv1300.id}.json`));
+      } catch (e) {}
+    }
+    if (createdUserId) {
+      try {
+        authService.deleteUser(createdUserId, alonso);
+      } catch (e) {}
+    }
   });
 });
 

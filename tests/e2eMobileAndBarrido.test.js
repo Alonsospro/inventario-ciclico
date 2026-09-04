@@ -95,12 +95,12 @@ test('E2E Verification of Mobile UI, Barrido Description, and Contract Adjustmen
     const itemInDb = loaded.items.find(it => it.SKU === 'SKU-ALT-24V');
     assert.ok(itemInDb);
     assert.strictEqual(itemInDb.Descripcion, customDesc);
+  });
 
-    // Teardown
-    inventoryService.deleteInventory({
-      inventoryId: testInvId,
-      user: { username: 'alonso', role: 'ADMIN', isSuperadmin: true },
-      deleteKey: 'ADM26'
-    });
+  t.after(() => {
+    try {
+      const storagePath = require('../src/services/storagePath');
+      storagePath.deleteFile(path.join(storagePath.getInventoriesDirectory(), 'INV-BARRIDO-TEST-E2E.json'));
+    } catch (e) {}
   });
 });

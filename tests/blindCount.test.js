@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const inventoryService = require('../src/services/inventoryService');
+const storagePath = require('../src/services/storagePath');
 
 test('Conteo Ciego (Blind Count) & Data Privacy Contracts', async (t) => {
   const auxiliarUser = {
@@ -74,5 +76,12 @@ test('Conteo Ciego (Blind Count) & Data Privacy Contracts', async (t) => {
     assert.notStrictEqual(firstItem.Stock_Sistema, undefined);
     assert.notStrictEqual(firstItem.Costo_Unitario, undefined);
     assert.notStrictEqual(firstItem.Diferencia, undefined);
+  });
+
+  t.after(() => {
+    try {
+      const filePath = path.join(storagePath.getInventoriesDirectory(), `${invId}.json`);
+      storagePath.deleteFile(filePath);
+    } catch (e) {}
   });
 });

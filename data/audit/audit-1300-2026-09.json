@@ -537,8 +537,8 @@
     "targetId": "INV-CICLICO-1300-MTLPYLKD"
   },
   {
-    "id": "LOG-1788452329432-v2ad2",
-    "timestamp": "2026-09-03T16:18:49.432Z",
+    "id": "LOG-1788531658169-3evi1",
+    "timestamp": "2026-09-04T14:20:58.169Z",
     "action": "INVENTORY_DELETED",
     "inventoryId": "INV-TEST-DEL-1300",
     "user": "ALONSO",
@@ -546,75 +546,12 @@
     "reason": "Eliminación por Administrador con minúsculas"
   },
   {
-    "id": "LOG-1788452341306-yd63p",
-    "timestamp": "2026-09-03T16:19:01.306Z",
+    "id": "LOG-1788531671281-5uz8u",
+    "timestamp": "2026-09-04T14:21:11.281Z",
     "action": "INVENTORY_CREATED",
     "details": "Inventario Inventario Test 1300 creado por Juan Carlos creado con 1 ítems",
     "user": "Jcarlos",
     "center": "1300",
-    "targetId": "INV-CICLICO-1300-MTLQCIEX"
-  },
-  {
-    "id": "LOG-1788452474064-dpqja",
-    "timestamp": "2026-09-03T16:21:14.064Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1300",
-    "user": "ALONSO",
-    "center": "1300",
-    "reason": "Eliminación por Administrador con minúsculas"
-  },
-  {
-    "id": "LOG-1788452483132-uoic5",
-    "timestamp": "2026-09-03T16:21:23.132Z",
-    "action": "INVENTORY_CREATED",
-    "details": "Inventario Inventario Test 1300 creado por Juan Carlos creado con 1 ítems",
-    "user": "Jcarlos",
-    "center": "1300",
-    "targetId": "INV-CICLICO-1300-MTLQFJUJ"
-  },
-  {
-    "id": "LOG-1788456283176-quln0",
-    "timestamp": "2026-09-03T17:24:43.176Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-CICLICO-1300-MTLQFJUJ",
-    "user": "Alonso",
-    "center": "1300",
-    "reason": "BOOR"
-  },
-  {
-    "id": "LOG-1788461829389-umd0m",
-    "timestamp": "2026-09-03T18:57:09.389Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1300",
-    "user": "ALONSO",
-    "center": "1300",
-    "reason": "Eliminación por Administrador con minúsculas"
-  },
-  {
-    "id": "LOG-1788461840303-2lu7m",
-    "timestamp": "2026-09-03T18:57:20.303Z",
-    "action": "INVENTORY_CREATED",
-    "details": "Inventario Inventario Test 1300 creado por Juan Carlos creado con 1 ítems",
-    "user": "Jcarlos",
-    "center": "1300",
-    "targetId": "INV-CICLICO-1300-MTLW03VY"
-  },
-  {
-    "id": "LOG-1788462673707-8a1f5",
-    "timestamp": "2026-09-03T19:11:13.707Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1300",
-    "user": "ALONSO",
-    "center": "1300",
-    "reason": "Eliminación por Administrador con minúsculas"
-  },
-  {
-    "id": "LOG-1788462682050-55ghn",
-    "timestamp": "2026-09-03T19:11:22.050Z",
-    "action": "INVENTORY_CREATED",
-    "details": "Inventario Inventario Test 1300 creado por Juan Carlos creado con 1 ítems",
-    "user": "Jcarlos",
-    "center": "1300",
-    "targetId": "INV-CICLICO-1300-MTLWI5DS"
+    "targetId": "INV-CICLICO-1300-MTN1KTTC"
   }
 ]

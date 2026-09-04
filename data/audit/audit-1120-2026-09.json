@@ -1,7 +1,7 @@
 [
   {
-    "id": "LOG-1788452329410-okitr",
-    "timestamp": "2026-09-03T16:18:49.410Z",
+    "id": "LOG-1788531658151-bjiod",
+    "timestamp": "2026-09-04T14:20:58.151Z",
     "action": "INVENTORY_DELETED",
     "inventoryId": "INV-TEST-DEL-1120",
     "user": "Isaias",
@@ -9,8 +9,8 @@
     "reason": "Prueba de eliminación por encargado"
   },
   {
-    "id": "LOG-1788452329450-otx3t",
-    "timestamp": "2026-09-03T16:18:49.450Z",
+    "id": "LOG-1788531658181-amzd0",
+    "timestamp": "2026-09-04T14:20:58.181Z",
     "action": "INVENTORY_DELETED",
     "inventoryId": "INV-TEST-DEL-KEY",
     "user": "ALONSO",
@@ -18,8 +18,8 @@
     "reason": "Limpieza"
   },
   {
-    "id": "LOG-1788452329460-c8s4y",
-    "timestamp": "2026-09-03T16:18:49.460Z",
+    "id": "LOG-1788531658188-vv60l",
+    "timestamp": "2026-09-04T14:20:58.188Z",
     "action": "INVENTORY_DELETED",
     "inventoryId": "INV-TEST-DEL-AUX",
     "user": "ALONSO",
@@ -27,163 +27,34 @@
     "reason": "Limpieza"
   },
   {
-    "id": "LOG-1788452341299-fi5tm",
-    "timestamp": "2026-09-03T16:19:01.299Z",
+    "id": "LOG-1788531658805-93biw",
+    "timestamp": "2026-09-04T14:20:58.805Z",
+    "action": "COUNT_REGISTERED",
+    "inventoryId": "INV-BARRIDO-TEST-E2E",
+    "sku": "SKU-ALT-24V",
+    "previousQty": null,
+    "newQty": 4,
+    "isReEdit": false,
+    "user": "alonso",
+    "center": "1120",
+    "location": "RACK-M-12",
+    "malEstado": 0,
+    "reason": "Conteo físico confirmado"
+  },
+  {
+    "id": "LOG-1788531671271-n0b9u",
+    "timestamp": "2026-09-04T14:21:11.271Z",
     "action": "INVENTORY_CREATED",
     "details": "Inventario Inventario Test 1120 creado por Alonso creado con 1 ítems",
     "user": "Alonso",
     "center": "1120",
-    "targetId": "INV-CICLICO-1120-MTLQCIEQ"
+    "targetId": "INV-CICLICO-1120-MTN1KTT2"
   },
   {
-    "id": "LOG-1788452341326-zih5v",
-    "timestamp": "2026-09-03T16:19:01.326Z",
+    "id": "LOG-1788531671310-6vbo2",
+    "timestamp": "2026-09-04T14:21:11.310Z",
     "action": "ITEMS_REASSIGNED",
-    "inventoryId": "INV-CICLICO-1120-MTLQCIEQ",
-    "fromUser": "Varios",
-    "toUser": "Bladimir",
-    "user": "Isaias",
-    "center": "1120",
-    "affectedCount": 1,
-    "reason": "Asignación de turno operativo"
-  },
-  {
-    "id": "LOG-1788452474044-a89zi",
-    "timestamp": "2026-09-03T16:21:14.045Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1120",
-    "user": "Isaias",
-    "center": "1120",
-    "reason": "Prueba de eliminación por encargado"
-  },
-  {
-    "id": "LOG-1788452474075-28qrn",
-    "timestamp": "2026-09-03T16:21:14.075Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-KEY",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788452474082-zkm10",
-    "timestamp": "2026-09-03T16:21:14.082Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-AUX",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788452483124-nmvgk",
-    "timestamp": "2026-09-03T16:21:23.124Z",
-    "action": "INVENTORY_CREATED",
-    "details": "Inventario Inventario Test 1120 creado por Alonso creado con 1 ítems",
-    "user": "Alonso",
-    "center": "1120",
-    "targetId": "INV-CICLICO-1120-MTLQFJUB"
-  },
-  {
-    "id": "LOG-1788452483143-la9ng",
-    "timestamp": "2026-09-03T16:21:23.143Z",
-    "action": "ITEMS_REASSIGNED",
-    "inventoryId": "INV-CICLICO-1120-MTLQFJUB",
-    "fromUser": "Varios",
-    "toUser": "Bladimir",
-    "user": "Isaias",
-    "center": "1120",
-    "affectedCount": 1,
-    "reason": "Asignación de turno operativo"
-  },
-  {
-    "id": "LOG-1788461829363-zthxe",
-    "timestamp": "2026-09-03T18:57:09.363Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1120",
-    "user": "Isaias",
-    "center": "1120",
-    "reason": "Prueba de eliminación por encargado"
-  },
-  {
-    "id": "LOG-1788461829401-wk1ky",
-    "timestamp": "2026-09-03T18:57:09.401Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-KEY",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788461829409-1bi09",
-    "timestamp": "2026-09-03T18:57:09.409Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-AUX",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788461840295-zg4x6",
-    "timestamp": "2026-09-03T18:57:20.295Z",
-    "action": "INVENTORY_CREATED",
-    "details": "Inventario Inventario Test 1120 creado por Alonso creado con 1 ítems",
-    "user": "Alonso",
-    "center": "1120",
-    "targetId": "INV-CICLICO-1120-MTLW03VP"
-  },
-  {
-    "id": "LOG-1788461840319-hh8do",
-    "timestamp": "2026-09-03T18:57:20.320Z",
-    "action": "ITEMS_REASSIGNED",
-    "inventoryId": "INV-CICLICO-1120-MTLW03VP",
-    "fromUser": "Varios",
-    "toUser": "Bladimir",
-    "user": "Isaias",
-    "center": "1120",
-    "affectedCount": 1,
-    "reason": "Asignación de turno operativo"
-  },
-  {
-    "id": "LOG-1788462673689-ovbq0",
-    "timestamp": "2026-09-03T19:11:13.689Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1120",
-    "user": "Isaias",
-    "center": "1120",
-    "reason": "Prueba de eliminación por encargado"
-  },
-  {
-    "id": "LOG-1788462673720-wse2o",
-    "timestamp": "2026-09-03T19:11:13.720Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-KEY",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788462673726-iz3mr",
-    "timestamp": "2026-09-03T19:11:13.726Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-AUX",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788462682038-sh740",
-    "timestamp": "2026-09-03T19:11:22.038Z",
-    "action": "INVENTORY_CREATED",
-    "details": "Inventario Inventario Test 1120 creado por Alonso creado con 1 ítems",
-    "user": "Alonso",
-    "center": "1120",
-    "targetId": "INV-CICLICO-1120-MTLWI5DG"
-  },
-  {
-    "id": "LOG-1788462682065-sad0l",
-    "timestamp": "2026-09-03T19:11:22.065Z",
-    "action": "ITEMS_REASSIGNED",
-    "inventoryId": "INV-CICLICO-1120-MTLWI5DG",
+    "inventoryId": "INV-CICLICO-1120-MTN1KTT2",
     "fromUser": "Varios",
     "toUser": "Bladimir",
     "user": "Isaias",

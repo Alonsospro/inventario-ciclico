@@ -537,441 +537,6 @@
     "targetId": "INV-CICLICO-1300-MTLPYLKD"
   },
   {
-    "id": "LOG-1788452329247-vtrea",
-    "timestamp": "2026-09-03T16:18:49.247Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "sku": "JD-AH12345",
-    "previousQty": null,
-    "newQty": 5,
-    "isReEdit": false,
-    "user": "auxiliar_warnes",
-    "center": "WARNES",
-    "location": "RACK-A1-01",
-    "malEstado": 2,
-    "reason": "Conteo físico confirmado"
-  },
-  {
-    "id": "LOG-1788452329265-e1un0",
-    "timestamp": "2026-09-03T16:18:49.265Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "user": "admin",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788452329325-79ye7",
-    "timestamp": "2026-09-03T16:18:49.326Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-ZERO-TEST",
-    "sku": "JD-Z001",
-    "previousQty": null,
-    "newQty": 0,
-    "isReEdit": false,
-    "user": "auxiliar_warnes",
-    "center": "WARNES",
-    "location": "RACK-Z1",
-    "malEstado": 0,
-    "reason": "Confirmación sin stock en estante"
-  },
-  {
-    "id": "LOG-1788452329410-okitr",
-    "timestamp": "2026-09-03T16:18:49.410Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1120",
-    "user": "Isaias",
-    "center": "1120",
-    "reason": "Prueba de eliminación por encargado"
-  },
-  {
-    "id": "LOG-1788452329432-v2ad2",
-    "timestamp": "2026-09-03T16:18:49.432Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1300",
-    "user": "ALONSO",
-    "center": "1300",
-    "reason": "Eliminación por Administrador con minúsculas"
-  },
-  {
-    "id": "LOG-1788452329450-otx3t",
-    "timestamp": "2026-09-03T16:18:49.450Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-KEY",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788452329460-c8s4y",
-    "timestamp": "2026-09-03T16:18:49.460Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-AUX",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788452329669-n5eiv",
-    "timestamp": "2026-09-03T16:18:49.669Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-TEST-EDITS",
-    "sku": "JD-TEST-REEDIT-1",
-    "previousQty": null,
-    "newQty": 10,
-    "isReEdit": false,
-    "user": "test_worker_1",
-    "center": "WARNES",
-    "location": "RACK-A1",
-    "malEstado": 0,
-    "reason": "Conteo físico inicial"
-  },
-  {
-    "id": "LOG-1788452329687-nthwi",
-    "timestamp": "2026-09-03T16:18:49.687Z",
-    "action": "COUNT_MODIFIED",
-    "inventoryId": "INV-TEST-EDITS",
-    "sku": "JD-TEST-REEDIT-1",
-    "previousQty": 10,
-    "newQty": 8,
-    "isReEdit": true,
-    "user": "test_worker_1",
-    "center": "WARNES",
-    "location": "RACK-A1",
-    "malEstado": 0,
-    "reason": "Recuento corregido por segunda pasada"
-  },
-  {
-    "id": "LOG-1788452329702-c0ct5",
-    "timestamp": "2026-09-03T16:18:49.702Z",
-    "action": "JUSTIFICATION_SUBMITTED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "sku": "JD-AH12345",
-    "justification": "Diferencia justificada por ajuste de merma",
-    "photoUrl": "/api/photos/sample.jpg",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "diffQty": -2
-  },
-  {
-    "id": "LOG-1788452341366-a4kpc",
-    "timestamp": "2026-09-03T16:19:01.366Z",
-    "action": "INVENTORY_REVIEW_FINISHED",
-    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-03.xlsx",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "targetId": "INV-TEST-DRIVE-WARNES-001"
-  },
-  {
-    "id": "LOG-1788452341373-huuua",
-    "timestamp": "2026-09-03T16:19:01.373Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788452473912-uqpsd",
-    "timestamp": "2026-09-03T16:21:13.912Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "sku": "JD-AH12345",
-    "previousQty": null,
-    "newQty": 5,
-    "isReEdit": false,
-    "user": "auxiliar_warnes",
-    "center": "WARNES",
-    "location": "RACK-A1-01",
-    "malEstado": 2,
-    "reason": "Conteo físico confirmado"
-  },
-  {
-    "id": "LOG-1788452473930-iw5cj",
-    "timestamp": "2026-09-03T16:21:13.930Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "user": "admin",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788452474001-iulua",
-    "timestamp": "2026-09-03T16:21:14.001Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-ZERO-TEST",
-    "sku": "JD-Z001",
-    "previousQty": null,
-    "newQty": 0,
-    "isReEdit": false,
-    "user": "auxiliar_warnes",
-    "center": "WARNES",
-    "location": "RACK-Z1",
-    "malEstado": 0,
-    "reason": "Confirmación sin stock en estante"
-  },
-  {
-    "id": "LOG-1788452474044-a89zi",
-    "timestamp": "2026-09-03T16:21:14.045Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1120",
-    "user": "Isaias",
-    "center": "1120",
-    "reason": "Prueba de eliminación por encargado"
-  },
-  {
-    "id": "LOG-1788452474064-dpqja",
-    "timestamp": "2026-09-03T16:21:14.064Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1300",
-    "user": "ALONSO",
-    "center": "1300",
-    "reason": "Eliminación por Administrador con minúsculas"
-  },
-  {
-    "id": "LOG-1788452474075-28qrn",
-    "timestamp": "2026-09-03T16:21:14.075Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-KEY",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788452474082-zkm10",
-    "timestamp": "2026-09-03T16:21:14.082Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-AUX",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788452474296-r2c6i",
-    "timestamp": "2026-09-03T16:21:14.297Z",
-    "action": "JUSTIFICATION_SUBMITTED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "sku": "JD-AH12345",
-    "justification": "Diferencia justificada por ajuste de merma",
-    "photoUrl": "/api/photos/sample.jpg",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "diffQty": -2
-  },
-  {
-    "id": "LOG-1788452486062-9k9s2",
-    "timestamp": "2026-09-03T16:21:26.062Z",
-    "action": "INVENTORY_REVIEW_FINISHED",
-    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-03.xlsx",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "targetId": "INV-TEST-DRIVE-WARNES-001"
-  },
-  {
-    "id": "LOG-1788452486070-hr2g8",
-    "timestamp": "2026-09-03T16:21:26.070Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788452520806-m0qke",
-    "timestamp": "2026-09-03T16:22:00.806Z",
-    "action": "JUSTIFICATION_SUBMITTED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "sku": "JD-AH12345",
-    "justification": "Diferencia justificada por ajuste de merma",
-    "photoUrl": "/api/photos/sample.jpg",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "diffQty": -2
-  },
-  {
-    "id": "LOG-1788452531224-lzo2h",
-    "timestamp": "2026-09-03T16:22:11.224Z",
-    "action": "INVENTORY_REVIEW_FINISHED",
-    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-03.xlsx",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "targetId": "INV-TEST-DRIVE-WARNES-001"
-  },
-  {
-    "id": "LOG-1788452541820-blhai",
-    "timestamp": "2026-09-03T16:22:21.820Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788456283176-quln0",
-    "timestamp": "2026-09-03T17:24:43.176Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-CICLICO-1300-MTLQFJUJ",
-    "user": "Alonso",
-    "center": "1300",
-    "reason": "BOOR"
-  },
-  {
-    "id": "LOG-1788461829363-zthxe",
-    "timestamp": "2026-09-03T18:57:09.363Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1120",
-    "user": "Isaias",
-    "center": "1120",
-    "reason": "Prueba de eliminación por encargado"
-  },
-  {
-    "id": "LOG-1788461829389-umd0m",
-    "timestamp": "2026-09-03T18:57:09.389Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1300",
-    "user": "ALONSO",
-    "center": "1300",
-    "reason": "Eliminación por Administrador con minúsculas"
-  },
-  {
-    "id": "LOG-1788461829401-wk1ky",
-    "timestamp": "2026-09-03T18:57:09.401Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-KEY",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788461829409-1bi09",
-    "timestamp": "2026-09-03T18:57:09.409Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-AUX",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788461829655-4d1d4",
-    "timestamp": "2026-09-03T18:57:09.655Z",
-    "action": "JUSTIFICATION_SUBMITTED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "sku": "JD-AH12345",
-    "justification": "Diferencia justificada por ajuste de merma",
-    "photoUrl": "/api/photos/sample.jpg",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "diffQty": -2
-  },
-  {
-    "id": "LOG-1788461841329-5gfgs",
-    "timestamp": "2026-09-03T18:57:21.329Z",
-    "action": "INVENTORY_REVIEW_FINISHED",
-    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-03.xlsx",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "targetId": "INV-TEST-DRIVE-WARNES-001"
-  },
-  {
-    "id": "LOG-1788461850013-kdube",
-    "timestamp": "2026-09-03T18:57:30.013Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788462673618-i4s1v",
-    "timestamp": "2026-09-03T19:11:13.618Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "sku": "JD-AH12345",
-    "previousQty": null,
-    "newQty": 5,
-    "isReEdit": false,
-    "user": "auxiliar_warnes",
-    "center": "WARNES",
-    "location": "RACK-A1-01",
-    "malEstado": 2,
-    "reason": "Conteo físico confirmado"
-  },
-  {
-    "id": "LOG-1788462673632-dp13m",
-    "timestamp": "2026-09-03T19:11:13.632Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "user": "admin",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788462673689-ovbq0",
-    "timestamp": "2026-09-03T19:11:13.689Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1120",
-    "user": "Isaias",
-    "center": "1120",
-    "reason": "Prueba de eliminación por encargado"
-  },
-  {
-    "id": "LOG-1788462673707-8a1f5",
-    "timestamp": "2026-09-03T19:11:13.707Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1300",
-    "user": "ALONSO",
-    "center": "1300",
-    "reason": "Eliminación por Administrador con minúsculas"
-  },
-  {
-    "id": "LOG-1788462673720-wse2o",
-    "timestamp": "2026-09-03T19:11:13.720Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-KEY",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788462673726-iz3mr",
-    "timestamp": "2026-09-03T19:11:13.726Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-AUX",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788462673942-tpfzx",
-    "timestamp": "2026-09-03T19:11:13.942Z",
-    "action": "JUSTIFICATION_SUBMITTED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "sku": "JD-AH12345",
-    "justification": "Diferencia justificada por ajuste de merma",
-    "photoUrl": "/api/photos/sample.jpg",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "diffQty": -2
-  },
-  {
-    "id": "LOG-1788462683635-jbi4p",
-    "timestamp": "2026-09-03T19:11:23.635Z",
-    "action": "INVENTORY_REVIEW_FINISHED",
-    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-03.xlsx",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "targetId": "INV-TEST-DRIVE-WARNES-001"
-  },
-  {
-    "id": "LOG-1788462692323-mvre4",
-    "timestamp": "2026-09-03T19:11:32.323Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
     "id": "LOG-1788463544126-9q7rt",
     "timestamp": "2026-09-03T19:25:44.126Z",
     "action": "INVENTORY_CREATED",
@@ -1569,243 +1134,6 @@
     "targetId": "INV-CICLICO-1300-MTLPYLKD"
   },
   {
-    "id": "LOG-1788464771189-9aaco",
-    "timestamp": "2026-09-03T19:46:11.189Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-CICLICO-1300-MTLWI5DS",
-    "user": "Alonso",
-    "center": "1300",
-    "reason": "AS"
-  },
-  {
-    "id": "LOG-1788464792155-qzmrz",
-    "timestamp": "2026-09-03T19:46:32.155Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-CICLICO-1120-MTLQCIEQ",
-    "user": "Alonso",
-    "center": "1120",
-    "reason": "AS"
-  },
-  {
-    "id": "LOG-1788464801051-j95l3",
-    "timestamp": "2026-09-03T19:46:41.051Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-ZERO-TEST",
-    "user": "Alonso",
-    "center": "WARNES",
-    "reason": "AS"
-  },
-  {
-    "id": "LOG-1788466622485-4xzlx",
-    "timestamp": "2026-09-03T20:17:02.485Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "sku": "JD-AH12345",
-    "previousQty": null,
-    "newQty": 5,
-    "isReEdit": false,
-    "user": "auxiliar_warnes",
-    "center": "WARNES",
-    "location": "RACK-A1-01",
-    "malEstado": 2,
-    "reason": "Conteo físico confirmado"
-  },
-  {
-    "id": "LOG-1788466622522-fk33z",
-    "timestamp": "2026-09-03T20:17:02.522Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "user": "admin",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788466622577-887tg",
-    "timestamp": "2026-09-03T20:17:02.577Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-ZERO-TEST",
-    "sku": "JD-Z001",
-    "previousQty": null,
-    "newQty": 0,
-    "isReEdit": false,
-    "user": "auxiliar_warnes",
-    "center": "WARNES",
-    "location": "RACK-Z1",
-    "malEstado": 0,
-    "reason": "Confirmación sin stock en estante"
-  },
-  {
-    "id": "LOG-1788466622654-qtqb3",
-    "timestamp": "2026-09-03T20:17:02.654Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1120",
-    "user": "Isaias",
-    "center": "1120",
-    "reason": "Prueba de eliminación por encargado"
-  },
-  {
-    "id": "LOG-1788466622676-049zb",
-    "timestamp": "2026-09-03T20:17:02.676Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1300",
-    "user": "ALONSO",
-    "center": "1300",
-    "reason": "Eliminación por Administrador con minúsculas"
-  },
-  {
-    "id": "LOG-1788466622697-ailas",
-    "timestamp": "2026-09-03T20:17:02.697Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-KEY",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788466622705-h40wi",
-    "timestamp": "2026-09-03T20:17:02.705Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-AUX",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788466622880-ujxe7",
-    "timestamp": "2026-09-03T20:17:02.880Z",
-    "action": "JUSTIFICATION_SUBMITTED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "sku": "JD-AH12345",
-    "justification": "Diferencia justificada por ajuste de merma",
-    "photoUrl": "/api/photos/sample.jpg",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "diffQty": -2
-  },
-  {
-    "id": "LOG-1788466641578-q7sg3",
-    "timestamp": "2026-09-03T20:17:21.578Z",
-    "action": "INVENTORY_REVIEW_FINISHED",
-    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-03.xlsx",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "targetId": "INV-TEST-DRIVE-WARNES-001"
-  },
-  {
-    "id": "LOG-1788466654750-ztqpl",
-    "timestamp": "2026-09-03T20:17:34.750Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788466958740-kl63n",
-    "timestamp": "2026-09-03T20:22:38.740Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "sku": "JD-AH12345",
-    "previousQty": null,
-    "newQty": 5,
-    "isReEdit": false,
-    "user": "auxiliar_warnes",
-    "center": "WARNES",
-    "location": "RACK-A1-01",
-    "malEstado": 2,
-    "reason": "Conteo físico confirmado"
-  },
-  {
-    "id": "LOG-1788466958763-0zmfa",
-    "timestamp": "2026-09-03T20:22:38.763Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-BARRIDO-001",
-    "user": "admin",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
-    "id": "LOG-1788466958786-axsbe",
-    "timestamp": "2026-09-03T20:22:38.786Z",
-    "action": "COUNT_REGISTERED",
-    "inventoryId": "INV-ZERO-TEST",
-    "sku": "JD-Z001",
-    "previousQty": null,
-    "newQty": 0,
-    "isReEdit": false,
-    "user": "auxiliar_warnes",
-    "center": "WARNES",
-    "location": "RACK-Z1",
-    "malEstado": 0,
-    "reason": "Confirmación sin stock en estante"
-  },
-  {
-    "id": "LOG-1788466958821-wb3ak",
-    "timestamp": "2026-09-03T20:22:38.821Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1120",
-    "user": "Isaias",
-    "center": "1120",
-    "reason": "Prueba de eliminación por encargado"
-  },
-  {
-    "id": "LOG-1788466958849-m00c6",
-    "timestamp": "2026-09-03T20:22:38.849Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-1300",
-    "user": "ALONSO",
-    "center": "1300",
-    "reason": "Eliminación por Administrador con minúsculas"
-  },
-  {
-    "id": "LOG-1788466958865-nf314",
-    "timestamp": "2026-09-03T20:22:38.865Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-KEY",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788466958875-np8aw",
-    "timestamp": "2026-09-03T20:22:38.875Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DEL-AUX",
-    "user": "ALONSO",
-    "center": "1120",
-    "reason": "Limpieza"
-  },
-  {
-    "id": "LOG-1788466959083-ouz18",
-    "timestamp": "2026-09-03T20:22:39.083Z",
-    "action": "JUSTIFICATION_SUBMITTED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "sku": "JD-AH12345",
-    "justification": "Diferencia justificada por ajuste de merma",
-    "photoUrl": "/api/photos/sample.jpg",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "diffQty": -2
-  },
-  {
-    "id": "LOG-1788466967853-zfpdj",
-    "timestamp": "2026-09-03T20:22:47.853Z",
-    "action": "INVENTORY_REVIEW_FINISHED",
-    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-03.xlsx",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "targetId": "INV-TEST-DRIVE-WARNES-001"
-  },
-  {
-    "id": "LOG-1788466980140-obu0f",
-    "timestamp": "2026-09-03T20:23:00.140Z",
-    "action": "INVENTORY_DELETED",
-    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
-    "user": "ALONSO",
-    "center": "WARNES",
-    "reason": "Eliminación autorizada con clave"
-  },
-  {
     "id": "LOG-1788467123781-r0jam",
     "timestamp": "2026-09-03T20:25:23.782Z",
     "action": "COUNT_REGISTERED",
@@ -1834,5 +1162,122 @@
     "location": "PASILLO-04",
     "malEstado": 0,
     "reason": "Registro desde Escáner Barrido"
+  },
+  {
+    "id": "LOG-1788531658151-bjiod",
+    "timestamp": "2026-09-04T14:20:58.151Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-1120",
+    "user": "Isaias",
+    "center": "1120",
+    "reason": "Prueba de eliminación por encargado"
+  },
+  {
+    "id": "LOG-1788531658169-3evi1",
+    "timestamp": "2026-09-04T14:20:58.169Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-1300",
+    "user": "ALONSO",
+    "center": "1300",
+    "reason": "Eliminación por Administrador con minúsculas"
+  },
+  {
+    "id": "LOG-1788531658181-amzd0",
+    "timestamp": "2026-09-04T14:20:58.181Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-KEY",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788531658188-vv60l",
+    "timestamp": "2026-09-04T14:20:58.188Z",
+    "action": "INVENTORY_DELETED",
+    "inventoryId": "INV-TEST-DEL-AUX",
+    "user": "ALONSO",
+    "center": "1120",
+    "reason": "Limpieza"
+  },
+  {
+    "id": "LOG-1788531658215-u2ekw",
+    "timestamp": "2026-09-04T14:20:58.215Z",
+    "action": "COUNT_REGISTERED",
+    "inventoryId": "INV-TEST-BARRIDO-001",
+    "sku": "JD-AH12345",
+    "previousQty": null,
+    "newQty": 5,
+    "isReEdit": false,
+    "user": "auxiliar_warnes",
+    "center": "WARNES",
+    "location": "RACK-A1-01",
+    "malEstado": 2,
+    "reason": "Conteo físico confirmado"
+  },
+  {
+    "id": "LOG-1788531658241-vflq7",
+    "timestamp": "2026-09-04T14:20:58.242Z",
+    "action": "COUNT_REGISTERED",
+    "inventoryId": "INV-TEST-BARRIDO-001",
+    "sku": "SKU-DISCOVERED-999",
+    "previousQty": null,
+    "newQty": 3,
+    "isReEdit": false,
+    "user": "auxiliar_warnes",
+    "center": "WARNES",
+    "location": "RACK-Z-99",
+    "malEstado": 0,
+    "reason": "Conteo físico confirmado"
+  },
+  {
+    "id": "LOG-1788531658658-pa2oz",
+    "timestamp": "2026-09-04T14:20:58.658Z",
+    "action": "JUSTIFICATION_SUBMITTED",
+    "inventoryId": "INV-TEST-DRIVE-WARNES-001",
+    "sku": "JD-AH12345",
+    "justification": "Diferencia justificada por ajuste de merma",
+    "photoUrl": "/api/photos/sample.jpg",
+    "user": "ALONSO",
+    "center": "WARNES",
+    "diffQty": -2
+  },
+  {
+    "id": "LOG-1788531670226-va4t4",
+    "timestamp": "2026-09-04T14:21:10.226Z",
+    "action": "INVENTORY_REVIEW_FINISHED",
+    "details": "Revisión completada por ALONSO. Archivo final Drive creado: CICLICO-WARNES-2026-09-04.xlsx",
+    "user": "ALONSO",
+    "center": "WARNES",
+    "targetId": "INV-TEST-DRIVE-WARNES-001"
+  },
+  {
+    "id": "LOG-1788531671271-n0b9u",
+    "timestamp": "2026-09-04T14:21:11.271Z",
+    "action": "INVENTORY_CREATED",
+    "details": "Inventario Inventario Test 1120 creado por Alonso creado con 1 ítems",
+    "user": "Alonso",
+    "center": "1120",
+    "targetId": "INV-CICLICO-1120-MTN1KTT2"
+  },
+  {
+    "id": "LOG-1788531671281-5uz8u",
+    "timestamp": "2026-09-04T14:21:11.281Z",
+    "action": "INVENTORY_CREATED",
+    "details": "Inventario Inventario Test 1300 creado por Juan Carlos creado con 1 ítems",
+    "user": "Jcarlos",
+    "center": "1300",
+    "targetId": "INV-CICLICO-1300-MTN1KTTC"
+  },
+  {
+    "id": "LOG-1788531671310-6vbo2",
+    "timestamp": "2026-09-04T14:21:11.310Z",
+    "action": "ITEMS_REASSIGNED",
+    "inventoryId": "INV-CICLICO-1120-MTN1KTT2",
+    "fromUser": "Varios",
+    "toUser": "Bladimir",
+    "user": "Isaias",
+    "center": "1120",
+    "affectedCount": 1,
+    "reason": "Asignación de turno operativo"
   }
 ]

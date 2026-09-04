@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const inventoryService = require('../src/services/inventoryService');
+const storagePath = require('../src/services/storagePath');
 
 test('Delete Inventory Authorization & ADM26 Key Verification', async (t) => {
   const adminUser = { username: 'ALONSO', role: 'ADMIN', center: 'GLOBAL', isSuperadmin: true };
@@ -119,6 +121,15 @@ test('Delete Inventory Authorization & ADM26 Key Verification', async (t) => {
       user: adminUser,
       deleteKey: 'ADM26',
       reason: 'Limpieza'
+    });
+  });
+
+  t.after(() => {
+    const ids = [invId1, invId2, 'INV-TEST-DEL-KEY', 'INV-TEST-DEL-AUX'];
+    ids.forEach(id => {
+      try {
+        storagePath.deleteFile(path.join(storagePath.getInventoriesDirectory(), `${id}.json`));
+      } catch (e) {}
     });
   });
 });

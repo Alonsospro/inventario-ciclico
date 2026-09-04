@@ -1,7 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const metricsService = require('../src/services/metricsService');
 const auditService = require('../src/services/auditService');
+const storagePath = require('../src/services/storagePath');
 
 test('Contadores Accuracy, Re-editions Tracking and Full Metrics Verification', async (t) => {
   // 1. Simulate audit log re-editions for a worker
@@ -79,5 +81,20 @@ test('Contadores Accuracy, Re-editions Tracking and Full Metrics Verification', 
     const metrics = metricsService.getDashboardMetrics({ type: 'TODOS', center: 'TODOS' });
     assert.ok(Array.isArray(metrics.multiLocationSkus), 'multiLocationSkus must be an array');
     assert.ok(metrics.summary.multiLocation, 'multiLocation summary must exist');
+  });
+
+  t.after(() => {
+    try {
+      const dateStr = new Date().toISOString().slice(0, 7);
+      const auditWarnes = path.join(storagePath.getAuditDirectory(), `audit-WARNES-${dateStr}.json`);
+      storagePath.deleteFile(auditWarnes);
+    } catch (e) {}
+
+    try {
+      const globalPath = path.join(storagePath.getAuditDirectory(), 'audit-consolidated.json');
+      const existing = storagePath.readJson(globalPath, []);
+      const cleaned = existing.filter(l => l.inventoryId !== 'INV-TEST-EDITS');
+      storagePath.writeJson(globalPath, cleaned);
+    } catch (e) {}
   });
 });

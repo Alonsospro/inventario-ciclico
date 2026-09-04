@@ -86,4 +86,28 @@ test('Photo Folder Structure for Mal Estado and Justificaciones', async (t) => {
     const nibolPath = path.resolve(__dirname, '..', 'nibol', 'ciclicos', 'fotos', 'justificaciones', '2026-09-02', 'John Deere - Km 10', 'JD-TEST-JUST-99.jpg');
     assert.ok(fs.existsSync(nibolPath), `Physical file must exist at ${nibolPath}`);
   });
+
+  t.after(() => {
+    const photosDir = storagePath.getPhotosDirectory();
+    try {
+      fs.rmSync(path.join(photosDir, 'malestado', '2026-09-02'), { recursive: true, force: true });
+    } catch (e) {}
+    try {
+      fs.rmSync(path.join(photosDir, 'justificaciones', '2026-09-02'), { recursive: true, force: true });
+    } catch (e) {}
+    try {
+      if (fs.existsSync(photosDir)) {
+        const files = fs.readdirSync(photosDir);
+        files.forEach(f => {
+          if (f.startsWith('PHOTO-')) {
+            fs.unlinkSync(path.join(photosDir, f));
+          }
+        });
+      }
+    } catch (e) {}
+    try {
+      const nibolPath = path.resolve(__dirname, '..', 'nibol');
+      fs.rmSync(nibolPath, { recursive: true, force: true });
+    } catch (e) {}
+  });
 });

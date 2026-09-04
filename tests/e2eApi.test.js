@@ -1,8 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const app = require('../server');
 const authService = require('../src/services/authService');
 const inventoryService = require('../src/services/inventoryService');
+const storagePath = require('../src/services/storagePath');
 
 // Helper to make fast internal HTTP calls to the express app without starting external network server
 test('E2E HTTP API Endpoint Tests', async (t) => {
@@ -115,14 +117,9 @@ test('E2E HTTP API Endpoint Tests', async (t) => {
     assert.strictEqual(typeof data.summary.eruPercent, 'number');
   });
 
-  await t.test('Teardown test HTTP server', async () => {
-    // Clean up test fixture
+  t.after(async () => {
     try {
-      inventoryService.deleteInventory({
-        inventoryId: testInvId,
-        user: { username: 'admin', role: 'ADMIN', isSuperadmin: true },
-        deleteKey: 'ADM26'
-      });
+      storagePath.deleteFile(path.join(storagePath.getInventoriesDirectory(), `${testInvId}.json`));
     } catch (e) {}
 
     if (server) {

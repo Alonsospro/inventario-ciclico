@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const inventoryService = require('../src/services/inventoryService');
+const storagePath = require('../src/services/storagePath');
 
 test('Barrido Dedicated Mode & Code Normalization', async (t) => {
   const invId = 'INV-TEST-BARRIDO-001';
@@ -89,9 +91,9 @@ test('Barrido Dedicated Mode & Code Normalization', async (t) => {
   });
 
   // Teardown
-  inventoryService.deleteInventory({
-    inventoryId: invId,
-    user: { username: 'admin', role: 'ADMIN', isSuperadmin: true },
-    deleteKey: 'ADM26'
+  t.after(() => {
+    try {
+      storagePath.deleteFile(path.join(storagePath.getInventoriesDirectory(), `${invId}.json`));
+    } catch (e) {}
   });
 });

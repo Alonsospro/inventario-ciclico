@@ -1,7 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const inventoryService = require('../src/services/inventoryService');
 const driveService = require('../src/services/driveService');
+const storagePath = require('../src/services/storagePath');
 
 test('Justification & Drive File Creation Contract', async (t) => {
   const adminUser = {
@@ -60,6 +62,9 @@ test('Justification & Drive File Creation Contract', async (t) => {
     assert.strictEqual(just.status, 'REVISADO');
   });
 
+  let driveFileId1 = null;
+  let driveFileId2 = null;
+
   await t.test('Terminar revisión must generate Drive file record and close inventory', async () => {
     const res = await inventoryService.finishReviewAndClose({
       inventoryId: invId,
@@ -71,6 +76,7 @@ test('Justification & Drive File Creation Contract', async (t) => {
     assert.strictEqual(res.inventory.status, 'REVISADO');
     assert.ok(res.drive.fileName.startsWith('CICLICO-WARNES-'));
     assert.ok(res.drive.fileId);
+    driveFileId1 = res.drive.fileId;
   });
 
   await t.test('createFinalDriveFile preserves center 1300 and does NOT fallback to 1120', async () => {
@@ -87,12 +93,30 @@ test('Justification & Drive File Creation Contract', async (t) => {
       reviewNotes: 'Test 1300'
     });
     assert.ok(driveRes.fileName.startsWith('CICLICO-1300-'), `FileName should start with CICLICO-1300-, got: ${driveRes.fileName}`);
+    driveFileId2 = driveRes.fileId;
   });
 
   // Teardown
-  inventoryService.deleteInventory({
-    inventoryId: invId,
-    user: adminUser,
-    deleteKey: 'ADM26'
+  t.after(() => {
+    try {
+      storagePath.deleteFile(path.join(storagePath.getInventoriesDirectory(), `${invId}.json`));
+    } catch (e) {}
+    try {
+      storagePath.deleteFile(path.join(storagePath.getJustificationsDirectory(), 'JUST-CICLICO-JD-AH12345-WARNES.json'));
+    } catch (e) {}
+    if (driveFileId1) {
+      try {
+        storagePath.deleteFile(path.join(storagePath.getHistoryDirectory(), `${driveFileId1}.json`));
+      } catch (e) {}
+    }
+    if (driveFileId2) {
+      try {
+        storagePath.deleteFile(path.join(storagePath.getHistoryDirectory(), `${driveFileId2}.json`));
+      } catch (e) {}
+    }
+    try {
+      const dateStr = new Date().toISOString().slice(0, 7);
+      storagePath.deleteFile(path.join(storagePath.getAuditDirectory(), `audit-WARNES-${dateStr}.json`));
+    } catch (e) {}
   });
 });

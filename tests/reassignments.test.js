@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const inventoryService = require('../src/services/inventoryService');
+const storagePath = require('../src/services/storagePath');
 
 test('Reassignments and Center Restraints', async (t) => {
   const encargadoWarnes = {
@@ -71,9 +73,9 @@ test('Reassignments and Center Restraints', async (t) => {
   });
 
   // Teardown
-  inventoryService.deleteInventory({
-    inventoryId: invId,
-    user: { username: 'admin', role: 'ADMIN', isSuperadmin: true },
-    deleteKey: 'ADM26'
+  t.after(() => {
+    try {
+      storagePath.deleteFile(path.join(storagePath.getInventoriesDirectory(), `${invId}.json`));
+    } catch (e) {}
   });
 });

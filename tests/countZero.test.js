@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const inventoryService = require('../src/services/inventoryService');
+const storagePath = require('../src/services/storagePath');
 
 test('Confirm Count with 0 Quantity and Audit Trail', async (t) => {
   const user = { username: 'auxiliar_warnes', role: 'AUXILIAR', center: 'WARNES' };
@@ -43,5 +45,17 @@ test('Confirm Count with 0 Quantity and Audit Trail', async (t) => {
     assert.strictEqual(res.item.Diferencia, -5);
     assert.strictEqual(res.item.Costo_Diferencia, -100);
     assert.strictEqual(res.item.Estado, 'Contado');
+  });
+
+  t.after(() => {
+    try {
+      const filePath = path.join(storagePath.getInventoriesDirectory(), `${invId}.json`);
+      storagePath.deleteFile(filePath);
+    } catch (e) {}
+    try {
+      const dateStr = new Date().toISOString().slice(0, 7);
+      const auditWarnes = path.join(storagePath.getAuditDirectory(), `audit-WARNES-${dateStr}.json`);
+      storagePath.deleteFile(auditWarnes);
+    } catch (e) {}
   });
 });

@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
 const inventoryService = require('../src/services/inventoryService');
+const storagePath = require('../src/services/storagePath');
 
 test('Multi-Location Logic & Row Appending Contract', async (t) => {
   const user = {
@@ -102,5 +104,12 @@ test('Multi-Location Logic & Row Appending Contract', async (t) => {
     const rawAfter = inventoryService.getInventoryRaw(invId);
     assert.strictEqual(rawAfter.items.length, 2);
     assert.strictEqual(rawAfter.items.some(it => it.id === itemToDelete.id), false);
+  });
+
+  t.after(() => {
+    try {
+      const filePath = path.join(storagePath.getInventoriesDirectory(), `${invId}.json`);
+      storagePath.deleteFile(filePath);
+    } catch (e) {}
   });
 });
