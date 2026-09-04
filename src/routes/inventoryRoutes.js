@@ -70,12 +70,13 @@ router.post('/fetch-from-gas', authenticate, requireInventoryCreator, async (req
 // POST /api/inventories/:id/count (Register physical count)
 router.post('/:id/count', authenticate, (req, res) => {
   try {
-    const { itemId, sku, stockFisico, malEstado, location, isNewLocation, reason, photoUrl, locked } = req.body;
+    const { itemId, sku, descripcion, stockFisico, malEstado, location, isNewLocation, reason, photoUrl, locked } = req.body;
 
     const result = inventoryService.updateCount({
       inventoryId: req.params.id,
       itemId,
       sku,
+      descripcion,
       stockFisico,
       malEstado,
       location,

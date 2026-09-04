@@ -10,7 +10,6 @@ class InventoryService {
   constructor() {
     this.invDir = storagePath.getInventoriesDirectory();
     this.justDir = storagePath.getJustificationsDirectory();
-    this.seedSampleInventories();
   }
 
   seedSampleInventories() {
@@ -146,7 +145,7 @@ class InventoryService {
 
   getAllInventoryFiles() {
     try {
-      const files = fs.readdirSync(this.invDir);
+      const files = storagePath.listFiles(this.invDir);
       return files.filter(f => f.endsWith('.json'));
     } catch (e) {
       return [];
@@ -161,7 +160,15 @@ class InventoryService {
 
   getInventoryRaw(id) {
     const filePath = path.join(this.invDir, `${id}.json`);
-    return storagePath.readJson(filePath, null);
+    const inv = storagePath.readJson(filePath, null);
+    if (inv && Array.isArray(inv.items)) {
+      inv.items.forEach((it, idx) => {
+        if (!it.id) {
+          it.id = `ITEM-${it.SKU ? String(it.SKU).replace(/[^a-zA-Z0-9_-]/g, '_') : (idx + 1)}-${idx + 1}`;
+        }
+      });
+    }
+    return inv;
   }
 
   getInventories(user, filterCenter = null, filterType = null) {
@@ -171,11 +178,11 @@ class InventoryService {
     files.forEach(file => {
       const inv = storagePath.readJson(path.join(this.invDir, file), null);
       if (inv) {
-        // Center filtering
+        // Strict Center filtering: non-admins strictly see only their assigned center
         if (user.role !== 'ADMIN' && !user.isSuperadmin) {
-          if (inv.center !== user.center) return;
+          if (!config.isSameCenter(inv.center, user.center)) return;
         } else if (filterCenter && filterCenter !== 'TODOS' && filterCenter !== 'GLOBAL') {
-          if (inv.center !== filterCenter) return;
+          if (!config.isSameCenter(inv.center, filterCenter)) return;
         }
 
         // Type filtering
@@ -185,8 +192,8 @@ class InventoryService {
 
         // Auxiliar specific filter: only show if assigned or has pending items
         if (user.role === 'AUXILIAR') {
-          const hasAssignedItems = inv.items.some(it => it.Responsable === user.username);
-          if (!hasAssignedItems && !inv.assignedAuxiliars?.includes(user.username)) {
+          const hasAssignedItems = inv.items.some(it => it.Responsable === user.username || it.Responsable === user.clave || it.Responsable === user.displayName);
+          if (!hasAssignedItems && !inv.assignedAuxiliars?.includes(user.username) && !inv.assignedAuxiliars?.includes(user.clave)) {
             return;
           }
         }
@@ -221,8 +228,8 @@ class InventoryService {
       throw new Error(`Inventario con ID '${id}' no encontrado`);
     }
 
-    // Check center authorization
-    if (user.role !== 'ADMIN' && !user.isSuperadmin && inv.center !== user.center) {
+    // Check strict center authorization
+    if (user.role !== 'ADMIN' && !user.isSuperadmin && !config.isSameCenter(inv.center, user.center)) {
       throw new Error(`No tiene permisos para acceder a inventarios del centro ${inv.center}`);
     }
 
@@ -231,7 +238,12 @@ class InventoryService {
     // 2. Hide columns H, I, K, L, O (Blind Count)
     if (user.role === 'AUXILIAR') {
       const isConteoPhase = inv.status !== 'REVISADO';
-      const userItems = inv.items.filter(it => it.Responsable === user.username || !it.Responsable);
+      const userItems = inv.items.filter(it =>
+        it.Responsable === user.username ||
+        it.Responsable === user.clave ||
+        it.Responsable === user.displayName ||
+        !it.Responsable
+      );
 
       return {
         ...inv,
@@ -260,28 +272,52 @@ class InventoryService {
     };
   }
 
-  createInventory({ type, center, name, items, user }) {
+  canCreateInventory(user) {
+    if (!user) return false;
+    if (user.isSuperadmin) return true;
+    const u = String(user.username || '').toLowerCase().trim();
+    const d = String(user.displayName || '').toLowerCase().trim();
+    if (u === 'alonso' || d.includes('alonso rios') || user.clave === 'ADM') return true;
+    if (u === 'jcarlos' || u === 'juancarlos' || u === 'juan carlos' || u === 'juan_carlos' || u === 'juan.carlos' || d.includes('juan carlos') || user.clave === 'JCS') return true;
+    return false;
+  }
+
+  async createInventory({ type, center, name, items, user }) {
     if (!type || !center) {
       throw new Error('Tipo y Centro son requeridos');
     }
 
-    const cleanType = type.toUpperCase();
-    const cleanCenter = center.toUpperCase();
-
-    if (user.role !== 'ADMIN' && !user.isSuperadmin && user.center !== cleanCenter) {
-      throw new Error(`No puede crear inventarios para el centro ${cleanCenter}`);
+    if (!this.canCreateInventory(user)) {
+      throw new Error('Acceso denegado: Solo Juan Carlos y Alonso están autorizados para crear nuevos inventarios.');
     }
 
-    const invId = `INV-${cleanType}-${cleanCenter}-${Date.now().toString(36).toUpperCase()}`;
-    const mappedItems = (items && items.length > 0)
-      ? gasService.mapRawRowsToColumns(items)
-      : [];
+    const cleanType = type.toUpperCase();
+    const targetCenter = center;
+
+    let mappedItems = [];
+    if (items && items.length > 0) {
+      mappedItems = gasService.mapRawRowsToColumns(items);
+    } else {
+      // Auto-fetch products from Google Apps Script for this center and type
+      try {
+        const fetched = await gasService.fetchProductsFromScript(cleanType, targetCenter);
+        if (fetched && fetched.length > 0) {
+          mappedItems = fetched;
+        }
+      } catch (err) {
+        console.warn(`[createInventory] Notice fetching GAS products for center ${targetCenter}:`, err.message);
+      }
+    }
+
+    const centerObj = config.findCenter(targetCenter);
+    const centerCode = centerObj ? centerObj.code : targetCenter;
+    const invId = `INV-${cleanType}-${centerCode}-${Date.now().toString(36).toUpperCase()}`;
 
     const newInventory = {
       id: invId,
-      name: name || `Inventario ${cleanType} - ${cleanCenter} (${new Date().toLocaleDateString()})`,
+      name: name || `Inventario ${cleanType} - ${centerObj ? centerObj.displayName : targetCenter} (${new Date().toLocaleDateString()})`,
       type: cleanType,
-      center: cleanCenter,
+      center: targetCenter,
       status: 'EN_PROGRESO',
       createdAt: new Date().toISOString(),
       createdBy: user.username,
@@ -294,24 +330,43 @@ class InventoryService {
       action: 'INVENTORY_CREATED',
       details: `Inventario ${newInventory.name} creado con ${mappedItems.length} ítems`,
       user: user.username,
-      center: cleanCenter,
+      center: targetCenter,
       targetId: invId
     });
 
     return newInventory;
   }
 
-  updateCount({ inventoryId, itemId, sku, stockFisico, malEstado = 0, location = null, isNewLocation = false, user, reason }) {
-    const inv = this.getInventoryRaw(inventoryId);
+  updateCount({ inventoryId, itemId, sku, descripcion, stockFisico, malEstado = 0, location = null, isNewLocation = false, user, reason, photoUrl = null, locked = true, comentario = null }) {
+    let inv = this.getInventoryRaw(inventoryId);
     if (!inv) {
-      throw new Error(`Inventario '${inventoryId}' no encontrado`);
+      if (inventoryId.startsWith('INV-BARRIDO-') || inventoryId.includes('BARRIDO')) {
+        const centerMatch = inventoryId.split('-')[2] || (user.center !== 'GLOBAL' ? user.center : '1120');
+        const cleanCenter = config.getCenterCode ? config.getCenterCode(centerMatch) : centerMatch;
+        const centerObj = config.findCenter ? config.findCenter(cleanCenter) : null;
+        inv = {
+          id: inventoryId,
+          name: `Barrido Operativo ${centerObj ? centerObj.name : cleanCenter}`,
+          type: 'BARRIDO',
+          center: cleanCenter,
+          status: 'EN_PROGRESO',
+          createdAt: new Date().toISOString(),
+          createdBy: user.username,
+          assignedAuxiliars: [user.username],
+          items: []
+        };
+        this.saveInventory(inv);
+      } else {
+        throw new Error(`Inventario '${inventoryId}' no encontrado`);
+      }
     }
 
-    if (user.role !== 'ADMIN' && !user.isSuperadmin && inv.center !== user.center) {
+    if (user.role !== 'ADMIN' && !user.isSuperadmin && !config.isSameCenter(inv.center, user.center)) {
       throw new Error(`No tiene permisos para modificar inventarios del centro ${inv.center}`);
     }
 
-    const qty = (stockFisico !== null && stockFisico !== undefined && stockFisico !== '') ? parseInt(stockFisico, 10) : 0;
+    const isCountProvided = (stockFisico !== null && stockFisico !== undefined && stockFisico !== '');
+    const qty = isCountProvided ? parseInt(stockFisico, 10) : null;
     const damagedQty = parseInt(malEstado, 10) || 0;
 
     let targetItem = inv.items.find(it => it.id === itemId || (sku && it.SKU === sku));
@@ -328,15 +383,18 @@ class InventoryService {
         Clasificacion_ABC: 'C',
         Unidad: 'PZA',
         Costo_Unitario: 0,
-        Stock_Sistema: 0
+        Stock_Sistema: 0,
+        Comentario: ''
       };
 
       const newItemId = `ITEM-NEW-LOC-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      const isConfirmedCount = isCountProvided && locked !== false;
+
       const newRow = {
         id: newItemId,
         SKU: baseItem.SKU,
         Codigo_Barras: baseItem.Codigo_Barras || '',
-        Descripcion: `${baseItem.Descripcion} (Ubicación Adicional)`,
+        Descripcion: descripcion || baseItem.Descripcion,
         Ubicacion: location || 'NUEVA_UBICACION',
         Categoria: baseItem.Categoria,
         Clasificacion_ABC: baseItem.Clasificacion_ABC,
@@ -344,35 +402,95 @@ class InventoryService {
         Costo_Unitario: baseItem.Costo_Unitario || 0,
         Stock_Sistema: 0, // Additional location system expected is 0
         Stock_Fisico: qty,
-        Diferencia: qty - 0,
-        Costo_Diferencia: (qty - 0) * (baseItem.Costo_Unitario || 0),
-        Fecha_Ultimo_Conteo: new Date().toISOString(),
-        Responsable: user.username,
-        Estado: 'Contado',
+        Diferencia: isCountProvided ? (qty - 0) : 0,
+        Costo_Diferencia: isCountProvided ? ((qty - 0) * (baseItem.Costo_Unitario || 0)) : 0,
+        Fecha_Ultimo_Conteo: isCountProvided ? new Date().toISOString() : null,
+        Responsable: user.displayName || user.username,
+        Estado: isConfirmedCount ? 'Contado' : 'Pendiente',
         Mal_estado: damagedQty,
+        Comentario: comentario !== null ? comentario : (baseItem.Comentario || ''),
+        foto_mal_estado: photoUrl || null,
         isAdditionalLocation: true,
-        originalItemId: targetItem ? targetItem.id : null
+        originalItemId: targetItem ? targetItem.id : null,
+        locked: isConfirmedCount
       };
 
       inv.items.push(newRow);
       targetItem = newRow;
     } else {
       if (!targetItem) {
-        throw new Error(`Ítem con ID '${itemId}' o SKU '${sku}' no encontrado en el inventario`);
-      }
+        // In BARRIDO or dynamic insertion, create the item if not present
+        const newItemId = itemId || `ITEM-BARRIDO-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+        targetItem = {
+          id: newItemId,
+          SKU: sku || 'SKU-DESCUBIERTO',
+          Codigo_Barras: '',
+          Descripcion: descripcion || (sku ? `Ítem Descubierto ${sku}` : 'Ítem Barrido'),
+          Ubicacion: location || '',
+          Categoria: 'BARRIDO',
+          Clasificacion_ABC: 'C',
+          Unidad: 'PZA',
+          Costo_Unitario: 0,
+          Stock_Sistema: 0,
+          Stock_Fisico: qty,
+          Diferencia: isCountProvided ? qty : 0,
+          Costo_Diferencia: 0,
+          Fecha_Ultimo_Conteo: isCountProvided ? new Date().toISOString() : null,
+          Responsable: user.displayName || user.username,
+          Estado: locked !== false ? 'Contado' : 'Pendiente',
+          Mal_estado: damagedQty,
+          Comentario: comentario !== null ? comentario : '',
+          foto_mal_estado: photoUrl || null,
+          locked: !!locked
+        };
+        inv.items.push(targetItem);
+      } else {
+        // Auxiliar can only count items assigned to them (except in BARRIDO mode where scan is open for the center)
+        if (user.role === 'AUXILIAR' && inv.type !== 'BARRIDO' && targetItem.Responsable && targetItem.Responsable !== user.username && targetItem.Responsable !== user.clave) {
+          throw new Error(`Este ítem está asignado al auxiliar ${targetItem.Responsable}`);
+        }
 
-      // Auxiliar can only count items assigned to them (except in BARRIDO mode where scan is open for the center)
-      if (user.role === 'AUXILIAR' && inv.type !== 'BARRIDO' && targetItem.Responsable && targetItem.Responsable !== user.username) {
-        throw new Error(`Este ítem está asignado al auxiliar ${targetItem.Responsable}`);
-      }
+        if (descripcion) {
+          targetItem.Descripcion = descripcion;
+        }
 
-      targetItem.Stock_Fisico = qty;
-      targetItem.Mal_estado = damagedQty;
-      targetItem.Diferencia = qty - (targetItem.Stock_Sistema || 0);
-      targetItem.Costo_Diferencia = targetItem.Diferencia * (targetItem.Costo_Unitario || 0);
-      targetItem.Fecha_Ultimo_Conteo = new Date().toISOString();
-      targetItem.Responsable = user.username;
-      targetItem.Estado = 'Contado';
+        if (location) {
+          targetItem.Ubicacion = location;
+        }
+
+        if (isCountProvided) {
+          targetItem.Stock_Fisico = qty;
+          targetItem.Diferencia = qty - (targetItem.Stock_Sistema || 0);
+          targetItem.Costo_Diferencia = targetItem.Diferencia * (targetItem.Costo_Unitario || 0);
+          targetItem.Fecha_Ultimo_Conteo = new Date().toISOString();
+          targetItem.Responsable = user.displayName || user.username;
+          targetItem.Estado = locked !== false ? 'Contado' : 'Pendiente';
+        }
+
+        if (previousQty !== null && previousQty !== undefined && isCountProvided) {
+          targetItem.modificationCount = (targetItem.modificationCount || 0) + 1;
+          targetItem.modificationHistory = targetItem.modificationHistory || [];
+          targetItem.modificationHistory.push({
+            previousQty,
+            newQty: qty,
+            previousDamaged: targetItem.Mal_estado || 0,
+            newDamaged: damagedQty,
+            user: user.username,
+            userDisplayName: user.displayName || user.username,
+            timestamp: new Date().toISOString(),
+            reason: reason || 'Modificación de conteo ya realizado'
+          });
+        }
+
+        targetItem.Mal_estado = damagedQty;
+        if (comentario !== null && comentario !== undefined) {
+          targetItem.Comentario = comentario;
+        }
+        if (photoUrl !== null && photoUrl !== undefined) {
+          targetItem.foto_mal_estado = photoUrl;
+        }
+        targetItem.locked = !!locked;
+      }
     }
 
     this.saveInventory(inv);
@@ -387,13 +505,59 @@ class InventoryService {
       center: inv.center,
       location: targetItem.Ubicacion,
       malEstado: damagedQty,
-      reason: reason || (isNewLocation ? 'Nueva ubicación detectada' : 'Conteo físico confirmado')
+      reason: reason || (isNewLocation ? 'Nueva ubicación detectada' : (previousQty !== null ? 'Modificación de conteo previo' : 'Conteo físico confirmado'))
     });
 
     return {
       success: true,
       item: targetItem,
       inventoryStatus: inv.status
+    };
+  }
+
+  requestUnlockItem({ inventoryId, itemId, user, reason }) {
+    const inv = this.getInventoryRaw(inventoryId);
+    if (!inv) {
+      throw new Error(`Inventario '${inventoryId}' no encontrado`);
+    }
+
+    if (user.role !== 'ADMIN' && !user.isSuperadmin && !config.isSameCenter(inv.center, user.center)) {
+      throw new Error(`No tiene permisos para modificar inventarios del centro ${inv.center}`);
+    }
+
+    const targetItem = inv.items.find(it => it.id === itemId || it.SKU === itemId || String(it.id) === String(itemId) || String(it.SKU) === String(itemId));
+    if (!targetItem) {
+      throw new Error(`Ítem '${itemId}' no encontrado en el inventario`);
+    }
+
+    targetItem.locked = false;
+    targetItem.unlockRequestCount = (targetItem.unlockRequestCount || 0) + 1;
+    targetItem.unlockRequests = targetItem.unlockRequests || [];
+    targetItem.unlockRequests.push({
+      user: user.username,
+      userDisplayName: user.displayName || user.username,
+      timestamp: new Date().toISOString(),
+      previousQty: targetItem.Stock_Fisico,
+      reason: reason || 'Solicitud de modificación de conteo'
+    });
+
+    this.saveInventory(inv);
+
+    auditService.logUnlockRequest({
+      inventoryId: inv.id,
+      itemId: targetItem.id,
+      sku: targetItem.SKU,
+      user: user.username,
+      center: inv.center,
+      location: targetItem.Ubicacion,
+      previousQty: targetItem.Stock_Fisico,
+      reason: reason || 'Solicitud de modificación de conteo'
+    });
+
+    return {
+      success: true,
+      message: `Ítem ${targetItem.SKU} desbloqueado para modificación`,
+      item: targetItem
     };
   }
 
@@ -404,7 +568,7 @@ class InventoryService {
     }
 
     if (requestingUser.role !== 'ADMIN' && !requestingUser.isSuperadmin) {
-      if (requestingUser.role === 'ENCARGADO' && inv.center !== requestingUser.center) {
+      if (requestingUser.role === 'ENCARGADO' && !config.isSameCenter(inv.center, requestingUser.center)) {
         throw new Error('No puede reasignar tareas de otro centro');
       }
       if (requestingUser.role === 'AUXILIAR') {
@@ -522,7 +686,7 @@ class InventoryService {
 
   getJustificationsForInventory(inventoryId) {
     try {
-      const files = fs.readdirSync(this.justDir).filter(f => f.endsWith('.json'));
+      const files = storagePath.listFiles(this.justDir).filter(f => f.endsWith('.json'));
       const list = [];
       files.forEach(f => {
         const j = storagePath.readJson(path.join(this.justDir, f), null);
@@ -602,7 +766,7 @@ class InventoryService {
     inv.closedBy = user.username;
     inv.driveFileId = driveResult.fileId;
     inv.driveFileName = driveResult.fileName;
-    inv.driveUrl = driveResult.driveUrl;
+    inv.driveUrl = driveResult.driveUrl || null; // Only real Drive URLs, null if GAS didn't provide one
 
     this.saveInventory(inv);
 
@@ -646,66 +810,81 @@ class InventoryService {
   }
 
   deleteInventory({ inventoryId, user, deleteKey, reason }) {
-    if (user.role !== 'ADMIN' && !user.isSuperadmin) {
-      throw new Error('Solo los administradores pueden eliminar inventarios');
-    }
-
-    if (deleteKey !== config.adminDeleteKey) {
-      throw new Error('Clave de confirmación de eliminación incorrecta');
-    }
-
     const inv = this.getInventoryRaw(inventoryId);
     if (!inv) throw new Error('Inventario no encontrado');
 
-    const filePath = path.join(this.invDir, `${inventoryId}.json`);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    if (user.role !== 'ADMIN' && !user.isSuperadmin) {
+      if (user.role === 'ENCARGADO') {
+        if (!config.isSameCenter(inv.center, user.center)) {
+          throw new Error(`No puede eliminar inventarios del centro ${inv.center}. Su centro asignado es ${user.center}`);
+        }
+      } else {
+        throw new Error('Solo los administradores y encargados pueden eliminar inventarios');
+      }
     }
+
+    const inputKey = String(deleteKey || '').trim().toUpperCase();
+    const targetKey = String(config.adminDeleteKey || 'ADM26').trim().toUpperCase();
+
+    if (inputKey !== targetKey) {
+      throw new Error('Clave de confirmación de eliminación incorrecta');
+    }
+
+    const filePath = path.join(this.invDir, `${inventoryId}.json`);
+    storagePath.deleteFile(filePath);
 
     auditService.logDeletion({
       inventoryId,
       user: user.username,
       center: inv.center,
-      reason
+      reason: reason || 'Eliminación autorizada con clave'
     });
 
     return { success: true, message: `Inventario ${inv.name} (${inventoryId}) eliminado exitosamente` };
   }
 
-  searchProductForBarrido({ barcodeOrSku, center }) {
+  async searchProductForBarrido({ barcodeOrSku, center }) {
     if (!barcodeOrSku) {
       throw new Error('Debe proporcionar un código de barras o SKU');
     }
 
     const raw = String(barcodeOrSku).trim();
-    // Normalize code: strip leading JD_ if exists, also support matching with JD_
-    const stripped = raw.replace(/^JD_/i, '').trim();
-    const withPrefix = `JD_${stripped}`;
+    // Normalize code: strip leading JD_ and JD- if exists, also support matching with prefixes
+    const stripped = raw.replace(/^JD_/i, '').replace(/^JD-/i, '').trim();
+    const withPrefixJD_ = `JD_${stripped}`;
+    const withPrefixJDHyphen = `JD-${stripped}`;
 
-    // Search through all current inventory items in this center
+    const matchCode = (targetVal) => {
+      if (!targetVal) return false;
+      const t = String(targetVal).trim();
+      const tStripped = t.replace(/^JD_/i, '').replace(/^JD-/i, '').trim();
+      const tUpper = t.toUpperCase();
+      const rawUpper = raw.toUpperCase();
+      const strippedUpper = stripped.toUpperCase();
+
+      return (
+        tUpper === rawUpper ||
+        tUpper === strippedUpper ||
+        tStripped.toUpperCase() === strippedUpper ||
+        tUpper === withPrefixJD_.toUpperCase() ||
+        tUpper === withPrefixJDHyphen.toUpperCase()
+      );
+    };
+
+    // 1. Search through all current inventory items in this center
     const files = this.getAllInventoryFiles();
     for (const f of files) {
       const inv = storagePath.readJson(path.join(this.invDir, f), null);
       if (!inv) continue;
-      if (center && center !== 'GLOBAL' && inv.center !== center) continue;
+      if (center && center !== 'GLOBAL' && !config.isSameCenter(inv.center, center)) continue;
 
-      for (const it of inv.items) {
-        const itBarcode = (it.Codigo_Barras || '').trim();
-        const itSku = (it.SKU || '').trim();
-        const itBarcodeStripped = itBarcode.replace(/^JD_/i, '').trim();
-
-        if (
-          itBarcode === raw ||
-          itBarcode === stripped ||
-          itBarcode === withPrefix ||
-          itBarcodeStripped === stripped ||
-          itSku.toUpperCase() === raw.toUpperCase() ||
-          itSku.toUpperCase() === stripped.toUpperCase()
-        ) {
+      for (const it of inv.items || []) {
+        if (matchCode(it.Codigo_Barras) || matchCode(it.SKU)) {
           return {
             found: true,
             source: 'EXISTING_INVENTORY',
             inventoryId: inv.id,
+            center: inv.center,
             item: {
               ...it,
               UbicacionOriginal: it.Ubicacion
@@ -715,11 +894,36 @@ class InventoryService {
       }
     }
 
-    // If not found in local files, return structured item placeholder for new discovery in barrido
+    // 2. If not found in local files, fetch directly from Google Apps Script for this center
+    const cleanCenter = config.getCenterCode ? config.getCenterCode(center || '1120') : (center || '1120');
+    try {
+      const gasProducts = await gasService.fetchProductsFromScript('BARRIDO', cleanCenter);
+      if (gasProducts && gasProducts.length > 0) {
+        for (const it of gasProducts) {
+          if (matchCode(it.Codigo_Barras) || matchCode(it.SKU)) {
+            return {
+              found: true,
+              source: 'GOOGLE_SHEETS',
+              center: cleanCenter,
+              item: {
+                ...it,
+                UbicacionOriginal: it.Ubicacion
+              }
+            };
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`[searchProductForBarrido] Warning querying GAS:`, err.message);
+    }
+
+    // 3. If not found in Google Sheets either, return structured item placeholder for new discovery in barrido
     return {
       found: false,
       source: 'NEW_DISCOVERY',
+      center: cleanCenter,
       item: {
+        id: `ITEM-NEW-${Date.now().toString(36)}`,
         SKU: raw.toUpperCase(),
         Codigo_Barras: raw,
         Descripcion: `Ítem Descubierto en Barrido (${raw})`,
@@ -733,8 +937,42 @@ class InventoryService {
         Diferencia: 0,
         Costo_Diferencia: 0,
         Estado: 'Pendiente',
-        Mal_estado: 0
+        Mal_estado: 0,
+        Comentario: ''
       }
+    };
+  }
+
+  deleteItem({ inventoryId, itemId, user }) {
+    const inv = this.getInventoryRaw(inventoryId);
+    if (!inv) {
+      throw new Error(`Inventario '${inventoryId}' no encontrado`);
+    }
+
+    if (user.role !== 'ADMIN' && !user.isSuperadmin && !config.isSameCenter(inv.center, user.center)) {
+      throw new Error(`No tiene permisos para modificar inventarios del centro ${inv.center}`);
+    }
+
+    const itemIdx = inv.items.findIndex(it => it.id === itemId);
+    if (itemIdx === -1) {
+      throw new Error('Ítem o ubicación no encontrada en este inventario');
+    }
+
+    const item = inv.items[itemIdx];
+    inv.items.splice(itemIdx, 1);
+    this.saveInventory(inv);
+
+    auditService.logAction({
+      action: 'LOCATION_DELETED',
+      details: `Ubicación eliminada: SKU ${item.SKU} - Ubic: ${item.Ubicacion || 'S/U'}`,
+      user: user.username,
+      center: inv.center,
+      targetId: inventoryId
+    });
+
+    return {
+      success: true,
+      message: `Ubicación '${item.Ubicacion}' del SKU ${item.SKU} eliminada correctamente`
     };
   }
 }

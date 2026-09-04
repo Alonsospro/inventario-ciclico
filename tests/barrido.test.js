@@ -69,6 +69,25 @@ test('Barrido Dedicated Mode & Code Normalization', async (t) => {
     assert.strictEqual(res.item.Mal_estado, 2, 'Columna P Mal_estado must be 2');
   });
 
+  await t.test('Custom description for newly discovered item in Barrido', () => {
+    const user = { username: 'auxiliar_warnes', role: 'AUXILIAR', center: 'WARNES' };
+    const customDesc = 'Bomba Hidráulica Auxiliar John Deere Reacondicionada';
+    const res = inventoryService.updateCount({
+      inventoryId: invId,
+      sku: 'SKU-DISCOVERED-999',
+      descripcion: customDesc,
+      stockFisico: 3,
+      malEstado: 0,
+      location: 'RACK-Z-99',
+      isNewLocation: false,
+      user
+    });
+
+    assert.ok(res.success);
+    assert.strictEqual(res.item.Descripcion, customDesc, 'Newly discovered item must save the custom description');
+    assert.strictEqual(res.item.Stock_Fisico, 3);
+  });
+
   // Teardown
   inventoryService.deleteInventory({
     inventoryId: invId,
